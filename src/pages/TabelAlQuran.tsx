@@ -70,9 +70,9 @@ export default function TabelAlQuran({
                             ? "rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-900"
                             : "text-gray-800"
                         }
+                        title={hadir.attendance_short ? "Hadir kurang dari Hari Efektif" : undefined}
                       >
                         {hadir.hadir}/{angka(hadir.effective_days)}
-                        {hadir.attendance_short && <div className="mt-0.5 text-xs font-normal">⚠ kurang</div>}
                       </span>
                     ) : (
                       <span className="text-xs text-gray-500">belum diisi</span>

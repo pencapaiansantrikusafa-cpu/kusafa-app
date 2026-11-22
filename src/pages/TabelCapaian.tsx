@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
-import TabelAlQuran from "./TabelAlQuran";
 import { angka, type BarisLaporan } from "../lib/laporan";
+import TabelAlQuran from "./TabelAlQuran";
 
 interface Halaqah {
   id: string;
@@ -28,13 +28,11 @@ interface Bidang {
   name: string;
 }
 
-/**
- * Tabel capaian per halaqah dan bulan. Seluruh angka berasal dari view
- * `v_monthly_report` di database; React hanya menyusun tampilan.
- */
 export default function TabelCapaian({ domain }: { domain: Domain }) {
   const [halaqahList, setHalaqahList] = useState<Halaqah[]>([]);
+  const [pengampu, setPengampu] = useState<Record<string, string>>({});
   const [bulanList, setBulanList] = useState<Bulan[]>([]);
+  const [tahun, setTahun] = useState<number | "">("");
   const [halaqahId, setHalaqahId] = useState("");
   const [bulanId, setBulanId] = useState("");
   const [baris, setBaris] = useState<BarisLaporan[]>([]);
@@ -42,14 +40,15 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   const [bidang, setBidang] = useState<Bidang[]>([]);
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Santri | null>(null);
 
-  // Daftar halaqah, bulan, dan bidang.
+  // Daftar halaqah + pengampu, bulan, dan bidang.
   useEffect(() => {
     let aktif = true;
     async function muat() {
       setMemuat(true);
       setGalat(null);
-      const [h, b, s] = await Promise.all([
+      const [h, b, s, t] = await Promise.all([
         supabase
           .from("halaqahs")
           .select("id, code, name, category")
@@ -61,13 +60,32 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           .select("id, month_no, name, academic_years!inner(hijri_year)")
           .order("month_no"),
         supabase.from("subjects").select("id, name").eq("domain", domain).order("sort_order"),
+        supabase
+          .from("halaqah_teachers")
+          .select("halaqah_id, teacher_role, profiles!inner(full_name), halaqahs!inner(domain)"),
       ]);
       if (!aktif) return;
-      if (h.error || b.error || s.error) {
-        setGalat(h.error?.message ?? b.error?.message ?? s.error?.message ?? null);
+      if (h.error || b.error || s.error || t.error) {
+        setGalat(h.error?.message ?? b.error?.message ?? s.error?.message ?? t.error?.message ?? null);
         setMemuat(false);
         return;
       }
+      // Peta pengampu: halaqah -> nama (utama didahulukan).
+      const petaGuru: Record<string, string[]> = {};
+      for (const row of (t.data ?? []) as unknown as Array<{
+        halaqah_id: string;
+        teacher_role: string;
+        profiles: { full_name: string };
+        halaqahs: { domain: string };
+      }>) {
+        if (row.halaqahs?.domain !== domain) continue;
+        const nama = row.profiles?.full_name;
+        if (!nama) continue;
+        const arr = petaGuru[row.halaqah_id] ?? [];
+        if (!arr.includes(nama)) arr.push(nama);
+      }
+      setPengampu(Object.fromEntries(Object.entries(petaGuru).map(([k, v]) => [k, v.join(", ")])));
+
       setHalaqahList(h.data ?? []);
       setBidang((s.data ?? []) as Bidang[]);
       const semua = ((b.data ?? []) as unknown as Array<{
@@ -82,7 +100,8 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       semua.sort((a, c) => a.hijri_year - c.hijri_year || a.month_no - c.month_no);
       setBulanList(semua);
       setHalaqahId((prev) => prev || h.data?.[0]?.id || "");
-      // Bulan default: bulan terakhir yang punya capaian (dihitung dari daftar kecil).
+
+      // Bulan default: bulan terakhir yang punya capaian.
       const { data: adaData } = await supabase
         .from("progress_entries")
         .select("month_id")
@@ -91,7 +110,9 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       if (!aktif) return;
       const punyaData = new Set((adaData ?? []).map((x) => x.month_id));
       const terakhir = [...semua].reverse().find((x) => punyaData.has(x.id));
-      setBulanId((prev) => prev || terakhir?.id || semua[semua.length - 1]?.id || "");
+      const dipilih = terakhir ?? semua[semua.length - 1];
+      setTahun((prev) => (prev !== "" ? prev : dipilih?.hijri_year ?? ""));
+      setBulanId((prev) => prev || dipilih?.id || "");
       setMemuat(false);
     }
     void muat();
@@ -144,20 +165,49 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     };
   }, [halaqahId, bulanId, domain]);
 
-  const ringkas = { kosong: 0, bawahTarget: 0, hadirKurang: 0 };
-  for (const b of baris) {
-    if (b.pos === null || b.target_monthly === null) ringkas.kosong++;
-    if (b.below_target) ringkas.bawahTarget++;
-    if (b.attendance_short) ringkas.hadirKurang++;
+  const daftarTahun = useMemo(
+    () => [...new Set(bulanList.map((b) => b.hijri_year))].sort((a, b) => a - b),
+    [bulanList],
+  );
+  const bulanTahunIni = useMemo(
+    () => bulanList.filter((b) => b.hijri_year === tahun),
+    [bulanList, tahun],
+  );
+
+  function gantiTahun(t: number) {
+    setTahun(t);
+    // Pilih bulan terakhir yang ada di tahun itu supaya tidak kosong.
+    const calon = bulanList.filter((b) => b.hijri_year === t);
+    if (!calon.some((b) => b.id === bulanId)) {
+      setBulanId(calon[calon.length - 1]?.id ?? "");
+    }
   }
+
+  // Ringkasan singkat untuk HP: santri mana yang belum sesuai target, bidang apa.
+  const ringkasanHp = useMemo(() => {
+    const peta = new Map<string, BarisLaporan>();
+    for (const b of baris) peta.set(`${b.student_id}|${b.subject_id}`, b);
+    return santri.map((s) => {
+      const masalah: string[] = [];
+      const kosong: string[] = [];
+      for (const bd of bidang) {
+        const r = peta.get(`${s.id}|${bd.id}`);
+        if (!r || r.pos === null || r.target_monthly === null) kosong.push(bd.name);
+        else if (r.below_target) masalah.push(bd.name);
+      }
+      return { santri: s, masalah, kosong };
+    });
+  }, [santri, bidang, baris]);
+
+  const pengampuTerpilih = pengampu[halaqahId] ?? "";
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-white p-4 ring-1 ring-black/5">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label htmlFor={`halaqah-${domain}`} className="block text-sm font-medium text-gray-800">
-              {domain === "wasilah" ? "Level" : "Halaqah"}
+              {domain === "wasilah" ? "Level" : domain === "ghayah" ? "Kelompok" : "Halaqah"}
             </label>
             <select
               id={`halaqah-${domain}`}
@@ -172,7 +222,31 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
                 </option>
               ))}
             </select>
+            <p className="mt-1 truncate text-xs text-gray-600" title={pengampuTerpilih}>
+              {pengampuTerpilih
+                ? `${domain === "ghayah" ? "Muallim" : domain === "wasilah" ? "Pengampu" : "Musyrif/ah"}: ${pengampuTerpilih}`
+                : "Pengampu belum ditetapkan"}
+            </p>
           </div>
+
+          <div>
+            <label htmlFor={`tahun-${domain}`} className="block text-sm font-medium text-gray-800">
+              Tahun Hijriyah
+            </label>
+            <select
+              id={`tahun-${domain}`}
+              value={tahun}
+              onChange={(e) => gantiTahun(Number(e.target.value))}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
+            >
+              {daftarTahun.map((t) => (
+                <option key={t} value={t}>
+                  {t} H
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label htmlFor={`bulan-${domain}`} className="block text-sm font-medium text-gray-800">
               Bulan
@@ -183,15 +257,13 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
               onChange={(e) => setBulanId(e.target.value)}
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
             >
-              {bulanList.map((b) => (
+              {bulanTahunIni.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name} {b.hijri_year} H
+                  {b.name}
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-gray-500">
-              Bulan pembanding otomatis bulan sebelumnya. Tidak perlu dipilih.
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Pembanding otomatis bulan sebelumnya.</p>
           </div>
         </div>
       </div>
@@ -206,25 +278,61 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 px-4 py-3">
           <h2 className="text-base font-bold text-gray-900">Capaian {DOMAIN_LABEL[domain]}</h2>
           <p className="text-xs text-gray-600">
-            {santri.length} santri · {memuat ? "memuat..." : `${ringkas.kosong} sel kosong`}
+            {santri.length} santri · {memuat ? "memuat..." : `${baris.filter((b) => b.below_target).length} di bawah target`}
           </p>
         </div>
 
         {memuat && santri.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-gray-600">Memuat data...</p>
         ) : santri.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-gray-600">
-            Belum ada anggota di halaqah ini.
-          </p>
-        ) : domain === "alquran" ? (
-          <TabelAlQuran santri={santri} baris={baris} bidang={bidang} memuat={memuat} />
+          <p className="px-4 py-8 text-center text-sm text-gray-600">Belum ada anggota di halaqah ini.</p>
         ) : (
-          <div className="px-4 py-8 text-center text-sm text-gray-700">
-            <p>
-              Tabel Wasilah/Ghayah (per mata pelajaran: Capaian Bulan Lalu, Bulan Ini, Selisih,
-              lalu daftar anggota) dikerjakan pada <strong>T6</strong>.
-            </p>
-          </div>
+          <>
+            {/* HP: ringkasan singkat, detail lewat pop-up. */}
+            <ul className="divide-y divide-black/5 lg:hidden">
+              {ringkasanHp.map(({ santri: s, masalah, kosong }) => (
+                <li key={s.id}>
+                  <button
+                    onClick={() => setDetail(s)}
+                    className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left hover:bg-gray-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-gray-900">{s.full_name}</span>
+                      <span className="mt-0.5 block text-xs">
+                        {masalah.length > 0 ? (
+                          <span className="text-pink-900">
+                            di bawah target: {masalah.join(", ")}
+                          </span>
+                        ) : (
+                          <span className="text-emerald-800">sesuai target</span>
+                        )}
+                        {kosong.length > 0 && (
+                          <span className="text-amber-800"> · belum diisi: {kosong.join(", ")}</span>
+                        )}
+                      </span>
+                    </span>
+                    <span aria-hidden className="shrink-0 text-gray-400">
+                      ›
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Desktop: tabel lengkap. */}
+            <div className="hidden lg:block">
+              {domain === "alquran" ? (
+                <TabelAlQuran santri={santri} baris={baris} bidang={bidang} memuat={memuat} />
+              ) : (
+                <div className="px-4 py-8 text-center text-sm text-gray-700">
+                  <p>
+                    Tabel Wasilah/Ghayah (per mata pelajaran: Capaian Bulan Lalu, Bulan Ini, Selisih,
+                    lalu daftar anggota) dikerjakan pada <strong>T6</strong>.
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
@@ -236,14 +344,135 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           selisih kurang dari target bulanan.
           <span className="mx-1">·</span>
           <span className="mr-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 font-medium text-amber-900">
-            ⚠ kurang
+            belum diisi
           </span>
-          Hadir kurang dari Hari Efektif.
+          data belum ada di Excel/database, bukan nol.
         </p>
-        <p className="mt-1">
-          Kolom per bidang berurutan <strong>Lalu · Kini · Selisih</strong>. Sel kosong tertulis
-          <em> belum diisi</em>, bukan nol. Selisih negatif berarti santri mengulang.
-        </p>
+      </div>
+
+      {detail && (
+        <DialogDetail
+          santri={detail}
+          bidang={bidang}
+          baris={baris}
+          namaHalaqah={halaqahList.find((h) => h.id === halaqahId)?.code ?? ""}
+          onTutup={() => setDetail(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Pop-up detail capaian satu santri (dipakai di HP). */
+function DialogDetail({
+  santri,
+  bidang,
+  baris,
+  namaHalaqah,
+  onTutup,
+}: {
+  santri: Santri;
+  bidang: Bidang[];
+  baris: BarisLaporan[];
+  namaHalaqah: string;
+  onTutup: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onTutup();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onTutup]);
+
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-end bg-black/40 sm:items-center sm:justify-center"
+      onClick={onTutup}
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detail capaian ${santri.full_name}`}
+        className="max-h-[85vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-xl sm:max-w-md sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">{santri.full_name}</h3>
+            <p className="text-xs text-gray-600">{namaHalaqah}</p>
+          </div>
+          <button
+            onClick={onTutup}
+            className="rounded-lg border border-gray-300 px-2.5 py-1 text-sm text-gray-700"
+          >
+            Tutup
+          </button>
+        </div>
+
+        <div className="mt-3 space-y-3">
+          {bidang.map((b) => {
+            const r = baris.find((x) => x.student_id === santri.id && x.subject_id === b.id);
+            return (
+              <div key={b.id} className="rounded-lg bg-gray-50 p-3">
+                <p className="text-sm font-semibold text-kusafa">{b.name}</p>
+                {!r || r.pos === null ? (
+                  <p className="mt-1 text-xs text-amber-800">Belum diisi</p>
+                ) : (
+                  <dl className="mt-1 space-y-0.5 text-xs">
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-gray-600">Capaian lalu</dt>
+                      <dd className="text-gray-800">{r.prev_item_label ?? "–"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-gray-600">Capaian kini</dt>
+                      <dd className="font-medium text-gray-900">{r.item_label ?? "–"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-gray-600">Selisih</dt>
+                      <dd
+                        className={
+                          r.selisih !== null && r.selisih < 0
+                            ? "font-semibold text-red-700"
+                            : "font-semibold text-kusafa"
+                        }
+                      >
+                        {r.selisih === null ? "–" : (r.selisih > 0 ? "+" : "") + angka(r.selisih)}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-gray-600">Target bulanan</dt>
+                      <dd className="text-gray-800">{angka(r.target_monthly)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-gray-600">Hadir/HE</dt>
+                      <dd className="text-gray-800">
+                        {angka(r.hadir)}/{angka(r.effective_days)}
+                        {r.attendance_short ? " — kurang" : ""}
+                      </dd>
+                    </div>
+                    <div className="pt-1">
+                      {r.target_monthly === null ? (
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 font-medium text-amber-900">
+                          target belum ada
+                        </span>
+                      ) : r.below_target ? (
+                        <span className="rounded bg-pink-100 px-1.5 py-0.5 font-medium text-pink-900">
+                          di bawah target
+                        </span>
+                      ) : (
+                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-800">
+                          sesuai target
+                        </span>
+                      )}
+                    </div>
+                  </dl>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

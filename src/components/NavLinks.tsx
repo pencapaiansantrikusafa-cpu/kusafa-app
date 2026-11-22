@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import type { NavItem, NavKey } from "../lib/roles";
 
 /** Ikon sederhana (SVG sebaris) untuk tiap menu. Tidak memakai pustaka tambahan. */
-function Ikon({ navKey, className }: { navKey: NavKey; className?: string }) {
+export function Ikon({ navKey, className }: { navKey: NavKey; className?: string }) {
   const c = className ?? "h-5 w-5";
   const common = {
     className: c,

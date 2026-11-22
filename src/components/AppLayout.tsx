@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 import { ROLE_LABEL, navItemsFor } from "../lib/roles";
-import NavLinks from "./NavLinks";
+import NavLinks, { Ikon } from "./NavLinks";
 
 const KUNCI_MENU = "kusafa:menu-ringkas";
 
-/** Kerangka aplikasi setelah login: header, menu sesuai role, dan isi halaman. */
+/**
+ * Kerangka aplikasi setelah login.
+ * - Desktop: header + menu samping (bisa dilipat jadi ikon saja) + isi.
+ * - HP: header + isi + bilah menu di bawah (bottom bar).
+ */
 export default function AppLayout() {
   const { profile, signOut } = useAuth();
-  const [menuTerbuka, setMenuTerbuka] = useState(false);
-  // Pilihan "menu ikon saja" diingat di browser, supaya tidak perlu diubah tiap kali.
   const [ringkas, setRingkas] = useState<boolean>(() => {
     try {
       return localStorage.getItem(KUNCI_MENU) === "1";
@@ -57,22 +59,12 @@ export default function AppLayout() {
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white">
         <div className="flex items-center gap-3 px-4 py-3">
-          <button
-            className="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm lg:hidden"
-            onClick={() => setMenuTerbuka((v) => !v)}
-            aria-expanded={menuTerbuka}
-            aria-controls="menu-hp"
-          >
-            Menu
-          </button>
-
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-bold text-kusafa">KUSAFA</p>
             <p className="truncate text-xs text-gray-600">
               {profile.full_name} · {ROLE_LABEL[profile.role]}
             </p>
           </div>
-
           <button
             onClick={() => void keluar()}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
@@ -80,20 +72,10 @@ export default function AppLayout() {
             Keluar
           </button>
         </div>
-
-        {menuTerbuka && (
-          <div id="menu-hp" className="border-t border-black/5 px-4 py-3 lg:hidden">
-            <NavLinks items={items} onNavigate={() => setMenuTerbuka(false)} />
-          </div>
-        )}
       </header>
 
-      <div className="flex w-full gap-4 px-3 py-4">
-        <aside
-          className={
-            "hidden shrink-0 lg:block " + (ringkas ? "w-16" : "w-56")
-          }
-        >
+      <div className="flex w-full gap-4 px-3 py-4 pb-24 lg:pb-4">
+        <aside className={"hidden shrink-0 lg:block " + (ringkas ? "w-16" : "w-56")}>
           <div className="sticky top-20 space-y-2">
             <button
               onClick={() => setRingkas((v) => !v)}
@@ -120,6 +102,42 @@ export default function AppLayout() {
           )}
         </main>
       </div>
+
+      {/* Bilah menu bawah untuk HP; desktop memakai menu samping. */}
+      {items.length > 0 && (
+        <nav
+          aria-label="Menu bawah"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+        >
+          <ul className="grid grid-flow-col auto-cols-fr">
+            {items.map((item) => (
+              <li key={item.key}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    "flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight " +
+                    (isActive ? "text-kusafa font-semibold" : "text-gray-600")
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span
+                        className={
+                          "flex h-7 w-7 items-center justify-center rounded-lg " +
+                          (isActive ? "bg-kusafa-light" : "")
+                        }
+                      >
+                        <Ikon navKey={item.key} className="h-4.5 w-4.5" />
+                      </span>
+                      <span className="text-center">{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </div>
   );
 }
