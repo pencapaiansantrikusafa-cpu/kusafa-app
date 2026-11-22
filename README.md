@@ -18,7 +18,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | E - Seed data uji | Selesai | `build_seed.py`: BERHASIL, 0 galat, 25 peringatan (Tilawah mundur/khatam, wajar). Data masuk ke Supabase: 9 bidang, 158 buku, 10954 item, 109 santri, 38 halaqah, 327 target, 2036 capaian, 599 presensi, 24 akun dummy. |
 | F - Uji lokal | Selesai | `npm run dev` jalan di http://localhost:5173/ ; halaman menampilkan "Tersambung ke Supabase." tanpa galat konsol. |
 | G - Vercel | Selesai | Situs live: https://kusafa-app.vercel.app — "Tersambung ke Supabase." tanpa galat. Repo GitHub terhubung (deploy otomatis tiap push). Environment di Vercel hanya `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` (Production/Preview/Development). Site URL Supabase diatur manual di dashboard. |
-| H - Laporan akhir & T2-T10 | Belum | - |
+| H - Laporan akhir & T2-T10 | Berjalan | Tahap A-G selesai. Situs live dan repo publik aktif. Tugas T2-T10 belum dimulai. |
 
 **Pertanyaan terbuka**
 - Repo harus dijadikan **privat** sebelum data asli santri dimuat ke database:
