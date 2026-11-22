@@ -50,13 +50,10 @@ export default function AppLayout() {
 
   const items = navItemsFor(profile.role);
   const { pathname } = useLocation();
-  // Submenu bilah bawah hanya tampil setelah dipilih (tidak menempel terus).
-  const [subBawahTerbuka, setSubBawahTerbuka] = useState(false);
-  // Submenu dari menu yang sedang dibuka (dipakai bilah bawah di HP).
-  const subBawah = subBawahTerbuka
-    ? items.find((i) => i.children?.length && (pathname.startsWith(i.path.split("/").slice(0, 2).join("/") + "/") || pathname === i.path))
-        ?.children ?? []
-    : [];
+  // Bilah bawah: submenu hanya terbuka untuk menu yang Diketuk, di halaman mana pun.
+  const [subBawahKey, setSubBawahKey] = useState<string | null>(null);
+  const menuSubBawah = subBawahKey ? items.find((i) => i.key === subBawahKey) : undefined;
+  const subBawah = menuSubBawah?.children ?? [];
 
   async function keluar() {
     await signOut();
@@ -118,7 +115,7 @@ export default function AppLayout() {
           className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
         >
           {/* Submenu hanya muncul setelah menu bertingkat diketuk. */}
-          {subBawah.length > 0 && subBawahTerbuka && (
+          {subBawah.length > 0 && (
             <div className="flex gap-1 overflow-x-auto border-b border-black/5 px-2 py-1.5">
               {subBawah.map((c) => {
                 const aktif = pathname === c.path;
@@ -126,6 +123,7 @@ export default function AppLayout() {
                   <Link
                     key={c.path}
                     to={c.path}
+                    onClick={() => setSubBawahKey(null)}
                     aria-current={aktif ? "page" : undefined}
                     className={
                       "shrink-0 rounded-full px-3 py-1 text-xs font-medium " +
@@ -169,8 +167,8 @@ export default function AppLayout() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setSubBawahTerbuka((v) => !v)}
-                    aria-expanded={subBawahTerbuka}
+                    onClick={() => setSubBawahKey((v) => (v === item.key ? null : item.key))}
+                    aria-expanded={subBawahKey === item.key}
                     className={
                       "flex w-full flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight " +
                       (pathname.startsWith(item.path.split("/").slice(0, 2).join("/"))
@@ -187,7 +185,7 @@ export default function AppLayout() {
                       <Ikon navKey={item.key} className="h-4.5 w-4.5" />
                     </span>
                     <span className="text-center">
-                      {item.label} <span aria-hidden>{subBawahTerbuka ? "▴" : "▾"}</span>
+                      {item.label} <span aria-hidden>{subBawahKey === item.key ? "▴" : "▾"}</span>
                     </span>
                   </button>
                 )}

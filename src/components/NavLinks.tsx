@@ -91,7 +91,6 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
   // Bila pengguna mengetuk submenu, submenu ikut menutup.
   function pilihSub() {
     setTerbuka(null);
-    onNavigate?.();
   }
 
   // Submenu hanya dibuka oleh pengguna, tidak otomatis mengikuti halaman.
@@ -102,7 +101,7 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
       {items.map((item) => {
         const aktif = menuAktif(item, pathname);
         const punyaAnak = !!item.children?.length;
-        const bukaSub = punyaAnak && terbuka === item.key && !ringkas;
+        const bukaSub = punyaAnak && terbuka === item.key;
 
         const kelas =
           "flex w-full items-center rounded-lg text-sm font-medium transition " +
@@ -124,7 +123,7 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
         );
 
         return (
-          <div key={item.key}>
+          <div key={item.key} className={ringkas ? "relative" : undefined}>
             {punyaAnak ? (
               <button
                 type="button"
@@ -150,7 +149,15 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
             )}
 
             {bukaSub && item.children && (
-              <ul id={`submenu-${item.key}`} className="mt-1 ml-3 space-y-0.5 border-l border-kusafa/20 pl-3">
+              <ul
+                id={`submenu-${item.key}`}
+                className={
+                  ringkas
+                    ? // Mode ikon: submenu melayang ke samping agar tetap terbaca.
+                      "absolute left-full top-0 z-30 ml-2 w-44 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/10"
+                    : "mt-1 ml-3 space-y-0.5 border-l border-kusafa/20 pl-3"
+                }
+              >
                 {item.children.map((c) => {
                   const sa = subAktif(c.path, pathname);
                   return (
