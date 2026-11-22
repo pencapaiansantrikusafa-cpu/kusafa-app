@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 import { ROLE_LABEL, navItemsFor } from "../lib/roles";
 import NavLinks, { Ikon } from "./NavLinks";
@@ -49,6 +49,11 @@ export default function AppLayout() {
   }
 
   const items = navItemsFor(profile.role);
+  const { pathname } = useLocation();
+  // Submenu dari menu yang sedang dibuka (dipakai bilah bawah di HP).
+  const subBawah =
+    items.find((i) => pathname.startsWith(i.path.split("/").slice(0, 2).join("/") + "/") || pathname === i.path)
+      ?.children ?? [];
 
   async function keluar() {
     await signOut();
@@ -109,14 +114,38 @@ export default function AppLayout() {
           aria-label="Menu bawah"
           className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
         >
+          {/* Submenu untuk menu bertingkat (mis. Capaian Al Qur'an / Ilmu Wasilah / Ilmu Ghayah). */}
+          {subBawah.length > 0 && (
+            <div className="flex gap-1 overflow-x-auto border-b border-black/5 px-2 py-1.5">
+              {subBawah.map((c) => {
+                const aktif = pathname === c.path;
+                return (
+                  <Link
+                    key={c.path}
+                    to={c.path}
+                    aria-current={aktif ? "page" : undefined}
+                    className={
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium " +
+                      (aktif ? "bg-kusafa text-white" : "bg-gray-100 text-gray-700")
+                    }
+                  >
+                    {c.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
           <ul className="grid grid-flow-col auto-cols-fr">
             {items.map((item) => (
               <li key={item.key}>
                 <NavLink
                   to={item.path}
+                  aria-current={pathname.startsWith(item.path.split("/").slice(0, 2).join("/")) ? "page" : undefined}
                   className={({ isActive }) =>
                     "flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight " +
-                    (isActive ? "text-kusafa font-semibold" : "text-gray-600")
+                    (isActive || pathname.startsWith(item.path.split("/").slice(0, 2).join("/"))
+                      ? "text-kusafa font-semibold"
+                      : "text-gray-600")
                   }
                 >
                   {({ isActive }) => (

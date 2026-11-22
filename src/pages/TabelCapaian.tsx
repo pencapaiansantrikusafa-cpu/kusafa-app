@@ -217,16 +217,10 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
               {halaqahList.map((h) => (
                 <option key={h.id} value={h.id}>
                   {h.code}
-                  {h.category ? ` — ${h.category}` : ""}
+                  {pengampu[h.id] ? ` - ${pengampu[h.id]}` : ""}
                 </option>
               ))}
             </select>
-            <p className="mt-1 truncate text-xs text-gray-600" title={pengampuTerpilih}>
-              
-              {pengampuTerpilih
-                ? `${domain === "ghayah" ? "Muallim" : domain === "wasilah" ? "Pengampu" : "Musyrif/ah"}: ${pengampuTerpilih}`
-                : "Pengampu belum ditetapkan"}
-            </p>
           </div>
 
           <div>
@@ -356,6 +350,12 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           bidang={bidang}
           baris={baris}
           namaHalaqah={halaqahList.find((h) => h.id === halaqahId)?.code ?? ""}
+          hadirTeks={(() => {
+            const hd = baris.find((b) => b.student_id === detail.id && b.hadir !== null);
+            return hd
+              ? `${angka(hd.hadir)}/${angka(hd.effective_days)}${hd.attendance_short ? " — kurang" : ""}`
+              : "belum diisi";
+          })()}
           onTutup={() => setDetail(null)}
         />
       )}
@@ -369,12 +369,15 @@ function DialogDetail({
   bidang,
   baris,
   namaHalaqah,
+  hadirTeks,
   onTutup,
 }: {
   santri: Santri;
   bidang: Bidang[];
   baris: BarisLaporan[];
   namaHalaqah: string;
+  /** Hadir/HE cukup ditampilkan sekali di kepala pop-up. */
+  hadirTeks: string;
   onTutup: () => void;
 }) {
   useEffect(() => {
@@ -401,7 +404,9 @@ function DialogDetail({
         <div className="flex items-start justify-between gap-2">
           <div>
             <h3 className="text-base font-bold text-gray-900">{santri.full_name}</h3>
-            <p className="text-xs text-gray-600">{namaHalaqah}</p>
+            <p className="text-xs text-gray-600">
+              {namaHalaqah} · Hadir/HE: <strong className="text-gray-800">{hadirTeks}</strong>
+            </p>
           </div>
           <button
             onClick={onTutup}
@@ -444,13 +449,6 @@ function DialogDetail({
                     <div className="flex justify-between gap-2">
                       <dt className="text-gray-600">Target bulanan</dt>
                       <dd className="text-gray-800">{angka(r.target_monthly)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-2">
-                      <dt className="text-gray-600">Hadir/HE</dt>
-                      <dd className="text-gray-800">
-                        {angka(r.hadir)}/{angka(r.effective_days)}
-                        {r.attendance_short ? " — kurang" : ""}
-                      </dd>
                     </div>
                     <div className="pt-1">
                       {r.target_monthly === null ? (

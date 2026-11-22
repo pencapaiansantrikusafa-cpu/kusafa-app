@@ -51,6 +51,8 @@ export interface NavItem {
   label: string;
   path: string;
   description: string;
+  /** Submenu; dipakai untuk memisahkan Capaian per domain. */
+  children?: { label: string; path: string }[];
 }
 
 /**
@@ -61,8 +63,13 @@ export function navItemsFor(role: AppRole): NavItem[] {
   const capaian: NavItem = {
     key: "capaian",
     label: "Capaian",
-    path: "/capaian",
+    path: "/capaian/alquran",
     description: "Melihat capaian santri per halaqah dan bulan.",
+    children: [
+      { label: "Al Qur'an", path: "/capaian/alquran" },
+      { label: "Ilmu Wasilah", path: "/capaian/wasilah" },
+      { label: "Ilmu Ghayah", path: "/capaian/ghayah" },
+    ],
   };
   const input: NavItem = {
     key: "input",

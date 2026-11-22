@@ -34,7 +34,8 @@ export default function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<Beranda />} />
-        <Route path="capaian" element={<CapaianPage />} />
+        <Route path="capaian" element={<Navigate to="/capaian/alquran" replace />} />
+        <Route path="capaian/:domain" element={<CapaianPage />} />
         {items
           .filter((i) => i.key !== "capaian")
           .map((i) => (

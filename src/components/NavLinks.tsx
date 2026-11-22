@@ -68,8 +68,8 @@ interface Props {
 }
 
 /**
- * Daftar menu; dipakai di samping (desktop) dan panel menu (HP).
- * Saat `ringkas`, hanya ikon tampil dan nama menu muncul sebagai tooltip (title).
+ * Daftar menu (menu samping desktop).
+ * Menu bertingkat tampil sebagai submenu saat menunya sedang dibuka.
  */
 export default function NavLinks({ items, ringkas = false, onNavigate }: Props) {
   const { pathname } = useLocation();
@@ -77,26 +77,53 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
   return (
     <nav aria-label="Menu utama" className="space-y-1">
       {items.map((item) => {
-        const aktif = pathname === item.path || pathname.startsWith(item.path + "/");
+        const aktif = pathname === item.path || pathname.startsWith(item.path.split("/").slice(0, 2).join("/") + "/");
+        const bukaSub = !!item.children && aktif;
         return (
-          <Link
-            key={item.key}
-            to={item.path}
-            onClick={onNavigate}
-            title={item.label}
-            aria-current={aktif ? "page" : undefined}
-            aria-label={item.label}
-            className={
-              "flex items-center rounded-lg text-sm font-medium transition " +
-              (ringkas ? "justify-center px-2 py-2.5 " : "gap-2.5 px-3 py-2 ") +
-              (aktif
-                ? "bg-kusafa text-white"
-                : "text-gray-700 hover:bg-kusafa-light hover:text-kusafa")
-            }
-          >
-            <Ikon navKey={item.key} />
-            {!ringkas && <span>{item.label}</span>}
-          </Link>
+          <div key={item.key}>
+            <Link
+              to={item.path}
+              onClick={onNavigate}
+              title={item.label}
+              aria-current={aktif ? "page" : undefined}
+              aria-label={item.label}
+              className={
+                "flex items-center rounded-lg text-sm font-medium transition " +
+                (ringkas ? "justify-center px-2 py-2.5 " : "gap-2.5 px-3 py-2 ") +
+                (aktif
+                  ? "bg-kusafa text-white"
+                  : "text-gray-700 hover:bg-kusafa-light hover:text-kusafa")
+              }
+            >
+              <Ikon navKey={item.key} />
+              {!ringkas && <span className="flex-1">{item.label}</span>}
+            </Link>
+
+            {bukaSub && item.children && !ringkas && (
+              <ul className="mt-1 space-y-0.5 border-l border-kusafa/20 pl-3 ml-3">
+                {item.children.map((c) => {
+                  const subAktif = pathname === c.path;
+                  return (
+                    <li key={c.path}>
+                      <Link
+                        to={c.path}
+                        onClick={onNavigate}
+                        aria-current={subAktif ? "page" : undefined}
+                        className={
+                          "block rounded-md px-2 py-1.5 text-[13px] " +
+                          (subAktif
+                            ? "bg-kusafa-light font-semibold text-kusafa"
+                            : "text-gray-600 hover:bg-gray-100")
+                        }
+                      >
+                        {c.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         );
       })}
     </nav>
