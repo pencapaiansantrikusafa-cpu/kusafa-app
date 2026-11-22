@@ -1,0 +1,6 @@
+#!/bin/sh
+# Menjalankan pemeriksaan keamanan sebelum commit. Aktifkan: git config core.hooksPath .githooks
+for p in python python3 py; do
+  if command -v "$p" >/dev/null 2>&1; then "$p" scripts/check_repo_safety.py --staged; exit $?; fi
+done
+echo "Python tidak ditemukan; pemeriksaan keamanan tidak bisa dijalankan." >&2; exit 1

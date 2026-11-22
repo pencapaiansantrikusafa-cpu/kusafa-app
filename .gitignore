@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+scripts/seed/output/
+__pycache__/
+supabase/.temp/
+# data santri (nanti berisi data asli): jangan di-commit
+data/source/*.xlsx
+supabase/seed/*.sql
+.DS_Store
