@@ -21,8 +21,10 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | H - Laporan akhir & T2-T10 | Berjalan | Tahap A-G selesai. Situs live dan repo publik aktif. Tugas T2-T10 belum dimulai. |
 
 **Pertanyaan terbuka**
-- Repo harus dijadikan **privat** sebelum data asli santri dimuat ke database:
+- **Keputusan Mudir (22 Nov 2026):** repo tetap **publik** selama pengembangan karena seluruh data (Excel dan isi database) masih data palsu (NIS berpola `144x.dummy-nis.xxx`, nama Fulan/Fulanah bernomor).
+  Repo baru dijadikan **privat** ketika aplikasi sudah sempurna:
   `gh repo edit --visibility private --accept-visibility-change-consequences`.
+- **Sebelum dipakai publik:** semua data dummy harus dihapus sehingga situs dimulai dengan data kosong (bukan seed). Seed hanya untuk pengembangan dan uji.
 - `npm install` melaporkan 4 kerentanan dependensi (3 sedang, 1 tinggi). Belum diperbaiki karena `npm audit fix --force` berisiko merusak versi paket.
 
 **Catatan teknis**
