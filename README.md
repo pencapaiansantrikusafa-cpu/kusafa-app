@@ -18,10 +18,17 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | E - Seed data uji | Selesai | `build_seed.py`: BERHASIL, 0 galat, 25 peringatan (Tilawah mundur/khatam, wajar). Data masuk ke Supabase: 9 bidang, 158 buku, 10954 item, 109 santri, 38 halaqah, 327 target, 2036 capaian, 599 presensi, 24 akun dummy. |
 | F - Uji lokal | Selesai | `npm run dev` jalan di http://localhost:5173/ ; halaman menampilkan "Tersambung ke Supabase." tanpa galat konsol. |
 | G - Vercel | Selesai | Situs live: https://kusafa-app.vercel.app — "Tersambung ke Supabase." tanpa galat. Repo GitHub terhubung (deploy otomatis tiap push). Environment di Vercel hanya `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` (Production/Preview/Development). Site URL Supabase diatur manual di dashboard. |
-| H - Laporan akhir & T2-T10 | Berjalan | T2 selesai: login, profil, menu per role. T3-T10 belum. |
+| H - Laporan akhir & T2-T10 | Berjalan | T2, T3, T4 selesai; T5 berjalan; T6-T10 belum. |
 | T2 - Login & kerangka | Selesai | Halaman login bahasa Indonesia, profil dari `profiles`, menu sesuai role (Mudir/Admin 6 menu; Masul 5; Musyrif/ah, Mudarris/ah 3). Diuji: 7 role login OK, form login OK, pesan galat saat sandi salah OK. `typecheck` & `build` hijau. |
 | T3 - Tabel capaian Al Qur'an | Selesai | Tabel per halaqah + bulan (bulan pembanding otomatis), kolom Hadir/HE, Lalu/Kini/Selisih per bidang, target bulanan. Sorotan `di bawah target` (merah muda) dan `⚠ kurang` (kuning) disertai teks. Sel kosong tampil "belum diisi", bukan 0. Bulan default = bulan terakhir yang berisi data. Tabel Wasilah & Ghayah masih versi dasar (dirapikan di T6). |
 | T4 - Halaman satu santri | Selesai | `/santri/:id` — pilih domain (Al Qur'an/Wasilah/Ghayah) dan rentang (Semester 1 / Semester 2 / Satu tahun). Grafik selisih per bidang + kehadiran (SVG sendiri, tanpa pustaka), garis diputus pada bulan kosong. Tabel riwayat dengan posisi kumulatif, selisih, Hadir/HE, target. Nama santri di tabel capaian bisa diketuk. `typecheck` & `build` hijau. |
+| T5 - Input capaian Al Qur'an | Berjalan | Sudah ada: pilih halaqah dan Tahun/Bulan (dua dropdown terpisah), daftar santri per halaqah, isian per bidang (Tilawah, Tahfidz, Kitabah) dari item aktif, izin/sakit/alpha, Hari Efektif khusus (hanya Mudir/Admin), catatan, saringan "Semua / Belum lengkap / Sudah ada data", penanda warna disertai teks. Simpan langsung ke `attendance`, `monthly_notes`, dan `progress_entries`; nilai tersimpan tampil lagi saat dibuka; bulan terkunci ditolak database dan pesannya ditampilkan apa adanya. **Belum ada:** pilihan "khatam, mulai putaran baru" (menaikkan `putaran`), dan input Wasilah/Ghayah (T6). |
+
+**Pemeriksaan serah terima 22 November 2026**
+- `npm run typecheck` hijau dan `npm run build` berhasil (96 modul, bundel 453,65 kB; gzip 129,40 kB).
+- `python scripts/check_repo_safety.py` lolos. Semua pekerjaan T2-T5 sudah di-commit dan di-push ke `main`.
+- Vercel: project `kusafa-app` terhubung dan production siap.
+- Verifikasi jumlah baris database (santri/capaian) **belum bisa dijalankan**: koneksi pooler Supabase timeout dari jaringan ini. Perlu diulang saat jaringan stabil; jangan jalankan seed ulang untuk sekadar memeriksa.
 
 **Pertanyaan terbuka**
 - **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.
@@ -34,6 +41,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
   `gh repo edit --visibility private --accept-visibility-change-consequences`.
 - **Sebelum dipakai publik:** semua data dummy harus dihapus sehingga situs dimulai dengan data kosong (bukan seed). Seed hanya untuk pengembangan dan uji.
 - `npm install` melaporkan 4 kerentanan dependensi (3 sedang, 1 tinggi). Belum diperbaiki karena `npm audit fix --force` berisiko merusak versi paket.
+- Berkas `.smoke-tokens.js` (token uji sementara) sudah dikecualikan di `.gitignore`; sebaiknya dihapus dari komputer. Jangan pernah di-commit.
 
 **Catatan teknis**
 - Supabase CLI 3.2.0: perintah ke project online butuh penanda `--remote` (mis. `npx supabase db push --remote`).
