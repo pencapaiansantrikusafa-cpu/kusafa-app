@@ -48,7 +48,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     async function muat() {
       setMemuat(true);
       setGalat(null);
-      const [h, b, s, t] = await Promise.all([
+      const [h, b, s, guru] = await Promise.all([
         supabase
           .from("halaqahs")
           .select("id, code, name, category")
@@ -60,32 +60,27 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           .select("id, month_no, name, academic_years!inner(hijri_year)")
           .order("month_no"),
         supabase.from("subjects").select("id, name").eq("domain", domain).order("sort_order"),
-        supabase
-          .from("halaqah_teachers")
-          .select("halaqah_id, teacher_role, profiles!inner(full_name), halaqahs!inner(domain)"),
+        supabase.from("halaqah_teachers").select("halaqah_id, profiles!inner(full_name)").limit(500),
       ]);
-      if (!aktif) return;
-      if (h.error || b.error || s.error || t.error) {
-        setGalat(h.error?.message ?? b.error?.message ?? s.error?.message ?? t.error?.message ?? null);
-        setMemuat(false);
-        return;
-      }
-      // Peta pengampu: halaqah -> nama (utama didahulukan).
-      const petaGuru: Record<string, string[]> = {};
-      for (const row of (t.data ?? []) as unknown as Array<{
+
+      // Peta pengampu memakai Map: aman untuk kunci apa pun dan tidak bisa "bentrok" seperti objek biasa.
+      const barisGuru = (guru.data ?? []) as unknown as Array<{
         halaqah_id: string;
-        teacher_role: string;
         profiles: { full_name: string };
-        halaqahs: { domain: string };
-      }>) {
-        if (row.halaqahs?.domain !== domain) continue;
+      }>;
+      const petaGuru = new Map<string, string[]>();
+      for (const row of barisGuru) {
         const nama = row.profiles?.full_name;
         if (!nama) continue;
-        const arr = petaGuru[row.halaqah_id] ?? [];
+        const arr = petaGuru.get(row.halaqah_id) ?? [];
         if (!arr.includes(nama)) arr.push(nama);
+        petaGuru.set(row.halaqah_id, arr);
       }
-      setPengampu(Object.fromEntries(Object.entries(petaGuru).map(([k, v]) => [k, v.join(", ")])));
-
+      const hasilPeta: Record<string, string> = {};
+      petaGuru.forEach((v, k) => {
+        hasilPeta[k] = v.join(", ");
+      });
+      setPengampu(hasilPeta);
       setHalaqahList(h.data ?? []);
       setBidang((s.data ?? []) as Bidang[]);
       const semua = ((b.data ?? []) as unknown as Array<{
@@ -99,7 +94,8 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       });
       semua.sort((a, c) => a.hijri_year - c.hijri_year || a.month_no - c.month_no);
       setBulanList(semua);
-      setHalaqahId((prev) => prev || h.data?.[0]?.id || "");
+      const halaqahAwal = h.data?.[0]?.id || "";
+      setHalaqahId((prev) => prev || halaqahAwal);
 
       // Bulan default: bulan terakhir yang punya capaian.
       const { data: adaData } = await supabase
@@ -112,10 +108,14 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       const terakhir = [...semua].reverse().find((x) => punyaData.has(x.id));
       const dipilih = terakhir ?? semua[semua.length - 1];
       setTahun((prev) => (prev !== "" ? prev : dipilih?.hijri_year ?? ""));
+      // Hanya terapkan pada pemuatan pertama; domain berikutnya punya state sendiri.
       setBulanId((prev) => prev || dipilih?.id || "");
       setMemuat(false);
     }
-    void muat();
+    void muat().catch((e: unknown) => {
+      setGalat(`Gagal memuat: ${e instanceof Error ? e.message : String(e)}`);
+      setMemuat(false);
+    });
     return () => {
       aktif = false;
     };
@@ -170,14 +170,13 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     [bulanList],
   );
   const bulanTahunIni = useMemo(
-    () => bulanList.filter((b) => b.hijri_year === tahun),
+    () => bulanList.filter((b) => Number(b.hijri_year) === Number(tahun)),
     [bulanList, tahun],
   );
 
   function gantiTahun(t: number) {
     setTahun(t);
-    // Pilih bulan terakhir yang ada di tahun itu supaya tidak kosong.
-    const calon = bulanList.filter((b) => b.hijri_year === t);
+    const calon = bulanList.filter((b) => Number(b.hijri_year) === t);
     if (!calon.some((b) => b.id === bulanId)) {
       setBulanId(calon[calon.length - 1]?.id ?? "");
     }
@@ -223,6 +222,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
               ))}
             </select>
             <p className="mt-1 truncate text-xs text-gray-600" title={pengampuTerpilih}>
+              
               {pengampuTerpilih
                 ? `${domain === "ghayah" ? "Muallim" : domain === "wasilah" ? "Pengampu" : "Musyrif/ah"}: ${pengampuTerpilih}`
                 : "Pengampu belum ditetapkan"}
