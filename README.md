@@ -14,7 +14,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | A - Pemeriksaan alat | Selesai | Node 26.13, npm 11.20, Python 3.12.16, git 2.39, gh 2.105. Tidak ada yang perlu dipasang. |
 | B - Siapkan proyek | Selesai | 5 file Excel di `data/source/`; `npm install` berhasil; `npm run typecheck` dan `npm run build` hijau. |
 | C - Git dan GitHub | Selesai | Repo publik: https://github.com/pencapaiansantrikusafa-cpu/kusafa-app — hook keamanan `.githooks/pre-commit` aktif. |
-| D - Supabase | Berjalan | Belum ada project. |
+| D - Supabase | Selesai | Project `kusafa` (ref `vcmamapzkhzgikpsvcdo`), region Singapore. 6 migrasi diterapkan (`db push --remote`). 18 tabel, semua `rowsecurity = true`, 44 kebijakan RLS. `.env.local` berisi 5 variabel; `DATABASE_URL` memakai pooler (`aws-0-ap-southeast-1.pooler.supabase.com:5432`) karena jaringan tanpa IPv6. |
 | E - Seed data uji | Belum | - |
 | F - Uji lokal | Belum | - |
 | G - Vercel | Belum | Belum ada situs live. |
@@ -24,6 +24,10 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - Repo harus dijadikan **privat** sebelum data asli santri dimuat ke database:
   `gh repo edit --visibility private --accept-visibility-change-consequences`.
 - `npm install` melaporkan 4 kerentanan dependensi (3 sedang, 1 tinggi). Belum diperbaiki karena `npm audit fix --force` berisiko merusak versi paket.
+
+**Catatan teknis**
+- Supabase CLI 3.2.0: perintah ke project online butuh penanda `--remote` (mis. `npx supabase db push --remote`).
+- Alamat koneksi langsung `db.<ref>.supabase.co` tidak bisa diresolusi di jaringan ini (tanpa IPv6), jadi semua skrip memakai pooler.
 
 ## Isi repo
 ```
