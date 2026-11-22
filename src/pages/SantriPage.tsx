@@ -152,6 +152,12 @@ export default function SantriPage() {
     titik: titikPosisi(b.id),
   }));
 
+  // Kehadiran ikut dalam grafik gabungan (garis putus-putus, satuan hari).
+  const seriGabungan: Seri[] = [
+    ...seriPosisi,
+    { nama: "Kehadiran (hari)", warna: "#b45309", putus: true, titik: titikHadir() },
+  ];
+
   // Tampilkan tautan kembali bila pengguna datang dari halaman capaian.
   const asal = cari.get("dari");
 
@@ -267,9 +273,9 @@ export default function SantriPage() {
 
       {modeGrafik === "gabung" ? (
         <GrafikGabungan
-          judul="Posisi capaian kumulatif"
-          seri={seriPosisi}
-          satuan={`${bulanRentang.length} bulan`}
+          judul="Posisi capaian kumulatif & kehadiran"
+          seri={seriGabungan}
+          satuan={`${bulanRentang.length} bulan · kehadiran dalam hari`}
         />
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
@@ -281,17 +287,15 @@ export default function SantriPage() {
               warna={WARNA[i % WARNA.length]}
             />
           ))}
+          {/* Kehadiran diletakkan tepat di samping kanan grafik Kitabah. */}
+          <GrafikGaris
+            judul="Kehadiran (Hadir)"
+            titik={titikHadir()}
+            satuan="hari"
+            warna="#b45309"
+          />
         </div>
       )}
-
-      <div className="grid gap-3 lg:grid-cols-2">
-        <GrafikGaris
-          judul="Kehadiran (Hadir)"
-          titik={titikHadir()}
-          satuan="hari"
-          warna="#b45309"
-        />
-      </div>
 
       <div className="rounded-xl bg-white ring-1 ring-black/5">
         <div className="border-b border-black/5 px-4 py-3">
