@@ -3,6 +3,8 @@ import { useAuth } from "../lib/auth-context";
 import { navItemsFor } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import FormInputAlQuran, { type BarisInput, type BidangInput } from "./FormInputAlQuran";
+import PemilihTahunBulan from "../components/PemilihTahunBulan";
+import PemilihHalaqah, { ambilPengampu } from "../components/PemilihHalaqah";
 
 interface Halaqah {
   id: string;
@@ -33,7 +35,9 @@ export default function InputPage() {
   const [halaqahId, setHalaqahId] = useState("");
   const [bulanList, setBulanList] = useState<Bulan[]>([]);
   const [bulanId, setBulanId] = useState("");
+  const [tahun, setTahun] = useState<number | "">("");
   const [bidang, setBidang] = useState<BidangInput[]>([]);
+  const [pengampu, setPengampu] = useState<Record<string, string>>({});
   const [items, setItems] = useState<Item[]>([]);
   // Item capaian yang sudah tersimpan tetapi belum ada di daftar aktif (mis. sudah dinonaktifkan).
   const [itemTambahan, setItemTambahan] = useState<Item[]>([]);
@@ -64,6 +68,7 @@ export default function InputPage() {
         return;
       }
       setHalaqahList(h.data ?? []);
+      setPengampu(await ambilPengampu());
       const semua = ((b.data ?? []) as unknown as Array<{
         id: string;
         month_no: number;
@@ -76,7 +81,9 @@ export default function InputPage() {
       semua.sort((a, c) => a.hijri_year - c.hijri_year || a.month_no - c.month_no);
       setBulanList(semua.filter((m) => m.month_no > 0));
       setHalaqahId((prev) => prev || h.data?.[0]?.id || "");
-      setBulanId((prev) => prev || semua.filter((m) => m.month_no > 0).slice(-1)[0]?.id || "");
+      const bulanTerakhir = semua.filter((m) => m.month_no > 0).slice(-1)[0];
+      setBulanId((prev) => prev || bulanTerakhir?.id || "");
+      setTahun((prev) => (prev !== "" ? prev : bulanTerakhir?.hijri_year ?? ""));
       setMemuat(false);
     }
     void muat();
@@ -235,43 +242,31 @@ export default function InputPage() {
         </p>
       </div>
 
-      <div className="rounded-xl bg-white p-4 ring-1 ring-black/5">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label htmlFor="input-halaqah" className="block text-sm font-medium text-gray-800">
-              Halaqah
-            </label>
-            <select
-              id="input-halaqah"
-              value={halaqahId}
-              onChange={(e) => setHalaqahId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-            >
-              {halaqahList.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.code}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="input-bulan" className="block text-sm font-medium text-gray-800">
-              Bulan
-            </label>
-            <select
-              id="input-bulan"
-              value={bulanId}
-              onChange={(e) => setBulanId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-            >
-              {bulanList.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name} {b.hijri_year} H
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      <div className="space-y-3 rounded-xl bg-white p-4 ring-1 ring-black/5">
+        <PemilihHalaqah
+          id="input-halaqah"
+          label="Halaqah"
+          halaqah={halaqahList}
+          pengampu={pengampu}
+          nilai={halaqahId}
+          onChange={setHalaqahId}
+          keterangan={
+            pengampu[halaqahId] ? `Musyrif/ah: ${pengampu[halaqahId]}` : "Pengampu belum ditetapkan"
+          }
+        />
+        <PemilihTahunBulan
+          bulan={bulanList}
+          tahun={tahun}
+          bulanId={bulanId}
+          idAwalan="input"
+          tanpaDataAwal
+          onTahun={(t) => {
+            setTahun(t);
+            const calon = bulanList.filter((b) => Number(b.hijri_year) === t && b.month_no > 0);
+            if (!calon.some((b) => b.id === bulanId)) setBulanId(calon[calon.length - 1]?.id ?? "");
+          }}
+          onBulan={setBulanId}
+        />
       </div>
 
       {galat && (

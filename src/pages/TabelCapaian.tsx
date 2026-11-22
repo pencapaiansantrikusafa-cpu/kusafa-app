@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import PemilihTahunBulan from "../components/PemilihTahunBulan";
+import PemilihHalaqah, { ambilPengampu } from "../components/PemilihHalaqah";
 import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import { angka, type BarisLaporan } from "../lib/laporan";
@@ -49,7 +51,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     async function muat() {
       setMemuat(true);
       setGalat(null);
-      const [h, b, s, guru] = await Promise.all([
+      const [h, b, s] = await Promise.all([
         supabase
           .from("halaqahs")
           .select("id, code, name, category")
@@ -61,27 +63,9 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           .select("id, month_no, name, academic_years!inner(hijri_year)")
           .order("month_no"),
         supabase.from("subjects").select("id, name").eq("domain", domain).order("sort_order"),
-        supabase.from("halaqah_teachers").select("halaqah_id, profiles!inner(full_name)").limit(500),
-      ]);
+        ]);
 
-      // Peta pengampu memakai Map: aman untuk kunci apa pun dan tidak bisa "bentrok" seperti objek biasa.
-      const barisGuru = (guru.data ?? []) as unknown as Array<{
-        halaqah_id: string;
-        profiles: { full_name: string };
-      }>;
-      const petaGuru = new Map<string, string[]>();
-      for (const row of barisGuru) {
-        const nama = row.profiles?.full_name;
-        if (!nama) continue;
-        const arr = petaGuru.get(row.halaqah_id) ?? [];
-        if (!arr.includes(nama)) arr.push(nama);
-        petaGuru.set(row.halaqah_id, arr);
-      }
-      const hasilPeta: Record<string, string> = {};
-      petaGuru.forEach((v, k) => {
-        hasilPeta[k] = v.join(", ");
-      });
-      setPengampu(hasilPeta);
+      setPengampu(await ambilPengampu());
       setHalaqahList(h.data ?? []);
       setBidang((s.data ?? []) as Bidang[]);
       const semua = ((b.data ?? []) as unknown as Array<{
@@ -166,15 +150,6 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     };
   }, [halaqahId, bulanId, domain]);
 
-  const daftarTahun = useMemo(
-    () => [...new Set(bulanList.map((b) => b.hijri_year))].sort((a, b) => a - b),
-    [bulanList],
-  );
-  const bulanTahunIni = useMemo(
-    () => bulanList.filter((b) => Number(b.hijri_year) === Number(tahun)),
-    [bulanList, tahun],
-  );
-
   function gantiTahun(t: number) {
     setTahun(t);
     const calon = bulanList.filter((b) => Number(b.hijri_year) === t);
@@ -224,42 +199,15 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
             </select>
           </div>
 
-          <div>
-            <label htmlFor={`tahun-${domain}`} className="block text-sm font-medium text-gray-800">
-              Tahun Hijriyah
-            </label>
-            <select
-              id={`tahun-${domain}`}
-              value={tahun}
-              onChange={(e) => gantiTahun(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-            >
-              {daftarTahun.map((t) => (
-                <option key={t} value={t}>
-                  {t} H
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor={`bulan-${domain}`} className="block text-sm font-medium text-gray-800">
-              Bulan
-            </label>
-            <select
-              id={`bulan-${domain}`}
-              value={bulanId}
-              onChange={(e) => setBulanId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-            >
-              {bulanTahunIni.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-500">Pembanding otomatis bulan sebelumnya.</p>
-          </div>
+          <PemilihTahunBulan
+            bulan={bulanList}
+            tahun={tahun}
+            bulanId={bulanId}
+            idAwalan={`tahun-bulan-${domain}`}
+            onTahun={gantiTahun}
+            onBulan={setBulanId}
+            catatan="Pembanding otomatis bulan sebelumnya."
+          />
         </div>
       </div>
 

@@ -35,6 +35,11 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
   Merah muda = selisih di bawah target. Kuning = Hadir kurang dari Hari Efektif. Mobile-friendly, ringan.
 - Aksesibel: label pada input, kontras cukup, jangan mengandalkan warna saja (tambahkan teks/ikon).
 
+## Aturan tampilan dan formulir (berlaku untuk SEMUA halaman, sekarang dan nanti)
+- **Dropdown Tahun dan Bulan selalu terpisah dua dropdown.** Jangan pernah membuat satu dropdown berisi "Bulan + Tahun". Saat berganti tahun ajaran, jumlah pilihan bulan tidak boleh bertambah. Pakai komponen `src/components/PemilihTahunBulan.tsx`.
+- **Dropdown halaqah/level/kelompok selalu menampilkan pengampunya**: "HLQ-PA-1 - Ust. Fulan 1" (Al Qur'an: musyrif/ah; Wasilah: pengampu; Ghayah: muallim/ah). Jangan menampilkan kategori Putra/Putri karena sudah terbaca dari kode. Pakai `src/components/PemilihHalaqah.tsx`.
+- **Semua formulir input (dropdown maupun isian) harus terhubung ke database**: nilai yang tersimpan ditampilkan kembali saat dibuka, dan tombol simpan menulis ke tabel Supabase (bukan sekadar state di browser). Bila hak akses menolak, tampilkan pesan galat dari database apa adanya.
+
 ## Perintah
 ```
 npm install
