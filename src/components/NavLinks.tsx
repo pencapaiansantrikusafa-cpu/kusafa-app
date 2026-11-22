@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import type { NavItem, NavKey } from "../lib/roles";
 
@@ -60,6 +61,17 @@ export function Ikon({ navKey, className }: { navKey: NavKey; className?: string
   }
 }
 
+/** Apakah suatu menu sedang aktif (termasuk sub-halamannya). */
+export function menuAktif(item: NavItem, pathname: string): boolean {
+  const akar = item.path.split("/").slice(0, 2).join("/") + "/";
+  return pathname === item.path || pathname.startsWith(akar);
+}
+
+/** Apakah path cocok dengan submenu tertentu. */
+export function subAktif(path: string, pathname: string): boolean {
+  return pathname === path;
+}
+
 interface Props {
   items: NavItem[];
   /** true = hanya ikon (lebar sempit). */
@@ -69,49 +81,87 @@ interface Props {
 
 /**
  * Daftar menu (menu samping desktop).
- * Menu bertingkat tampil sebagai submenu saat menunya sedang dibuka.
+ * Menu bertingkat (Capaian) dibuka/tutup dengan mengetuk menunya, tidak tampil terus.
  */
 export default function NavLinks({ items, ringkas = false, onNavigate }: Props) {
   const { pathname } = useLocation();
+  // Menu yang submenunya sedang dibuka. Semula tidak ada.
+  const [terbuka, setTerbuka] = useState<string | null>(null);
+
+  // Bila pengguna mengetuk submenu, submenu ikut menutup.
+  function pilihSub() {
+    setTerbuka(null);
+    onNavigate?.();
+  }
+
+  // Submenu hanya dibuka oleh pengguna, tidak otomatis mengikuti halaman.
+  // (Dulu otomatis terbuka saat halaman dibuka, membuat submenu menetap.)
 
   return (
     <nav aria-label="Menu utama" className="space-y-1">
       {items.map((item) => {
-        const aktif = pathname === item.path || pathname.startsWith(item.path.split("/").slice(0, 2).join("/") + "/");
-        const bukaSub = !!item.children && aktif;
+        const aktif = menuAktif(item, pathname);
+        const punyaAnak = !!item.children?.length;
+        const bukaSub = punyaAnak && terbuka === item.key && !ringkas;
+
+        const kelas =
+          "flex w-full items-center rounded-lg text-sm font-medium transition " +
+          (ringkas ? "justify-center px-2 py-2.5 " : "gap-2.5 px-3 py-2 ") +
+          (aktif
+            ? "bg-kusafa text-white"
+            : "text-gray-700 hover:bg-kusafa-light hover:text-kusafa");
+
+        const isi = (
+          <>
+            <Ikon navKey={item.key} />
+            {!ringkas && <span className="flex-1 text-left">{item.label}</span>}
+            {!ringkas && punyaAnak && (
+              <span aria-hidden className="text-xs opacity-80">
+                {bukaSub ? "▾" : "▸"}
+              </span>
+            )}
+          </>
+        );
+
         return (
           <div key={item.key}>
-            <Link
-              to={item.path}
-              onClick={onNavigate}
-              title={item.label}
-              aria-current={aktif ? "page" : undefined}
-              aria-label={item.label}
-              className={
-                "flex items-center rounded-lg text-sm font-medium transition " +
-                (ringkas ? "justify-center px-2 py-2.5 " : "gap-2.5 px-3 py-2 ") +
-                (aktif
-                  ? "bg-kusafa text-white"
-                  : "text-gray-700 hover:bg-kusafa-light hover:text-kusafa")
-              }
-            >
-              <Ikon navKey={item.key} />
-              {!ringkas && <span className="flex-1">{item.label}</span>}
-            </Link>
+            {punyaAnak ? (
+              <button
+                type="button"
+                onClick={() => setTerbuka((v) => (v === item.key ? null : item.key))}
+                aria-expanded={bukaSub}
+                aria-controls={`submenu-${item.key}`}
+                title={item.label}
+                className={kelas}
+              >
+                {isi}
+              </button>
+            ) : (
+              <Link
+                to={item.path}
+                onClick={onNavigate}
+                title={item.label}
+                aria-current={aktif ? "page" : undefined}
+                aria-label={item.label}
+                className={kelas}
+              >
+                {isi}
+              </Link>
+            )}
 
-            {bukaSub && item.children && !ringkas && (
-              <ul className="mt-1 space-y-0.5 border-l border-kusafa/20 pl-3 ml-3">
+            {bukaSub && item.children && (
+              <ul id={`submenu-${item.key}`} className="mt-1 ml-3 space-y-0.5 border-l border-kusafa/20 pl-3">
                 {item.children.map((c) => {
-                  const subAktif = pathname === c.path;
+                  const sa = subAktif(c.path, pathname);
                   return (
                     <li key={c.path}>
                       <Link
                         to={c.path}
-                        onClick={onNavigate}
-                        aria-current={subAktif ? "page" : undefined}
+                        onClick={pilihSub}
+                        aria-current={sa ? "page" : undefined}
                         className={
                           "block rounded-md px-2 py-1.5 text-[13px] " +
-                          (subAktif
+                          (sa
                             ? "bg-kusafa-light font-semibold text-kusafa"
                             : "text-gray-600 hover:bg-gray-100")
                         }
