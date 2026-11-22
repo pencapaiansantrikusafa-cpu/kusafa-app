@@ -5,14 +5,17 @@ Pemeriksaan keamanan repo. Repo ini boleh PUBLIK hanya selama berisi data dummy 
     python scripts/check_repo_safety.py            # periksa semua berkas yang dilacak git
     python scripts/check_repo_safety.py --staged   # periksa hanya yang akan di-commit (dipakai hook pre-commit)
 
-Gagal (kode 1) bila menemukan: berkas terlarang (.env, .xlsx, .zip, seed SQL, users.csv, dll.), kunci service_role / secret Supabase,
-atau URL database berisi kata sandi. Isi rahasia TIDAK dicetak, hanya nama berkas dan nomor baris.
+Gagal (kode 1) bila menemukan: berkas terlarang (.env, .xlsx, .zip, seed SQL, users.csv, berkas token, dll.),
+kunci service_role / secret Supabase, token akses (JWT) apa pun, refresh token, atau URL database berisi kata sandi.
+Isi rahasia TIDAK dicetak, hanya nama berkas dan nomor baris.
 """
 import base64, fnmatch, json, re, subprocess, sys
 
-FORBIDDEN = [".env", ".env.*", "*.xlsx", "*.xls", "*.csv", "*.zip", "supabase/seed/*.sql", "scripts/seed/output/*", "data/source/*"]
+FORBIDDEN = [".env", ".env.*", "*.xlsx", "*.xls", "*.csv", "*.zip", "supabase/seed/*.sql", "scripts/seed/output/*", "data/source/*", "*smoke-tokens*"]
 ALLOWED = [".env.example", "data/source/.gitkeep", "supabase/seed/.gitkeep"]
+# JWT apa pun (access token) dianggap rahasia, bukan hanya yang ber-role service_role.
 JWT = re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.([A-Za-z0-9_-]{10,})\.[A-Za-z0-9_-]{10,}")
+REFRESH_TOKEN = re.compile(r"[\"']?refresh_token[\"']?\s*[:=]\s*[\"'][A-Za-z0-9_-]{8,}[\"']")
 SECRET_KEY = re.compile(r"sb_secret_[A-Za-z0-9_-]{10,}")
 DB_URL = re.compile(r"postgres(?:ql)?://[^\s:@/]+:(?!PASSWORD\b|xxxx\b|password\b)[^\s@/]{4,}@")
 
@@ -41,6 +44,9 @@ def main():
                     payload = {}
                 if payload.get("role") == "service_role":
                     problems.append(f"{name}:{no}: kunci service_role Supabase.")
+                else:
+                    problems.append(f"{name}:{no}: token akses (JWT) tidak boleh ada di repo.")
+            if REFRESH_TOKEN.search(line): problems.append(f"{name}:{no}: refresh token tidak boleh ada di repo.")
             if SECRET_KEY.search(line): problems.append(f"{name}:{no}: kunci secret Supabase (sb_secret_...).")
             if DB_URL.search(line): problems.append(f"{name}:{no}: URL database berisi kata sandi.")
     if problems:

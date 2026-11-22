@@ -24,6 +24,16 @@ interface Item {
   subject_id: string;
   label: string;
   value: string | null;
+  /** Buku siklik (Tilawah Al Qur'an) — hanya di sini pilihan khatam ditawarkan. */
+  siklik: boolean;
+}
+
+/** Baris laporan bulan sebelumnya (posisi + putaran) dari `v_monthly_report`. */
+interface LaporanLalu {
+  student_id: string;
+  subject_id: string;
+  pos: number | null;
+  putaran: number | null;
 }
 
 const DOMAIN = "alquran" as const;
@@ -126,11 +136,16 @@ export default function InputPage() {
     }
 
     const subjectIds = bidangList.map((b) => b.id);
-    const [st, capaian, presensi, catatan, semuaItem] = await Promise.all([
+    // Bulan sebelumnya dan bulan-bulan sesudahnya, menurut urutan kalender.
+    const idx = bulanList.findIndex((b) => b.id === bulanId);
+    const bulanLaluId = idx > 0 ? bulanList[idx - 1].id : null;
+    const bulanSetelahIds = idx >= 0 ? bulanList.slice(idx + 1).map((b) => b.id) : [];
+
+    const [st, capaian, presensi, catatan, semuaItem, laporanLalu, setelah] = await Promise.all([
       supabase.from("students").select("id, full_name").in("id", anggota).order("full_name"),
       supabase
         .from("progress_entries")
-        .select("student_id, subject_id, item_id, curriculum_items(label)")
+        .select("student_id, subject_id, item_id, putaran, curriculum_items(label)")
         .eq("month_id", bulanId)
         .eq("halaqah_id", halaqahId),
       // Tentukan bulan secara tegas di kedua sisi (sisi klien dan kunci peta).
@@ -148,16 +163,42 @@ export default function InputPage() {
         .eq("domain", DOMAIN)
         .in("student_id", anggota),
       // curriculum_items tidak punya subject_id langsung; bidang diambil lewat books.
+      // is_cyclic menandai buku siklik (Tilawah Al Qur'an) tempat khatam ditawarkan.
       supabase
         .from("curriculum_items")
-        .select("id, label, value, is_active, books!inner(subject_id)")
+        .select("id, label, value, is_active, books!inner(subject_id, is_cyclic)")
         .in("books.subject_id", subjectIds)
         .eq("is_active", true)
         .order("seq")
         .limit(20000),
+      // Posisi dan putaran bulan lalu (pembanding otomatis). Selalu difilter agar tidak timeout.
+      bulanLaluId
+        ? supabase
+            .from("v_monthly_report")
+            .select("student_id, subject_id, pos, putaran")
+            .eq("halaqah_id", halaqahId)
+            .eq("month_id", bulanLaluId)
+            .eq("domain", DOMAIN)
+        : Promise.resolve({ data: [], error: null }),
+      // Apakah bulan sesudahnya sudah terisi (untuk peringatan peninjauan putaran).
+      bulanSetelahIds.length > 0
+        ? supabase
+            .from("progress_entries")
+            .select("student_id, subject_id")
+            .in("month_id", bulanSetelahIds)
+            .in("student_id", anggota)
+            .in("subject_id", subjectIds)
+            .limit(20000)
+        : Promise.resolve({ data: [], error: null }),
     ]);
     const galat2 =
-      st.error ?? capaian.error ?? presensi.error ?? catatan.error ?? semuaItem.error;
+      st.error ??
+      capaian.error ??
+      presensi.error ??
+      catatan.error ??
+      semuaItem.error ??
+      laporanLalu.error ??
+      setelah.error;
     if (galat2) {
       setGalat(galat2.message);
       setMemuat(false);
@@ -169,10 +210,16 @@ export default function InputPage() {
       id: string;
       label: string;
       value: string | null;
-      books: { subject_id: string } | { subject_id: string }[];
+      books: { subject_id: string; is_cyclic: boolean } | { subject_id: string; is_cyclic: boolean }[];
     }>).map((it) => {
       const bk = Array.isArray(it.books) ? it.books[0] : it.books;
-      return { id: it.id, subject_id: bk?.subject_id ?? "", label: it.label, value: it.value };
+      return {
+        id: it.id,
+        subject_id: bk?.subject_id ?? "",
+        label: it.label,
+        value: it.value,
+        siklik: !!bk?.is_cyclic,
+      };
     });
     setItems(daftarItem);
 
@@ -180,15 +227,31 @@ export default function InputPage() {
       student_id: string;
       subject_id: string;
       item_id: string;
+      putaran: number;
       curriculum_items: { label: string } | { label: string }[] | null;
     }>;
     const petaCapaian = new Map(barisCapaian.map((c) => [`${c.student_id}|${c.subject_id}`, c.item_id]));
+    const petaPutaranTersimpan = new Map(
+      barisCapaian.map((c) => [`${c.student_id}|${c.subject_id}`, c.putaran]),
+    );
+    const petaLalu = new Map(
+      ((laporanLalu.data ?? []) as unknown as LaporanLalu[]).map((r) => [
+        `${r.student_id}|${r.subject_id}`,
+        r,
+      ]),
+    );
+    const petaSetelah = new Set(
+      ((setelah.data ?? []) as unknown as Array<{ student_id: string; subject_id: string }>).map(
+        (r) => `${r.student_id}|${r.subject_id}`,
+      ),
+    );
 
     // Label item tersimpan (dipakai bila item tidak ada di daftar aktif).
     const tambahan: Item[] = [];
     for (const c of barisCapaian) {
       const ci = Array.isArray(c.curriculum_items) ? c.curriculum_items[0] : c.curriculum_items;
-      if (ci?.label) tambahan.push({ id: c.item_id, subject_id: c.subject_id, label: ci.label, value: null });
+      if (ci?.label)
+        tambahan.push({ id: c.item_id, subject_id: c.subject_id, label: ci.label, value: null, siklik: false });
     }
     setItemTambahan(tambahan);
     // Hanya baris pada bulan yang sedang dibuka (jaga-jaga bila ada baris lain).
@@ -201,7 +264,22 @@ export default function InputPage() {
       (st.data ?? []).map((s) => {
         const p = petaPresensi.get(s.id);
         const itemPerBidang: Record<string, string | null> = {};
-        for (const bd of bidangList) itemPerBidang[bd.id] = petaCapaian.get(`${s.id}|${bd.id}`) ?? null;
+        const khatamPerBidang: Record<string, boolean> = {};
+        const putaranTersimpan: Record<string, number> = {};
+        const posLalu: Record<string, number | null> = {};
+        const putaranLalu: Record<string, number | null> = {};
+        const adaBulanSetelah: Record<string, boolean> = {};
+        for (const bd of bidangList) {
+          const kunci = `${s.id}|${bd.id}`;
+          itemPerBidang[bd.id] = petaCapaian.get(kunci) ?? null;
+          khatamPerBidang[bd.id] = false;
+          const tersimpan = petaPutaranTersimpan.get(kunci);
+          if (tersimpan !== undefined) putaranTersimpan[bd.id] = tersimpan;
+          const lalu = petaLalu.get(kunci);
+          posLalu[bd.id] = lalu?.pos ?? null;
+          putaranLalu[bd.id] = lalu?.putaran ?? null;
+          adaBulanSetelah[bd.id] = petaSetelah.has(kunci);
+        }
         return {
           santri_id: s.id,
           santri_nama: s.full_name,
@@ -214,11 +292,16 @@ export default function InputPage() {
             p?.effective_days_override === null || p?.effective_days_override === undefined
               ? ""
               : String(p.effective_days_override),
+          khatamPerBidang,
+          putaranTersimpan,
+          posLalu,
+          putaranLalu,
+          adaBulanSetelah,
         };
       }),
     );
     setMemuat(false);
-  }, [halaqahId, bulanId]);
+  }, [halaqahId, bulanId, bulanList]);
 
   useEffect(() => {
     void muatIsi();

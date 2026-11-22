@@ -45,6 +45,7 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 npm install
 npm run dev          # pengembangan
 npm run typecheck    # wajib hijau sebelum selesai
+npm run test         # uji aturan putaran (khatam/pengulangan)
 npm run build        # wajib berhasil sebelum selesai
 python scripts/check_repo_safety.py   # wajib lolos sebelum push
 npm run seed:build   # membangun supabase/seed/*.sql dari data/source/*.xlsx

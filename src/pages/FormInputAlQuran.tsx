@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { angka } from "../lib/laporan";
+import { bolehKhatam, putaranUntukSimpan } from "../lib/putaran";
+import { posisiItem } from "../lib/posisi";
+import KonfirmasiPutaran, { type KasusTurun } from "../components/KonfirmasiPutaran";
 
 export interface BarisInput {
   santri_id: string;
@@ -14,6 +17,16 @@ export interface BarisInput {
   catatan: string;
   /** Hari Efektif khusus santri (hanya boleh diubah Mudir/Admin). */
   heOverride: string;
+  /** Centang "khatam, mulai putaran baru" per bidang (hanya buku siklik). */
+  khatamPerBidang: Record<string, boolean>;
+  /** Putaran yang sudah tersimpan di bulan ini. */
+  putaranTersimpan: Record<string, number>;
+  /** Posisi capaian bulan lalu per bidang (dari v_monthly_report). */
+  posLalu: Record<string, number | null>;
+  /** Putaran bulan lalu per bidang; null = bulan lalu belum diisi. */
+  putaranLalu: Record<string, number | null>;
+  /** Bulan-bulan setelah bulan ini sudah terisi untuk bidang ini. */
+  adaBulanSetelah: Record<string, boolean>;
 }
 
 export interface BidangInput {
@@ -21,11 +34,13 @@ export interface BidangInput {
   name: string;
 }
 
-interface Item {
+export interface Item {
   id: string;
   subject_id: string;
   label: string;
   value: string | null;
+  /** Buku siklik (Tilawah Al Qur'an). */
+  siklik: boolean;
 }
 
 interface Props {
@@ -45,6 +60,7 @@ interface Props {
 /**
  * Form input capaian Al Qur'an untuk satu halaqah dan satu bulan.
  * Semua penjagaan hak akses tetap di database (RLS); form hanya menampilkan pesan galatnya.
+ * Putaran tidak pernah ditebak: khatam hanya lewat centang atau konfirmasi eksplisit.
  */
 export default function FormInputAlQuran({
   bulanId,
@@ -64,10 +80,21 @@ export default function FormInputAlQuran({
   const [terbuka, setTerbuka] = useState<string | null>(baris[0]?.santri_id ?? null);
   // "belum" = hanya santri yang belum lengkap (fokus mengisi), "semua" = termasuk yang sudah ada data.
   const [saring, setSaring] = useState<"semua" | "belum" | "sudah">("semua");
+  /** Pertanyaan yang belum dijawab: pengulangan atau khatam. */
+  const [kasus, setKasus] = useState<KasusTurun[] | null>(null);
+  const [jawaban, setJawaban] = useState<Record<string, "ulang" | "khatam">>({});
+  /** Ada isian yang diubah pada kunjungan ini (dipakai peringatan bulan lampau). */
+  const [berubah, setBerubah] = useState(false);
 
   const itemPerBidang = useMemo(() => {
     const p: Record<string, Item[]> = {};
     for (const it of items) (p[it.subject_id] ??= []).push(it);
+    return p;
+  }, [items]);
+
+  const petaItem = useMemo(() => {
+    const p = new Map<string, Item>();
+    for (const it of items) p.set(it.id, it);
     return p;
   }, [items]);
 
@@ -85,7 +112,26 @@ export default function FormInputAlQuran({
     return saring === "semua" || (saring === "belum" ? !sudah : sudah);
   });
 
+  /** Santri/bidang yang bulan berikutnya sudah terisi (untuk peringatan). */
+  const perluTinjau = useMemo(() => {
+    // Peringatan hanya muncul bila ada perubahan nyata pada kunjungan ini.
+    if (!berubah) return [];
+    const daftar: string[] = [];
+    for (const b of baris) {
+      for (const bd of bidang) {
+        // Peringatan berlaku untuk isian yang akan tersimpan — baik yang baru dipilih
+        // maupun yang sudah ada di bulan ini — asalkan bulan sesudahnya sudah terisi.
+        const akanTersimpan = !!b.itemPerBidang[bd.id] || b.putaranTersimpan[bd.id] !== undefined;
+        if (akanTersimpan && b.adaBulanSetelah[bd.id]) {
+          daftar.push(`${b.santri_nama} · ${bd.name}`);
+        }
+      }
+    }
+    return daftar;
+  }, [baris, bidang, berubah]);
+
   function ubah(santriId: string, patch: Partial<BarisInput>) {
+    setBerubah(true);
     setBaris(baris.map((b) => (b.santri_id === santriId ? { ...b, ...patch } : b)));
   }
 
@@ -94,14 +140,87 @@ export default function FormInputAlQuran({
     if (!b) return;
     ubah(santriId, {
       itemPerBidang: { ...b.itemPerBidang, [bidangId]: itemId || null },
+      // Ganti item = pilihan khatam lama tidak berlaku lagi.
+      khatamPerBidang: { ...b.khatamPerBidang, [bidangId]: false },
+    });
+  }
+
+  function ubahKhatam(santriId: string, bidangId: string, nilai: boolean) {
+    const b = baris.find((x) => x.santri_id === santriId);
+    if (!b) return;
+    ubah(santriId, { khatamPerBidang: { ...b.khatamPerBidang, [bidangId]: nilai } });
+  }
+
+  /** Putaran yang akan disimpan untuk satu bidang, mengikuti jawaban konfirmasi. */
+  function putaranEfektif(b: BarisInput, bidangId: string): number {
+    const kunci = `${b.santri_id}|${bidangId}`;
+    const khatam = !!b.khatamPerBidang[bidangId] || jawaban[kunci] === "khatam";
+    return putaranUntukSimpan({
+      khatam,
+      putaranBulanLalu: b.putaranLalu[bidangId] ?? null,
+      putaranTersimpan: b.putaranTersimpan[bidangId] ?? null,
     });
   }
 
   async function simpan() {
+    if (menyimpan) return;
     setMenyimpan(true);
     setPesan(null);
     try {
-      // 1. Kehadiran (izin/sakit/alpha) dan catatan per santri.
+      // 1. Periksa capaian yang lebih kecil dari bulan lalu sebelum menulis apa pun.
+      //    Posisi dihitung database lewat RPC item_position; panggilan dikumpulkan dulu
+      //    agar bisa berjalan bersamaan, bukan satu per satu.
+      const kandidat: Array<{
+        kunci: string;
+        santriNama: string;
+        bidangNama: string;
+        posLalu: number;
+        itemId: string;
+        putaran: number;
+        siklik: boolean;
+      }> = [];
+      for (const b of baris) {
+        for (const bd of bidang) {
+          const itemId = b.itemPerBidang[bd.id];
+          if (!itemId) continue;
+          const kunci = `${b.santri_id}|${bd.id}`;
+          const posLalu = b.posLalu[bd.id] ?? null;
+          if (posLalu === null || jawaban[kunci]) continue;
+          kandidat.push({
+            kunci,
+            santriNama: b.santri_nama,
+            bidangNama: bd.name,
+            posLalu,
+            itemId,
+            putaran: putaranEfektif(b, bd.id),
+            siklik: !!petaItem.get(itemId)?.siklik,
+          });
+        }
+      }
+      const posKiniSemua = await Promise.all(
+        kandidat.map((k) => posisiItem(k.itemId, k.putaran)),
+      );
+      const perluKonfirmasi: KasusTurun[] = kandidat.flatMap((k, i) => {
+        const posKini = posKiniSemua[i];
+        if (posKini === null || posKini >= k.posLalu) return [];
+        return [
+          {
+            kunci: k.kunci,
+            santriNama: k.santriNama,
+            bidangNama: k.bidangNama,
+            posLalu: k.posLalu,
+            posKini,
+            siklik: k.siklik,
+          },
+        ];
+      });
+      if (perluKonfirmasi.length > 0) {
+        setKasus(perluKonfirmasi);
+        setMenyimpan(false);
+        return;
+      }
+
+      // 2. Kehadiran (izin/sakit/alpha) dan catatan per santri.
       for (const b of baris) {
         const att = {
           student_id: b.santri_id,
@@ -134,7 +253,7 @@ export default function FormInputAlQuran({
           if (e2) throw new Error(`Catatan ${b.santri_nama}: ${e2.message}`);
         }
 
-        // 2. Capaian per bidang yang dipilih.
+        // 3. Capaian per bidang yang dipilih, termasuk putaran.
         for (const bd of bidang) {
           const itemId = b.itemPerBidang[bd.id];
           if (!itemId) continue;
@@ -145,12 +264,16 @@ export default function FormInputAlQuran({
               subject_id: bd.id,
               month_id: bulanId,
               item_id: itemId,
+              putaran: putaranEfektif(b, bd.id),
             },
             { onConflict: "student_id,subject_id,month_id" },
           );
           if (e3) throw new Error(`Capaian ${bd.name} ${b.santri_nama}: ${e3.message}`);
         }
       }
+      setKasus(null);
+      setJawaban({});
+      setBerubah(false);
       setPesan({ jenis: "ok", teks: "Data tersimpan." });
       onSelesai();
     } catch (e) {
@@ -199,6 +322,15 @@ export default function FormInputAlQuran({
           </p>
         )}
       </div>
+
+      {perluTinjau.length > 0 && (
+        <p role="status" className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-900 ring-1 ring-amber-200">
+          Bulan setelah bulan ini sudah terisi untuk {perluTinjau.length} santri/bidang (
+          {perluTinjau.slice(0, 3).join(", ")}
+          {perluTinjau.length > 3 ? ", dan lainnya" : ""}). Bila capaian atau putaran bulan ini diubah,
+          putaran bulan-bulan berikutnya perlu ditinjau.
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-black/5">
         <span className="text-sm font-medium text-gray-800">Tampilkan</span>
@@ -274,29 +406,65 @@ export default function FormInputAlQuran({
               {buka && (
                 <div className="space-y-3 border-t border-black/5 px-4 py-3">
                   <div className="grid gap-3 sm:grid-cols-3">
-                    {bidang.map((bd) => (
-                      <div key={bd.id}>
-                        <label
-                          htmlFor={`item-${b.santri_id}-${bd.id}`}
-                          className="block text-xs font-medium text-gray-800"
-                        >
-                          {bd.name}
-                        </label>
-                        <select
-                          id={`item-${b.santri_id}-${bd.id}`}
-                          value={b.itemPerBidang[bd.id] ?? ""}
-                          onChange={(e) => ubahBidang(b.santri_id, bd.id, e.target.value)}
-                          className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
-                        >
-                          <option value="">— belum diisi —</option>
-                          {(itemPerBidang[bd.id] ?? []).map((it) => (
-                            <option key={it.id} value={it.id}>
-                              {it.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
+                    {bidang.map((bd) => {
+                      const itemId = b.itemPerBidang[bd.id];
+                      const item = itemId ? petaItem.get(itemId) : undefined;
+                      const pLalu = b.putaranLalu[bd.id] ?? null;
+                      const bisaKhatam = bolehKhatam(!!item?.siklik, {
+                        pos: b.posLalu[bd.id] ?? null,
+                        putaran: pLalu,
+                      });
+                      const khatam = !!b.khatamPerBidang[bd.id];
+                      return (
+                        <div key={bd.id}>
+                          <label
+                            htmlFor={`item-${b.santri_id}-${bd.id}`}
+                            className="block text-xs font-medium text-gray-800"
+                          >
+                            {bd.name}
+                          </label>
+                          <select
+                            id={`item-${b.santri_id}-${bd.id}`}
+                            value={itemId ?? ""}
+                            onChange={(e) => ubahBidang(b.santri_id, bd.id, e.target.value)}
+                            className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+                          >
+                            <option value="">— belum diisi —</option>
+                            {(itemPerBidang[bd.id] ?? []).map((it) => (
+                              <option key={it.id} value={it.id}>
+                                {it.label}
+                              </option>
+                            ))}
+                          </select>
+                          {item && b.posLalu[bd.id] !== null && (
+                            <p className="mt-1 text-[11px] text-gray-600">
+                              Bulan lalu: {angka(b.posLalu[bd.id])}
+                              {pLalu !== null ? ` (putaran ${pLalu})` : ""}
+                            </p>
+                          )}
+                          {bisaKhatam && (
+                            <label
+                              htmlFor={`khatam-${b.santri_id}-${bd.id}`}
+                              className="mt-1 flex items-start gap-2 text-xs text-gray-800"
+                            >
+                              <input
+                                id={`khatam-${b.santri_id}-${bd.id}`}
+                                type="checkbox"
+                                checked={khatam}
+                                onChange={(e) => ubahKhatam(b.santri_id, bd.id, e.target.checked)}
+                                className="mt-0.5"
+                              />
+                              <span>
+                                khatam, mulai putaran baru
+                                <span className="block text-[11px] text-gray-600">
+                                  putaran menjadi {(pLalu ?? 0) + 1}
+                                </span>
+                              </span>
+                            </label>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -371,6 +539,22 @@ export default function FormInputAlQuran({
           );
         })}
       </ul>
+
+      {kasus && (
+        <KonfirmasiPutaran
+          kasus={kasus}
+          dijawab={jawaban}
+          onJawab={(kunci, nilai) => setJawaban((prev) => ({ ...prev, [kunci]: nilai }))}
+          onTutup={() => {
+            setKasus(null);
+            setJawaban({});
+          }}
+          onSimpan={() => {
+            setKasus(null);
+            void simpan();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "node --test tests/",
     "seed:build": "python scripts/seed/build_seed.py",
     "seed:users": "python scripts/seed/create_auth_users.py",
     "db:sql": "python scripts/db/run_sql.py"
