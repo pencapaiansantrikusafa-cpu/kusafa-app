@@ -21,6 +21,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | H - Laporan akhir & T2-T10 | Berjalan | T2 selesai: login, profil, menu per role. T3-T10 belum. |
 | T2 - Login & kerangka | Selesai | Halaman login bahasa Indonesia, profil dari `profiles`, menu sesuai role (Mudir/Admin 6 menu; Masul 5; Musyrif/ah, Mudarris/ah 3). Diuji: 7 role login OK, form login OK, pesan galat saat sandi salah OK. `typecheck` & `build` hijau. |
 | T3 - Tabel capaian Al Qur'an | Selesai | Tabel per halaqah + bulan (bulan pembanding otomatis), kolom Hadir/HE, Lalu/Kini/Selisih per bidang, target bulanan. Sorotan `di bawah target` (merah muda) dan `⚠ kurang` (kuning) disertai teks. Sel kosong tampil "belum diisi", bukan 0. Bulan default = bulan terakhir yang berisi data. Tabel Wasilah & Ghayah masih versi dasar (dirapikan di T6). |
+| T4 - Halaman satu santri | Selesai | `/santri/:id` — pilih domain (Al Qur'an/Wasilah/Ghayah) dan rentang (Semester 1 / Semester 2 / Satu tahun). Grafik selisih per bidang + kehadiran (SVG sendiri, tanpa pustaka), garis diputus pada bulan kosong. Tabel riwayat dengan posisi kumulatif, selisih, Hadir/HE, target. Nama santri di tabel capaian bisa diketuk. `typecheck` & `build` hijau. |
 
 **Pertanyaan terbuka**
 - **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.

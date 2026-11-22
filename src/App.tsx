@@ -3,6 +3,7 @@ import { useAuth } from "./lib/auth-context";
 import { navItemsFor } from "./lib/roles";
 import LoginPage from "./pages/LoginPage";
 import CapaianPage from "./pages/CapaianPage";
+import SantriPage from "./pages/SantriPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import AppLayout from "./components/AppLayout";
 
@@ -36,6 +37,7 @@ export default function App() {
         <Route index element={<Beranda />} />
         <Route path="capaian" element={<Navigate to="/capaian/alquran" replace />} />
         <Route path="capaian/:domain" element={<CapaianPage />} />
+        <Route path="santri/:id" element={<SantriPage />} />
         {items
           .filter((i) => i.key !== "capaian")
           .map((i) => (

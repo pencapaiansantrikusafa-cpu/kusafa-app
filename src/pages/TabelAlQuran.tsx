@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { angka, type BarisLaporan } from "../lib/laporan";
 
 /**
@@ -60,7 +61,13 @@ export default function TabelAlQuran({
               return (
                 <tr key={s.id} className="border-t border-black/5 align-top">
                   <th scope="row" className="px-2 py-3 text-left align-top font-medium text-gray-900">
-                    {s.full_name}
+                    <Link
+                      to={`/santri/${s.id}?domain=alquran&dari=capaian`}
+                      className="underline decoration-gray-300 underline-offset-2 hover:text-kusafa"
+                      title="Buka halaman santri"
+                    >
+                      {s.full_name}
+                    </Link>
                   </th>
                   <td className="whitespace-nowrap px-2 py-3 align-top">
                     {hadir && hadir.hadir !== null ? (

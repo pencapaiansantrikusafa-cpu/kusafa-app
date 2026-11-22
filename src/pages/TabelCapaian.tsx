@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import { angka, type BarisLaporan } from "../lib/laporan";
@@ -349,6 +350,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           santri={detail}
           bidang={bidang}
           baris={baris}
+          domain={domain}
           namaHalaqah={halaqahList.find((h) => h.id === halaqahId)?.code ?? ""}
           hadirTeks={(() => {
             const hd = baris.find((b) => b.student_id === detail.id && b.hadir !== null);
@@ -368,6 +370,7 @@ function DialogDetail({
   santri,
   bidang,
   baris,
+  domain,
   namaHalaqah,
   hadirTeks,
   onTutup,
@@ -375,6 +378,7 @@ function DialogDetail({
   santri: Santri;
   bidang: Bidang[];
   baris: BarisLaporan[];
+  domain: Domain;
   namaHalaqah: string;
   /** Hadir/HE cukup ditampilkan sekali di kepala pop-up. */
   hadirTeks: string;
@@ -415,6 +419,13 @@ function DialogDetail({
             Tutup
           </button>
         </div>
+
+        <Link
+          to={`/santri/${santri.id}?domain=${domain}&dari=capaian`}
+          className="mt-3 block rounded-lg bg-kusafa px-3 py-2 text-center text-sm font-medium text-white hover:bg-kusafa/90"
+        >
+          Buka halaman santri (grafik & riwayat)
+        </Link>
 
         <div className="mt-3 space-y-3">
           {bidang.map((b) => {
