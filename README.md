@@ -4,6 +4,27 @@ Aplikasi web evaluasi capaian santri KUSAFA. Stack: Vite + React + TypeScript + 
 
 Dokumen acuan (di akun Claude pemilik proyek): "KUSAFA - System Design" dan papan "KUSAFA - Wireframe UI/UX". Ringkasannya ada di `docs/SPEC.md`.
 
+## Status pembangunan
+
+Diperbarui: 22 November 2026. Bagian ini diperbarui setiap selesai satu tahap atau satu tugas.
+Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
+
+| Tahap | Status | Hasil |
+|---|---|---|
+| A - Pemeriksaan alat | Selesai | Node 26.13, npm 11.20, Python 3.12.16, git 2.39, gh 2.105. Tidak ada yang perlu dipasang. |
+| B - Siapkan proyek | Selesai | 5 file Excel di `data/source/`; `npm install` berhasil; `npm run typecheck` dan `npm run build` hijau. |
+| C - Git dan GitHub | Selesai | Repo publik: https://github.com/pencapaiansantrikusafa-cpu/kusafa-app — hook keamanan `.githooks/pre-commit` aktif. |
+| D - Supabase | Berjalan | Belum ada project. |
+| E - Seed data uji | Belum | - |
+| F - Uji lokal | Belum | - |
+| G - Vercel | Belum | Belum ada situs live. |
+| H - Laporan akhir & T2-T10 | Belum | - |
+
+**Pertanyaan terbuka**
+- Repo harus dijadikan **privat** sebelum data asli santri dimuat ke database:
+  `gh repo edit --visibility private --accept-visibility-change-consequences`.
+- `npm install` melaporkan 4 kerentanan dependensi (3 sedang, 1 tinggi). Belum diperbaiki karena `npm audit fix --force` berisiko merusak versi paket.
+
 ## Isi repo
 ```
 AGENTS.md                panduan untuk OpenCode
