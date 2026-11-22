@@ -3,7 +3,11 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { angka, type BarisLaporan } from "../lib/laporan";
 import { DOMAIN_LABEL, type Domain } from "../lib/roles";
-import GrafikGaris, { type TitikGrafik } from "../components/GrafikGaris";
+import GrafikGaris from "../components/GrafikGaris";
+import GrafikGabungan, { type Seri } from "../components/GrafikGabungan";
+
+/** Warna garis tiap bidang (juga dipakai di grafik gabungan). */
+const WARNA = ["#0f5b45", "#1d4ed8", "#b45309", "#7c3aed", "#0891b2"];
 
 interface Santri {
   id: string;
@@ -51,6 +55,7 @@ export default function SantriPage() {
   const [bidang, setBidang] = useState<Bidang[]>([]);
   const [riwayat, setRiwayat] = useState<BarisRiwayat[]>([]);
   const [rentang, setRentang] = useState<Rentang>("tahun");
+  const [modeGrafik, setModeGrafik] = useState<"gabung" | "pisah">("gabung");
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
 
@@ -120,17 +125,19 @@ export default function SantriPage() {
 
   const bidangDomain = useMemo(() => bidang.filter((b) => b.domain === domain), [bidang, domain]);
 
-  function titikUntuk(subjectId: string, tipe: "selisih" | "hadir"): TitikGrafik[] {
+  /**
+   * Garis posisi kumulatif per bidang (bukan selisih bulanan), supaya tidak
+   * pernah turun hanya karena naiknya kecil. Semua angka berasal dari view.
+   */
+  function titikPosisi(subjectId: string) {
     return bulanRentang.map((b) => {
       const r = riwayat.find((x) => x.subject_id === subjectId && x.month_id === b.id);
-      if (!r) return { label: b.name, nilai: null };
-      const v = tipe === "selisih" ? r.selisih : r.hadir;
-      return { label: b.name, nilai: v === null || v === undefined ? null : Number(v) };
+      return { label: b.name, nilai: r?.pos === null || r?.pos === undefined ? null : Number(r.pos) };
     });
   }
 
-  function titikHadir(): TitikGrafik[] {
-    // Kehadiran sama untuk semua bidang dalam satu domain; ambil dari baris pertama.
+  /** Kehadiran (Hadir) diambil sekali per bulan dari baris mana pun di domain ini. */
+  function titikHadir() {
     return bulanRentang.map((b) => {
       const r = riwayat.find(
         (x) => x.month_id === b.id && bidangDomain.some((bd) => bd.id === x.subject_id),
@@ -138,6 +145,12 @@ export default function SantriPage() {
       return { label: b.name, nilai: r?.hadir === null || r?.hadir === undefined ? null : Number(r.hadir) };
     });
   }
+
+  const seriPosisi: Seri[] = bidangDomain.map((b, i) => ({
+    nama: b.name,
+    warna: WARNA[i % WARNA.length],
+    titik: titikPosisi(b.id),
+  }));
 
   // Tampilkan tautan kembali bila pengguna datang dari halaman capaian.
   const asal = cari.get("dari");
@@ -225,10 +238,53 @@ export default function SantriPage() {
         </p>
       )}
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        {bidangDomain.map((b) => (
-          <GrafikGaris key={b.id} judul={`${b.name} — selisih`} titik={titikUntuk(b.id, "selisih")} />
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-black/5">
+        <span className="text-sm font-medium text-gray-800">Tampilan grafik</span>
+        {(
+          [
+            ["gabung", "Satu kotak (gabungan)"],
+            ["pisah", "Terpisah per bidang"],
+          ] as ["gabung" | "pisah", string][]
+        ).map(([nilai, label]) => (
+          <button
+            key={nilai}
+            onClick={() => setModeGrafik(nilai)}
+            aria-pressed={modeGrafik === nilai}
+            className={
+              "rounded-lg px-3 py-1.5 text-sm " +
+              (modeGrafik === nilai
+                ? "bg-kusafa text-white"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-50")
+            }
+          >
+            {label}
+          </button>
         ))}
+        <span className="ml-auto text-xs text-gray-500">
+          Garis = posisi kumulatif (selalu naik selama santri maju)
+        </span>
+      </div>
+
+      {modeGrafik === "gabung" ? (
+        <GrafikGabungan
+          judul="Posisi capaian kumulatif"
+          seri={seriPosisi}
+          satuan={`${bulanRentang.length} bulan`}
+        />
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {bidangDomain.map((b, i) => (
+            <GrafikGaris
+              key={b.id}
+              judul={`${b.name} — posisi kumulatif`}
+              titik={titikPosisi(b.id)}
+              warna={WARNA[i % WARNA.length]}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="grid gap-3 lg:grid-cols-2">
         <GrafikGaris
           judul="Kehadiran (Hadir)"
           titik={titikHadir()}
@@ -280,12 +336,23 @@ export default function SantriPage() {
                             <div className="text-gray-800" title="Posisi kumulatif">
                               {r.item_label ?? "–"}
                             </div>
-                            <div
-                              className={
-                                r.selisih < 0 ? "font-semibold text-red-700" : "font-semibold text-kusafa"
-                              }
-                            >
-                              selisih {(r.selisih > 0 ? "+" : "") + angka(r.selisih)}
+                            <div className="flex flex-wrap items-center gap-1">
+                              <span
+                                className={
+                                  r.below_target
+                                    ? "rounded bg-pink-100 px-1.5 font-semibold text-pink-900"
+                                    : "rounded bg-emerald-50 px-1.5 font-semibold text-emerald-800"
+                                }
+                              >
+                                selisih {(r.selisih > 0 ? "+" : "") + angka(r.selisih)}
+                              </span>
+                              {r.target_monthly === null ? (
+                                <span className="text-amber-800">target belum ada</span>
+                              ) : r.below_target ? (
+                                <span className="text-pink-900">di bawah target</span>
+                              ) : (
+                                <span className="text-emerald-800">tercapai</span>
+                              )}
                             </div>
                           </div>
                         )}
