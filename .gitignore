@@ -12,3 +12,5 @@ supabase/seed/*.sql
 .DS_Store
 .vercel
 .env*
+# token uji sementara (jangan pernah di-commit)
+.smoke-tokens.js

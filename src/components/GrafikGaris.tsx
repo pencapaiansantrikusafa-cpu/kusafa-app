@@ -71,10 +71,10 @@ export default function GrafikGaris({ judul, titik, satuan, warna = "#0f5b45" }:
           Belum ada data untuk bidang ini.
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div>
           <svg
             viewBox={`0 0 ${W} ${H}`}
-            className="h-44 w-full min-w-[520px]"
+            className="h-44 w-full"
             role="img"
             aria-label={`Grafik ${judul}`}
           >

@@ -89,8 +89,8 @@ export default function GrafikGabungan({ judul, seri, satuan }: Props) {
       {!adaData ? (
         <p className="py-10 text-center text-xs text-gray-500">Belum ada data.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-full min-w-[560px]" role="img" aria-label={judul}>
+        <div>
+          <svg viewBox={`0 0 ${W} ${H}`} className="h-60 w-full" role="img" aria-label={judul}>
             {[max, min + (max - min) * 0.75, min + (max - min) * 0.5, min + (max - min) * 0.25, min].map((v, i) => (
               <g key={i}>
                 <line x1={PAD_KIRI} x2={W - PAD_KANAN} y1={y(v)} y2={y(v)} stroke="#e5e7eb" />
