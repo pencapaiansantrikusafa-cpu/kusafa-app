@@ -20,8 +20,14 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | G - Vercel | Selesai | Situs live: https://kusafa-app.vercel.app — "Tersambung ke Supabase." tanpa galat. Repo GitHub terhubung (deploy otomatis tiap push). Environment di Vercel hanya `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` (Production/Preview/Development). Site URL Supabase diatur manual di dashboard. |
 | H - Laporan akhir & T2-T10 | Berjalan | T2 selesai: login, profil, menu per role. T3-T10 belum. |
 | T2 - Login & kerangka | Selesai | Halaman login bahasa Indonesia, profil dari `profiles`, menu sesuai role (Mudir/Admin 6 menu; Masul 5; Musyrif/ah, Mudarris/ah 3). Diuji: 7 role login OK, form login OK, pesan galat saat sandi salah OK. `typecheck` & `build` hijau. |
+| T3 - Tabel capaian Al Qur'an | Selesai | Tabel per halaqah + bulan (bulan pembanding otomatis), kolom Hadir/HE, Lalu/Kini/Selisih per bidang, target bulanan. Sorotan `di bawah target` (merah muda) dan `⚠ kurang` (kuning) disertai teks. Sel kosong tampil "belum diisi", bukan 0. Bulan default = bulan terakhir yang berisi data. Tabel Wasilah & Ghayah masih versi dasar (dirapikan di T6). |
 
 **Pertanyaan terbuka**
+- **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.
+  Aplikasi **wajib** menampilkan notifikasi "data belum lengkap" kepada **Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, dan Musyrif/ah** yang terkait,
+  berisi daftar santri/halaqah yang target atau capaiannya masih kosong, beserta kolom pengampu yang perlu menghubungi/bertindak.
+  Musyrif/ah dapat mengisi sendiri atau meminta Admin mengisikan. Kosong tetap tampil kosong (bukan 0), sesuai `docs/SPEC.md`.
+  Rincian jumlah per bulan (Muharram 77/109 terisi, dst.) ada di laporan percakapan 22 Nov 2026.
 - **Keputusan Mudir (22 Nov 2026):** repo tetap **publik** selama pengembangan karena seluruh data (Excel dan isi database) masih data palsu (NIS berpola `144x.dummy-nis.xxx`, nama Fulan/Fulanah bernomor).
   Repo baru dijadikan **privat** ketika aplikasi sudah sempurna:
   `gh repo edit --visibility private --accept-visibility-change-consequences`.
@@ -30,6 +36,8 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 
 **Catatan teknis**
 - Supabase CLI 3.2.0: perintah ke project online butuh penanda `--remote` (mis. `npx supabase db push --remote`).
+- `hijri_months` **tidak punya** kolom `hijri_year`; tahun ada di `academic_years` (ambil lewat relasi `academic_years!inner(hijri_year)`).
+- Query `v_monthly_report` tanpa filter bisa kena *statement timeout*. Selalu filter `halaqah_id` + `month_id`.
 - Alamat koneksi langsung `db.<ref>.supabase.co` tidak bisa diresolusi di jaringan ini (tanpa IPv6), jadi semua skrip memakai pooler.
 - Data uji sudah dimuat. Kata sandi akun dummy ada di `scripts/seed/output/users.csv` (tidak di git). Laporan seed: `scripts/seed/output/seed-report.md`.
 - Site URL dan Redirect URL Supabase diatur **manual di dashboard** (Authentication → URL Configuration), bukan lewat `supabase config push`, karena perintah itu akan ikut mengubah 11 pengaturan Auth lain (konfirmasi email, MFA, panjang OTP, pooler). Nilai yang diinginkan sudah tercatat di `supabase/config.toml` sebagai acuan.
