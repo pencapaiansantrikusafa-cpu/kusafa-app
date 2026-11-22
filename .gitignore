@@ -10,3 +10,5 @@ supabase/.temp/
 data/source/*.xlsx
 supabase/seed/*.sql
 .DS_Store
+.vercel
+.env*
