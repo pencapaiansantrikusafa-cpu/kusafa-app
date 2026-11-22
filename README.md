@@ -15,7 +15,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | B - Siapkan proyek | Selesai | 5 file Excel di `data/source/`; `npm install` berhasil; `npm run typecheck` dan `npm run build` hijau. |
 | C - Git dan GitHub | Selesai | Repo publik: https://github.com/pencapaiansantrikusafa-cpu/kusafa-app — hook keamanan `.githooks/pre-commit` aktif. |
 | D - Supabase | Selesai | Project `kusafa` (ref `vcmamapzkhzgikpsvcdo`), region Singapore. 6 migrasi diterapkan (`db push --remote`). 18 tabel, semua `rowsecurity = true`, 44 kebijakan RLS. `.env.local` berisi 5 variabel; `DATABASE_URL` memakai pooler (`aws-0-ap-southeast-1.pooler.supabase.com:5432`) karena jaringan tanpa IPv6. |
-| E - Seed data uji | Belum | - |
+| E - Seed data uji | Selesai | `build_seed.py`: BERHASIL, 0 galat, 25 peringatan (Tilawah mundur/khatam, wajar). Data masuk ke Supabase: 9 bidang, 158 buku, 10954 item, 109 santri, 38 halaqah, 327 target, 2036 capaian, 599 presensi, 24 akun dummy. |
 | F - Uji lokal | Belum | - |
 | G - Vercel | Belum | Belum ada situs live. |
 | H - Laporan akhir & T2-T10 | Belum | - |
@@ -28,6 +28,7 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 **Catatan teknis**
 - Supabase CLI 3.2.0: perintah ke project online butuh penanda `--remote` (mis. `npx supabase db push --remote`).
 - Alamat koneksi langsung `db.<ref>.supabase.co` tidak bisa diresolusi di jaringan ini (tanpa IPv6), jadi semua skrip memakai pooler.
+- Data uji sudah dimuat. Kata sandi akun dummy ada di `scripts/seed/output/users.csv` (tidak di git). Laporan seed: `scripts/seed/output/seed-report.md`.
 
 ## Isi repo
 ```
