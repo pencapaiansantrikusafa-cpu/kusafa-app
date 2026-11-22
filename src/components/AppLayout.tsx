@@ -1,14 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 import { ROLE_LABEL, navItemsFor } from "../lib/roles";
 import NavLinks from "./NavLinks";
 
+const KUNCI_MENU = "kusafa:menu-ringkas";
+
 /** Kerangka aplikasi setelah login: header, menu sesuai role, dan isi halaman. */
 export default function AppLayout() {
   const { profile, signOut } = useAuth();
   const [menuTerbuka, setMenuTerbuka] = useState(false);
+  // Pilihan "menu ikon saja" diingat di browser, supaya tidak perlu diubah tiap kali.
+  const [ringkas, setRingkas] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(KUNCI_MENU) === "1";
+    } catch {
+      return false;
+    }
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(KUNCI_MENU, ringkas ? "1" : "0");
+    } catch {
+      /* localStorage bisa diblokir; abaikan */
+    }
+  }, [ringkas]);
 
   if (!profile) {
     return (
@@ -29,7 +47,6 @@ export default function AppLayout() {
   }
 
   const items = navItemsFor(profile.role);
-  const pertama = items[0];
 
   async function keluar() {
     await signOut();
@@ -39,7 +56,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-3 px-4 py-3">
           <button
             className="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm lg:hidden"
             onClick={() => setMenuTerbuka((v) => !v)}
@@ -71,9 +88,23 @@ export default function AppLayout() {
         )}
       </header>
 
-      <div className="mx-auto flex max-w-6xl gap-6 px-4 py-6">
-        <aside className="hidden w-56 shrink-0 lg:block">
-          <NavLinks items={items} />
+      <div className="flex w-full gap-4 px-3 py-4">
+        <aside
+          className={
+            "hidden shrink-0 lg:block " + (ringkas ? "w-16" : "w-56")
+          }
+        >
+          <div className="sticky top-20 space-y-2">
+            <button
+              onClick={() => setRingkas((v) => !v)}
+              className="flex w-full items-center justify-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+              aria-pressed={ringkas}
+              title={ringkas ? "Tampilkan teks menu" : "Sembunyikan teks menu"}
+            >
+              {ringkas ? "»" : "« Ikon saja"}
+            </button>
+            <NavLinks items={items} ringkas={ringkas} />
+          </div>
         </aside>
 
         <main className="min-w-0 flex-1">
@@ -85,7 +116,7 @@ export default function AppLayout() {
               </p>
             </div>
           ) : (
-            <Outlet context={{ defaultPath: pertama?.path ?? "/" }} />
+            <Outlet context={{ defaultPath: items[0]?.path ?? "/" }} />
           )}
         </main>
       </div>
