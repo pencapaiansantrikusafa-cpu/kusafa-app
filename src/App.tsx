@@ -1,24 +1,51 @@
-import { useEffect, useState } from "react";
-import { supabase } from "./lib/supabase";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./lib/auth-context";
+import { navItemsFor } from "./lib/roles";
+import LoginPage from "./pages/LoginPage";
+import CapaianPage from "./pages/CapaianPage";
+import PlaceholderPage from "./pages/PlaceholderPage";
+import AppLayout from "./components/AppLayout";
 
-// Halaman awal sementara: hanya memeriksa sambungan ke Supabase.
-// Layar sebenarnya dibuat bertahap mengikuti prompts/OPENCODE.md.
+function Memuat() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gray-50">
+      <p className="text-sm text-gray-600">Memuat...</p>
+    </main>
+  );
+}
+
+/** Rute awal sesuai role: cari menu pertama yang tersedia. */
+function Beranda() {
+  const { profile } = useAuth();
+  if (!profile) return <Navigate to="/" replace />;
+  const pertama = navItemsFor(profile.role)[0];
+  return <Navigate to={pertama ? pertama.path : "/"} replace />;
+}
+
 export default function App() {
-  const [status, setStatus] = useState("Memeriksa sambungan ke Supabase...");
+  const { profile, loading } = useAuth();
 
-  useEffect(() => {
-    supabase
-      .from("academic_years")
-      .select("id", { head: true, count: "exact" })
-      .then(({ error }) => {
-        setStatus(error ? `Gagal tersambung: ${error.message}` : "Tersambung ke Supabase.");
-      });
-  }, []);
+  if (loading) return <Memuat />;
+  if (!profile) return <LoginPage />;
+
+  const items = navItemsFor(profile.role);
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-bold text-kusafa">KUSAFA - Evaluasi dan Capaian Santri</h1>
-      <p className="mt-4 text-sm text-gray-700">{status}</p>
-    </main>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<Beranda />} />
+        <Route path="capaian" element={<CapaianPage />} />
+        {items
+          .filter((i) => i.key !== "capaian")
+          .map((i) => (
+            <Route
+              key={i.key}
+              path={i.path.replace(/^\//, "")}
+              element={<PlaceholderPage item={i} roleLabel={profile.full_name} />}
+            />
+          ))}
+        <Route path="*" element={<Beranda />} />
+      </Route>
+    </Routes>
   );
 }
