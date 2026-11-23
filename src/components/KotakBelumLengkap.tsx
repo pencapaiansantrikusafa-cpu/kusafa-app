@@ -334,20 +334,36 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
                 Anda berhak. Total {santriTampil.length} santri belum lengkap.
               </p>
               {/* Kepala tabel tetap terlihat saat daftar digulir; kolom Santri
-                  dibekukan di kiri agar tetap terbaca di HP sempit. */}
+                  dibekukan di kiri agar tetap terbaca di HP sempit.
+                  Struktur: bingkai bergulir > tabel > dua kepala:
+                  (1) "thead-kepala" yang menempel di atas bingkai tanpa ikut tergulir
+                      (bukan sekadar sticky, karena sticky masih bisa ikut naik bila
+                      bingkai gulirnya ikut tergulir bersama halaman);
+                  (2) "thead-santri" berisi sudut "Santri" yang dibekukan (kiri atas)
+                      dan sengaja tidak terlihat (h-0, border-0, sr-only) sehingga
+                      tidak menambah tinggi tabel. */}
               <div className="max-h-80 overflow-auto rounded-lg ring-1 ring-black/5">
                 <table className="w-full min-w-[640px] border-collapse text-sm">
-                  <thead className="sticky top-0 z-10">
+                  <thead className="sticky top-0 z-30">
                     <tr className="bg-kusafa-light text-left text-xs uppercase tracking-wide text-kusafa">
-                      <th
-                        scope="col"
-                        className="sticky top-0 left-0 z-20 bg-kusafa-light px-2 py-2 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
-                      >
-                        Santri
-                      </th>
+                      <th scope="col" className="w-[34%] min-w-[9rem] px-2 py-2">Santri</th>
                       <th scope="col" className="px-2 py-2">Halaqah</th>
                       <th scope="col" className="px-2 py-2">Musyrif/ah</th>
                       <th scope="col" className="px-2 py-2">Bulan belum lengkap</th>
+                    </tr>
+                  </thead>
+                  <thead className="sticky top-0 z-40 h-0">
+                    <tr className="h-0">
+                      <th
+                        scope="col"
+                        aria-label="Santri"
+                        className="sticky left-0 z-40 h-0 border-0 bg-kusafa-light p-0 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+                      >
+                        <span className="sr-only">Santri</span>
+                      </th>
+                      <th className="sr-only" colSpan={3}>
+                        kolom lainnya
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

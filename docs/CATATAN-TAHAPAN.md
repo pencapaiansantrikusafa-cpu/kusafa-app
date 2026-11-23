@@ -12,6 +12,7 @@ Saat mengerjakan tahap yang disebut, baca poin di bawahnya lebih dulu.
 5. **Hak mengisi sesuai amanah:** Masul, Musyrif/ah, Mudarris/ah hanya ditawari halaqah yang diampu di layar Input (`hanyaHalaqahDiampu`). RLS database sudah menolak yang lain.
 6. **Teks "bulan lalu" tampil sebagai teks dropdown**, bukan angka posisi.
 7. **Grafik halaman santri:** Tilawah/Tahfidz/Kitabah satu kotak, kehadiran kotak terpisah. Tidak ada lagi pilihan gabung semua.
+8. **Submenu mode ikon melayang dan menutupi** isi halaman (menu samping `z-30`, submenu `z-50`, isi halaman `isolate`). Jangan kembalikan ke submenu dalam alur.
 
 ## T6 - Tabel dan input Wasilah serta Ghayah
 
@@ -42,6 +43,7 @@ Saat mengerjakan tahap yang disebut, baca poin di bawahnya lebih dulu.
 - Tambahkan pemeriksaan RLS otomatis untuk tiap role, termasuk **Masul tidak bisa mengisi halaqah yang tidak diampu** dan **Musyrif tidak bisa menulis ke halaqah guru lain** (sudah diuji manual 23 Nov 2026; jadikan uji tetap).
 - Uji selisih lintas buku (Iqro' ke Juz 'Amma), putaran khatam (+27) dan pengulangan (−577), selisih negatif, target bulanan = harian × Hadir, bulan terkunci.
 - Periksa tampilan di HP sempit: tabel notifikasi (kepala beku + kolom Santri beku), submenu ikon yang melayang harus menutupi isi halaman (z-50), dan dropdown yang terbuka tidak terpotong.
+- **Tabel yang kepala kolomnya harus beku dua arah:** sticky saja tidak cukup bila bingkai bergulirnya ikut tergulir bersama halaman. Pola yang dipakai sekarang (lihat `KotakBelumLengkap`): `thead` sticky z-30 untuk baris judul, ditambah `thead` kedua setinggi 0 berisi sel sudut `sticky left-0 z-40` (tidak terlihat) agar waktu scroll ke samping teks baris tidak tampak di atas label "Santri".
 
 ## T10 - Deploy
 
