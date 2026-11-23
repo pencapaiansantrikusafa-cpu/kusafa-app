@@ -9,6 +9,7 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 2. `docs/DATA-NOTES.md` - cara data Excel dipetakan, dan temuan data yang masih terbuka.
 3. `supabase/migrations/*.sql` - skema database yang sudah ditetapkan.
 4. `prompts/OPENCODE.md` - urutan tugas. Kerjakan satu tugas per sesi.
+   Keputusan dan catatan per tahap (T6-T10) ada di `docs/CATATAN-TAHAPAN.md`; baca sebelum mulai tahap terkait. Urutan tugas tidak berubah.
 
 ## Stack
 - Frontend: Vite + React + TypeScript + Tailwind CSS + react-router-dom. Hasil build berupa file statis (`dist/`).
