@@ -1,6 +1,6 @@
 # HANDOVER - serah terima keadaan proyek
 
-Diperbarui: **23 November 2026, 13.22**. Ditulis untuk sesi berikutnya agar bisa melanjutkan tanpa membaca riwayat percakapan.
+Diperbarui: **23 November 2026 (sesi uji browser)**. Ditulis untuk sesi berikutnya agar bisa melanjutkan tanpa membaca riwayat percakapan.
 Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berkas ini.
 
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/DATA-NOTES.md` → `docs/CATATAN-TAHAPAN.md` → `prompts/OPENCODE.md` (urutan tugas T1-T10) → berkas ini.
@@ -18,7 +18,7 @@ Urutan tugas tetap mengikuti `prompts/OPENCODE.md`: T1 → T2 → ... → T10. L
 | **T2** Login, profil, menu per role | SELESAI | `src/pages/LoginPage.tsx`, `src/components/AuthProvider.tsx`, `src/lib/auth-context.ts`, `src/lib/roles.ts`, `src/components/AppLayout.tsx`, `src/components/NavLinks.tsx`, `src/lib/supabase.ts` |
 | **T3** Tabel capaian Al Qur'an | SELESAI | `src/pages/CapaianPage.tsx`, `src/pages/TabelCapaian.tsx`, `src/pages/TabelAlQuran.tsx`, `src/components/PemilihTahunBulan.tsx`, `src/components/PemilihHalaqah.tsx`, `src/lib/laporan.ts` |
 | **T4** Halaman satu santri | SELESAI | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `src/components/GrafikGabungan.tsx` |
-| **T5** Input capaian Al Qur'an | **SELESAI (termasuk T5b & perbaikan masukan)** | `src/pages/InputPage.tsx`, `src/pages/FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `src/lib/posisi.ts`, `src/lib/ambil-semua.ts`, `src/components/DropdownCari.tsx`, `src/components/KonfirmasiPutaran.tsx`, `src/components/KotakBelumLengkap.tsx`, `tests/putaran.test.mjs`, `package.json` (skrip `test`) |
+| **T5** Input capaian Al Qur'an | **SELESAI (termasuk T5b, perbaikan masukan, dan uji browser 23 Nov)** | `src/pages/InputPage.tsx`, `src/pages/FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `src/lib/posisi.ts`, `src/lib/ambil-semua.ts`, `src/components/DropdownCari.tsx`, `src/components/KonfirmasiPutaran.tsx`, `src/components/KotakBelumLengkap.tsx`, `tests/putaran.test.mjs`, `package.json` (skrip `test`) |
 | **T6** Tabel + input Wasilah & Ghayah | BELUM | - (halaman Capaian Wasilah/Ghayah masih pesan "dikerjakan pada T6") |
 | **T7** Target dinamis (ajukan/setujui) | BELUM | - (menu Target masih `PlaceholderPage`) |
 | **T8** Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | BELUM | - (menu Kurikulum, Halaqah & Santri, Pengaturan masih `PlaceholderPage`) |

@@ -26,7 +26,7 @@ Serah terima lengkap (daftar berkas per tahap, keputusan teknis yang tidak boleh
 | T9 Pengujian & QA (RLS otomatis) | Belum |
 | T10 Deploy akhir (hapus data dummy, repo privat) | Belum |
 
-Pemeriksaan terakhir (23 Nov 2026): `npm run typecheck` hijau, `npm run test` 6/6 lulus, `npm run build` berhasil, `python scripts/check_repo_safety.py` lolos. Rincian tiap tahap ada di `docs/HANDOVER.md` bagian 1-2.
+Pemeriksaan terakhir (23 Nov 2026, sesi uji T5 di browser): `npm run typecheck` hijau, `npm run test` 6/6 lulus, `npm run build` berhasil, `python scripts/check_repo_safety.py` lolos. Rincian tiap tahap ada di `docs/HANDOVER.md` bagian 1-2.
 
 **Tabel rincian tahap A-G** (arsip)
 
@@ -51,11 +51,16 @@ Pemeriksaan terakhir (23 Nov 2026): `npm run typecheck` hijau, `npm run test` 6/
 - Jumlah baris database terverifikasi ulang (hanya baca): 109 santri, 2036 capaian — seed tidak dijalankan ulang.
 
 **Pemeriksaan 23 November 2026 (T5b)**
-- `npm run typecheck` hijau, `npm run build` berhasil, `npm run test` lulus 6 uji, `python scripts/check_repo_safety.py` lolos.
-- RLS diuji langsung di database (transaksi dibatalkan, tidak ada data berubah): Musyrif A ditolak menulis capaian, kehadiran, dan catatan pada halaqah milik Musyrif B.
+- `npm run typecheck` hijau, `npm run build` berhasil, `npm run test` lulus 6 uji, `python scripts/check_repo_safety.py` lolos.- RLS diuji langsung di database (transaksi dibatalkan, tidak ada data berubah): Musyrif A ditolak menulis capaian, kehadiran, dan catatan pada halaqah milik Musyrif B.
 - Antarmuka diuji di browser: pencarian "qura" → 4 pilihan Quraisy; Musyrif hanya melihat halaqah yang diampu (1 halaqah) dan notifikasi belum lengkap berisi 10 santri halaqahnya.
 - Jumlah item Tilawah aktif yang termuat di dropdown: 1.464 (sama dengan hitungan database); sebelumnya terpotong 74.
 - Catatan untuk pengembangan berikutnya: setiap query Supabase **wajib** memakai `ambilSemua` (atau `range` yang cukup besar) bila barisnya bisa lebih dari 1.000.
+
+**Pemeriksaan 23 November 2026 (uji browser T5, akun Musyrif/ah HLQ-PA-1)**
+- Simpan sungguhan dari browser berhasil: 3 bidang terisi → tertulis ke `progress_entries`, tampil lagi setelah muat ulang, halaqah menjadi 7/7 terisi. Data uji sudah dihapus kembali (2.036 capaian, 606 presensi).
+- Konfirmasi "Pengulangan atau khatam?" muncul untuk capaian yang lebih kecil dari bulan lalu dan menahan simpan sampai dijawab.
+- Dua cacat diperbaiki: ringkasan kehadiran menampilkan "0" untuk bulan yang belum diisi (kini "—"), dan item dropdown terduplikasi (kunci ganda React) karena memo mengubah state.
+- Diketahui, belum diperbaiki (menunggu keputusan): dropdown item hanya menampilkan 60 hasil pertama; label item Al Qur'an dan Tahfidz tumpang tindih.
 
 **Notifikasi "Data belum lengkap" — keputusan Mudir 23 Nov 2026**
 - **Batas bulan (opsi B):** yang diperiksa hanya bulan dari awal tahun sampai **bulan yang sudah berjalan**. Penandanya: bulan itu sudah punya Hari Efektif di `month_domain_settings` untuk domain tersebut. Bulan yang belum dimulai tidak dihitung, sehingga tidak dianggap kelalaian. Judul kotak: "awal tahun sampai bulan berjalan".
