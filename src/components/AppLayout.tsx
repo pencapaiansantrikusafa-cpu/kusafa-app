@@ -81,7 +81,9 @@ export default function AppLayout() {
 
       <div className="flex w-full gap-4 px-3 py-4 pb-24 lg:pb-4">
         <aside className={"hidden shrink-0 lg:block " + (ringkas ? "w-16" : "w-56")}>
-          <div className="sticky top-20 space-y-2">
+          {/* sticky + z-30: menu (dan submenu melayangnya, z-50) selalu di ATAS isi halaman.
+              Tanpa ini, submenu bisa tertutupi kartu formulir di sebelahnya. */}
+          <div className="sticky top-20 z-30 space-y-2">
             <button
               onClick={() => setRingkas((v) => !v)}
               className="flex w-full items-center justify-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
@@ -95,16 +97,20 @@ export default function AppLayout() {
         </aside>
 
         <main className="min-w-0 flex-1">
-          {items.length === 0 ? (
-            <div className="rounded-xl bg-white p-6 ring-1 ring-black/5">
-              <h1 className="text-lg font-bold text-gray-900">Akses belum tersedia</h1>
-              <p className="mt-2 text-sm text-gray-700">
-                Role Anda belum memiliki menu. Fitur wali santri masih disiapkan.
-              </p>
-            </div>
-          ) : (
-            <Outlet context={{ defaultPath: items[0]?.path ?? "/" }} />
-          )}
+          {/* isolate: isi halaman punya susunan lapisannya sendiri, sehingga z-20
+              di dalamnya (kepala tabel, dropdown) tidak bisa menimpa menu samping. */}
+          <div className="isolate">
+            {items.length === 0 ? (
+              <div className="rounded-xl bg-white p-6 ring-1 ring-black/5">
+                <h1 className="text-lg font-bold text-gray-900">Akses belum tersedia</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Role Anda belum memiliki menu. Fitur wali santri masih disiapkan.
+                </p>
+              </div>
+            ) : (
+              <Outlet context={{ defaultPath: items[0]?.path ?? "/" }} />
+            )}
+          </div>
         </main>
       </div>
 

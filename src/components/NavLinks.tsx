@@ -151,9 +151,15 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
             {bukaSub && item.children && (
               <ul
                 id={`submenu-${item.key}`}
-                // Submenu di pohon menu disimpan dalam alur (bukan melayang ke samping),
-                // agar tidak menutupi form di sebelahnya (dulu menumpuk dropdown Tahun).
-                className="relative z-10 mt-1 ml-2 space-y-0.5 rounded-lg border-l border-kusafa/20 py-1 pl-3"
+                // Mode ikon: submenu melayang ke samping dan harus MENUTUPI isi halaman.
+                // Lapisan naik di atas kartu/isi halaman (z-50 > z-30 dropdown, z-20 header),
+                // beririsan 8px dengan tombolnya agar tidak ada celah saat kursor bergerak,
+                // dan diberi latar putih + bayangan supaya jelas berada di depan.
+                className={
+                  ringkas
+                    ? "absolute left-full top-0 z-50 -ml-2 w-44 rounded-lg border border-black/10 bg-white p-1 shadow-xl"
+                    : "relative z-10 mt-1 ml-2 space-y-0.5 rounded-lg border-l border-kusafa/20 py-1 pl-3"
+                }
               >
                 {item.children.map((c) => {
                   const sa = subAktif(c.path, pathname);

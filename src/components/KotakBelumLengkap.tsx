@@ -341,7 +341,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
                     <tr className="bg-kusafa-light text-left text-xs uppercase tracking-wide text-kusafa">
                       <th
                         scope="col"
-                        className="sticky left-0 z-20 bg-kusafa-light px-2 py-2 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+                        className="sticky top-0 left-0 z-20 bg-kusafa-light px-2 py-2 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
                       >
                         Santri
                       </th>
