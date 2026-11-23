@@ -5,12 +5,14 @@ Proyek: **KUSAFA - Evaluasi dan Capaian Santri**. Aplikasi web untuk Mudir, Masu
 Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis dengan bahasa sederhana.
 
 ## Baca dulu (berurutan)
-1. `docs/SPEC.md` - aturan bisnis, role, model data, alur kerja. Ini sumber kebenaran.
+1. `docs/SPEC.md` - aturan bisnis, role, model data, alur kerja. Ini sumber kebenaran aturan.
 2. `docs/DATA-NOTES.md` - cara data Excel dipetakan, dan temuan data yang masih terbuka.
 3. `supabase/migrations/*.sql` - skema database yang sudah ditetapkan.
 4. `prompts/OPENCODE.md` - urutan tugas. Kerjakan satu tugas per sesi.
    Keputusan dan catatan per tahap (T6-T10) ada di `docs/CATATAN-TAHAPAN.md`; baca sebelum mulai tahap terkait. Urutan tugas tidak berubah.
-5. `docs/HANDOVER.md` - serah terima keadaan proyek: status tiap tahap, berkas yang diubah, keputusan yang tidak boleh berubah, status Supabase, dan perintah.
+5. `docs/STATUS.md` - status nyata tiap tahap (sumber kebenaran status).
+6. `docs/HANDOVER.md` - serah terima: langkah berikutnya, keputusan final, pertanyaan terbuka.
+7. `docs/FILE-MAP.md` - peta kode, tabel database, fungsi dan view SQL.
 
 ## Stack
 - Frontend: Vite + React + TypeScript + Tailwind CSS + react-router-dom. Hasil build berupa file statis (`dist/`).
@@ -48,6 +50,21 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - **Label item selalu memakai nama mata pelajaran di depan**: "Tahfidz · An Naba' - 40". Buku yang sama dipakai lebih dari satu mata pelajaran (mis. Juz 'Amma di Tilawah dan Kitabah) dengan urutan dan fokus berbeda, sehingga label mentah bisa sama. Aturan ini berlaku untuk halaman Input dan halaman lain yang menampilkan pilihan item.
 - **Pengampu hanya ditawari halaqah yang diampu**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat halaqahnya di halaman Input (`hanyaHalaqahDiampu` di `src/lib/roles.ts`). Hanya Mudir/Admin mengisi semua halaqah. Database (RLS) tetap penjaga terakhir.
 - **Jangan pernah mengambil daftar panjang dengan satu query tanpa batas**: Supabase mengembalikan maksimal 1.000 baris per permintaan. Pakai `ambilSemua` di `src/lib/ambil-semua.ts` atau `range` yang cukup besar.
+
+## Cara bekerja (aturan tetap)
+- **Satu sub-tugas, satu commit kecil.** Setelah sub-tugas selesai: jalankan `npm run typecheck` dan `npm run build`,
+  perbarui `docs/STATUS.md` dan `docs/HANDOVER.md`, lalu commit dan **push** ke `main`. Jangan menumpuk banyak perubahan dalam satu commit besar.
+- **`docs/STATUS.md` adalah sumber kebenaran status.** Perbarui setiap sub-tugas selesai: status tahap, hasil build/tsc/uji, kondisi Supabase, deploy.
+  Jangan menulis SELESAI untuk sesuatu yang belum dijalankan atau diuji; tulis **BELUM DIVERIFIKASI**.
+- **Tulis hanya fakta yang sudah diperiksa sendiri** (baca kode, jalankan perintah, tanya database). Jangan mengarang angka.
+- **`docs/HANDOVER.md`** diperbarui setiap sub-tugas selesai: posisi sekarang, langkah berikutnya yang berurutan, keputusan final, pertanyaan terbuka.
+- **Jangan mengubah "Keputusan final"** di `docs/HANDOVER.md` bagian 3 tanpa persetujuan Mudir. Bila perlu diubah, tanya dulu dan catat persetujuannya.
+- **Bila data atau aturan janggal atau tidak sinkron, berhenti dan tanya.** Jangan berasumsi, termasuk saat seed atau saat memperbaiki data.
+  Catat temuan di bagian "Pertanyaan terbuka" (`docs/HANDOVER.md`) dan/atau `docs/DATA-NOTES.md`.
+- **Tulis nama role selengkapnya** di kode, teks UI, dan dokumen: **Masul Al Quran**, **Masul Wasilah**, **Masul Ghayah**. Jangan menulis "masul" saja.
+- **Repo publik:** jalankan `python scripts/check_repo_safety.py` sebelum setiap push. Jangan pernah menulis kunci, kata sandi, `DATABASE_URL`, atau data santri.
+  Ingatkan Mudir bahwa repo harus dijadikan privat sebelum data asli dimuat.
+- Jangan mengubah logika aplikasi saat hanya diminta memperbarui dokumentasi.
 
 ## Perintah
 ```
