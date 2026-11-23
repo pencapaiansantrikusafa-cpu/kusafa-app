@@ -45,16 +45,27 @@ Catatan: T5 sudah ditutup atas permintaan pemilik proyek, lalu ditegaskan lagi o
 - Notifikasi "Data belum lengkap — awal tahun sampai bulan berjalan" dengan kolom musyrif/ah, ringkasan x/y terisi per bulan, saringan halaqah untuk Mudir/Admin/Masul Al Quran.
 - Halaqah yang ditawarkan mengikuti amanah (`hanyaHalaqahDiampu`); RLS database sudah menolak halaqah lain (diuji).
 
+### Uji browser dengan akun pengampu (23 Nov 2026, Musyrif HLQ-PA-1)
+- Login, pilih halaqah + bulan, isi 3 bidang dengan pencarian dropdown, simpan → **3 baris tertulis ke `progress_entries`**; setelah muat ulang nilai tampil lagi; tab "Belum lengkap" menjadi 0 dan "Sudah ada data" 7.
+- **Konfirmasi pengulangan** muncul benar (posisi 514 → 117) dan simpan tertahan sampai dijawab; setelah memilih "Pengulangan", putaran tetap 1 dan selisih negatif.
+- Data uji dikembalikan (capaian yang diisi dihapus). Jumlah akhir sama dengan seed: 2.036 capaian, 606 presensi.
+- Tampilan HP 390 px: bilah bawah muncul, dropdown menumpuk satu kolom, tidak ada teks terpotong.
+- **Dua cacat ditemukan dan diperbaiki**:
+  1. Ringkasan baris menulis `izin 0, sakit 0, alpha 0` untuk bulan yang belum diisi kehadiran (melanggar "kosong bukan 0"). Kini kosong tampil "—" (`FormInputAlQuran.tsx`).
+  2. Peringatan React "dua anak dengan kunci sama" di dropdown item: `useMemo` `itemPerBidang` ikut mengubah array state, sehingga Mode Ketat React menduplikasi item. Kini memo murni. Sebelumnya ini membuat satu pilihan bisa muncul/terpilih ganda.
+
 ### Belum
 - **Belum ada layar untuk mengisi Hari Efektif** (menu Pengaturan masih kosong). Sampai T8, Hari Efektif hanya diisi lewat SQL/dashboard. Akibatnya bulan yang belum diisi Hari Efektifnya tidak diperiksa oleh notifikasi.
 - Hanya domain Al Qur'an; input Wasilah & Ghayah di T6.
-- Uji simpan sungguhan lewat browser dengan akun pengampu belum dilakukan (uji simpan dilakukan lewat SQL dalam transaksi yang dibatalkan).
 
 ### Bug/error yang diketahui (belum ada yang menggantung)
 - Tidak ada galat typecheck/build/test saat serah terima ini.
 - Batas **1.000 baris** per permintaan Supabase; semua daftar panjang sudah memakai `ambilSemua`.
 - Query item ±4,7 detik untuk ~1.000 baris (butuh beberapa permintaan karena diambil per buku). Bisa dipercepat dengan view/migrasi baru bila perlu (belum dikerjakan, perlu izin karena menambah migrasi).
 - Kolom pengampu di notifikasi baru musyrif/ah Al Qur'an (pengampu Wasilah, muallim/ah Ghayah menyusul T6).
+- **Dropdown item hanya menampilkan 60 hasil pertama** yang cocok (`batasTampil`, belum ada gulir-tambah). Contoh: pada Kitabah, mencari "menyalin" berhenti di "Menyalin - 60" sehingga "Menyalin - 88" tidak tercapai; harus mengetik label utuh. Saran perbaikan: tampilkan lebih banyak saat kata kunci mendekati label, atau "muat lebih banyak". Belum dikerjakan (perlu keputusan Mudir).
+- **Label item Al Qur'an dan Tahfidz tumpang tindih** ("Al Ghasyiyah - 26" ada di dua bidang). Aman karena dropdown dipisah per bidang, tetapi bisa membingungkan pengguna. Perlu keputusan apakah label diberi nama buku di depan.
+- **Bulan 12 (Ramadhan) punya 7 baris presensi tanpa capaian dan tanpa Hari Efektif**. Untuk data uji ini tidak masalah; Mohon dipastikan ini memang disengaja sebelum T9.
 
 ### Langkah berikutnya yang konkret
 1. Mulai **T6**: tabel & input Wasilah/Ghayah sesuai `docs/SPEC.md` §2 dan §5.6. Satu isian per halaqah + mata pelajaran, disalin ke semua anggota aktif; perubahan anggota kemudian tidak mengubah baris lama.

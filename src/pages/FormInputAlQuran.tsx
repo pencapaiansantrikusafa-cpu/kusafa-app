@@ -97,9 +97,16 @@ export default function FormInputAlQuran({
   /** Ada isian yang diubah pada kunjungan ini (dipakai peringatan bulan lampau). */
   const [berubah, setBerubah] = useState(false);
 
+  // Memo ini harus murni (tidak memodifikasi state `items`). React Mode Ketat
+  // memanggilnya dua kali; bila array state ikut diubah, item terduplikasi
+  // dan React memperingatkan kunci ganda.
   const itemPerBidang = useMemo(() => {
     const p: Record<string, Item[]> = {};
-    for (const it of items) (p[it.subject_id] ??= []).push(it);
+    for (const it of items) {
+      const daftar = p[it.subject_id];
+      if (daftar) daftar.push(it);
+      else p[it.subject_id] = [it];
+    }
     return p;
   }, [items]);
 
@@ -408,7 +415,7 @@ export default function FormInputAlQuran({
                     </span>
                   </span>
                   <span className="text-xs text-gray-600">
-                    {st.terisi}/{st.total} bidang terisi · izin {b.izin || 0}, sakit {b.sakit || 0}, alpha {b.alpha || 0}
+                    {st.terisi}/{st.total} bidang terisi · izin {b.izin || "—"}, sakit {b.sakit || "—"}, alpha {b.alpha || "—"}
                   </span>
                 </span>
                 <span aria-hidden className="text-gray-400">{buka ? "▴" : "▾"}</span>
