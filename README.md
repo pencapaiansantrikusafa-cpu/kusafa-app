@@ -6,7 +6,7 @@ Dokumen acuan (di akun Claude pemilik proyek): "KUSAFA - System Design" dan papa
 
 ## Status pembangunan
 
-Diperbarui: 22 November 2026. Bagian ini diperbarui setiap selesai satu tahap atau satu tugas.
+Diperbarui: 23 November 2026. Bagian ini diperbarui setiap selesai satu tahap atau satu tugas.
 Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 
 | Tahap | Status | Hasil |
@@ -21,8 +21,9 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | H - Laporan akhir & T2-T10 | Berjalan | T2, T3, T4, T5 selesai; T6-T10 belum. |
 | T2 - Login & kerangka | Selesai | Halaman login bahasa Indonesia, profil dari `profiles`, menu sesuai role (Mudir/Admin 6 menu; Masul 5; Musyrif/ah, Mudarris/ah 3). Diuji: 7 role login OK, form login OK, pesan galat saat sandi salah OK. `typecheck` & `build` hijau. |
 | T3 - Tabel capaian Al Qur'an | Selesai | Tabel per halaqah + bulan (bulan pembanding otomatis), kolom Hadir/HE, Lalu/Kini/Selisih per bidang, target bulanan. Sorotan `di bawah target` (merah muda) dan `⚠ kurang` (kuning) disertai teks. Sel kosong tampil "belum diisi", bukan 0. Bulan default = bulan terakhir yang berisi data. Tabel Wasilah & Ghayah masih versi dasar (dirapikan di T6). |
-| T4 - Halaman satu santri | Selesai | `/santri/:id` — pilih domain (Al Qur'an/Wasilah/Ghayah) dan rentang (Semester 1 / Semester 2 / Satu tahun). Grafik selisih per bidang + kehadiran (SVG sendiri, tanpa pustaka), garis diputus pada bulan kosong. Tabel riwayat dengan posisi kumulatif, selisih, Hadir/HE, target. Nama santri di tabel capaian bisa diketuk. `typecheck` & `build` hijau. |
+| T4 - Halaman satu santri | Selesai | `/santri/:id` — pilih domain (Al Qur'an/Wasilah/Ghayah) dan rentang (Semester 1 / Semester 2 / Satu tahun). Grafik (SVG sendiri, tanpa pustaka), garis diputus pada bulan kosong. Sejak 23 Nov: **Tilawah, Tahfidz, dan Kitabah dalam satu kotak grafik**, dan **kehadiran di grafik terpisah** (pilihan "satu kotak gabungan semua" dihapus). Tabel riwayat dengan posisi kumulatif, selisih, Hadir/HE, target. Nama santri di tabel capaian bisa diketuk. |
 | T5 - Input capaian Al Qur'an | Selesai | Pilih halaqah dan Tahun/Bulan (dua dropdown terpisah), daftar santri per halaqah, isian per bidang (Tilawah, Tahfidz, Kitabah) dari item aktif, izin/sakit/alpha, Hari Efektif khusus (hanya Mudir/Admin), catatan, saringan "Semua / Belum lengkap / Sudah ada data", penanda warna disertai teks. Simpan ke `attendance`, `monthly_notes`, `progress_entries`; nilai tersimpan tampil lagi saat dibuka; bulan terkunci ditolak database dan pesannya ditampilkan apa adanya. **Putaran Tilawah:** centang "khatam, mulai putaran baru" hanya muncul untuk item di buku siklik (Tilawah Al Qur'an) dan selalu memakai putaran bulan lalu + 1. Bila capaian lebih kecil dari bulan lalu, aplikasi berhenti dan bertanya "Pengulangan atau khatam?" (tidak menebak). Mengubah bulan lampau yang bulan sesudahnya sudah terisi memunculkan peringatan agar putaran bulan berikutnya ditinjau. Berkas utama: `src/lib/putaran.ts` (aturan putaran), `src/components/KonfirmasiPutaran.tsx` (konfirmasi sebelum simpan), `src/pages/FormInputAlQuran.tsx` (formulir). Diuji dengan `npm run test`. |
+| T5b - Perbaikan masukan 23 Nov 2026 | Selesai | (1) **Dropdown pencarian** di semua dropdown (`src/components/DropdownCari.tsx`): tahun, bulan, halaqah (kode atau nama pengampu), dan setiap bidang (mis. ketik "qura" → hanya "Juz 'Amma - Quraisy : 1..4"). Komponen ini wajib dipakai untuk dropdown baru. (2) **Hak isi sesuai amanah**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat dan mengisi halaqah yang diampu di halaman Input; database (RLS) sudah menolak halaqah lain dan diuji ulang — insert capaian, kehadiran, dan catatan ke halaqah guru lain ditolak. (3) **Notifikasi "Data belum lengkap"** di halaman Input: daftar santri per halaqah yang belum punya capaian dari awal tahun sampai bulan terpilih (bisa ditutup), dibatasi halaqah sendiri untuk pengampu. (4) Grafik santri: satu kotak untuk Tilawah/Tahfidz/Kitabah, kehadiran terpisah. (5) **Bug data terpotong**: Supabase hanya mengembalikan maksimal 1.000 baris per permintaan; pilihan Tilawah sebelumnya terpotong (74 dari 1.464) dan notifikasi bisa salah menghitung. Kini semua daftar panjang diambil bertahap (`src/lib/ambil-semua.ts`). |
 
 **Pemeriksaan serah terima 22 November 2026**
 - `npm run typecheck` hijau, `npm run build` berhasil, dan `npm run test` lulus 6 uji (99 modul; bundel 460,65 kB, gzip 131,42 kB).
@@ -30,6 +31,13 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - `python scripts/check_repo_safety.py` lolos: berkas token uji (`.smoke-tokens.js`) sudah dihapus dan pemeriksaan kini menolak JWT/refresh token apa pun, bukan hanya kunci service role.
 - Vercel: project `kusafa-app` terhubung dan production siap.
 - Jumlah baris database terverifikasi ulang (hanya baca): 109 santri, 2036 capaian — seed tidak dijalankan ulang.
+
+**Pemeriksaan 23 November 2026 (T5b)**
+- `npm run typecheck` hijau, `npm run build` berhasil, `npm run test` lulus 6 uji, `python scripts/check_repo_safety.py` lolos.
+- RLS diuji langsung di database (transaksi dibatalkan, tidak ada data berubah): Musyrif A ditolak menulis capaian, kehadiran, dan catatan pada halaqah milik Musyrif B.
+- Antarmuka diuji di browser: pencarian "qura" → 4 pilihan Quraisy; Musyrif hanya melihat halaqah yang diampu (1 halaqah) dan notifikasi belum lengkap berisi 10 santri halaqahnya.
+- Jumlah item Tilawah aktif yang termuat di dropdown: 1.464 (sama dengan hitungan database); sebelumnya terpotong 74.
+- Catatan untuk pengembangan berikutnya: setiap query Supabase **wajib** memakai `ambilSemua` (atau `range` yang cukup besar) bila barisnya bisa lebih dari 1.000.
 
 **Pertanyaan terbuka**
 - **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.
@@ -51,6 +59,8 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - Posisi capaian dihitung database (`public.item_position`), dipanggil dari form lewat RPC `item_position` hanya saat tombol Simpan — untuk memeriksa apakah capaian lebih kecil dari bulan lalu. Tidak ada perhitungan selisih di React.
 - Dropdown item di halaman Input diambil **per buku** (buku urut `stage_order`, `sort_order`; item urut `seq`), lalu digabung. Satu query `ORDER BY seq` tidak boleh dipakai: `seq` mulai dari 1 di setiap buku dan tidak unik, sehingga urutannya acak.
 - Teks "Bulan lalu" di form memakai `item_label` dari `v_monthly_report` (teks dropdown bulan lalu), bukan angka posisi.
+- **Batas 1.000 baris per permintaan** (bawaan Supabase pada proyek ini): query yang hasilnya bisa lebih dari 1.000 baris wajib memakai `ambilSemua` di `src/lib/ambil-semua.ts`. Tanpa itu data diam-diam terpotong.
+- Semua dropdown wajib memakai `src/components/DropdownCari.tsx` (pencarian + `▾`); jangan memakai `<select>` biasa untuk daftar siswa/halaqah/level/bidang (aturan AGENTS.md).
 - Alamat koneksi langsung `db.<ref>.supabase.co` tidak bisa diresolusi di jaringan ini (tanpa IPv6), jadi semua skrip memakai pooler.
 - Data uji sudah dimuat. Kata sandi akun dummy ada di `scripts/seed/output/users.csv` (tidak di git). Laporan seed: `scripts/seed/output/seed-report.md`.
 - Site URL dan Redirect URL Supabase diatur **manual di dashboard** (Authentication → URL Configuration), bukan lewat `supabase config push`, karena perintah itu akan ikut mengubah 11 pengaturan Auth lain (konfirmasi email, MFA, panjang OTP, pooler). Nilai yang diinginkan sudah tercatat di `supabase/config.toml` sebagai acuan.

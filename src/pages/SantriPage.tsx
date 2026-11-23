@@ -6,7 +6,7 @@ import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import GrafikGaris from "../components/GrafikGaris";
 import GrafikGabungan, { type Seri } from "../components/GrafikGabungan";
 
-/** Warna garis tiap bidang (juga dipakai di grafik gabungan). */
+/** Warna garis tiap bidang. */
 const WARNA = ["#0f5b45", "#1d4ed8", "#b45309", "#7c3aed", "#0891b2"];
 
 interface Santri {
@@ -55,7 +55,6 @@ export default function SantriPage() {
   const [bidang, setBidang] = useState<Bidang[]>([]);
   const [riwayat, setRiwayat] = useState<BarisRiwayat[]>([]);
   const [rentang, setRentang] = useState<Rentang>("tahun");
-  const [modeGrafik, setModeGrafik] = useState<"gabung" | "pisah">("gabung");
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
 
@@ -152,11 +151,8 @@ export default function SantriPage() {
     titik: titikPosisi(b.id),
   }));
 
-  // Kehadiran ikut dalam grafik gabungan (garis putus-putus, satuan hari).
-  const seriGabungan: Seri[] = [
-    ...seriPosisi,
-    { nama: "Kehadiran (hari)", warna: "#b45309", putus: true, titik: titikHadir() },
-  ];
+  // Grafik: Tilawah, Tahfidz, dan Kitabah dalam SATU kotak; kehadiran di kotak TERPISAH.
+  // User meminta hanya tampilan terpisah ini (tanpa opsi gabung semua termasuk kehadiran).
 
   // Tampilkan tautan kembali bila pengguna datang dari halaman capaian.
   const asal = cari.get("dari");
@@ -244,58 +240,20 @@ export default function SantriPage() {
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-black/5">
-        <span className="text-sm font-medium text-gray-800">Tampilan grafik</span>
-        {(
-          [
-            ["gabung", "Satu kotak (gabungan)"],
-            ["pisah", "Terpisah per bidang"],
-          ] as ["gabung" | "pisah", string][]
-        ).map(([nilai, label]) => (
-          <button
-            key={nilai}
-            onClick={() => setModeGrafik(nilai)}
-            aria-pressed={modeGrafik === nilai}
-            className={
-              "rounded-lg px-3 py-1.5 text-sm " +
-              (modeGrafik === nilai
-                ? "bg-kusafa text-white"
-                : "border border-gray-300 text-gray-700 hover:bg-gray-50")
-            }
-          >
-            {label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-gray-500">
-          Garis = posisi kumulatif (selalu naik selama santri maju)
-        </span>
-      </div>
-
-      {modeGrafik === "gabung" ? (
+      {/* Tilawah, Tahfidz, Kitabah dalam satu kotak; kehadiran di kotak terpisah. */}
+      <div className="grid gap-3">
         <GrafikGabungan
-          judul="Posisi capaian kumulatif & kehadiran"
-          seri={seriGabungan}
-          satuan={`${bulanRentang.length} bulan · kehadiran dalam hari`}
+          judul="Posisi capaian kumulatif"
+          seri={seriPosisi}
+          satuan={`${bulanRentang.length} bulan`}
         />
-      ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {bidangDomain.map((b, i) => (
-            <GrafikGaris
-              key={b.id}
-              judul={`${b.name} — posisi kumulatif`}
-              titik={titikPosisi(b.id)}
-              warna={WARNA[i % WARNA.length]}
-            />
-          ))}
-          {/* Kehadiran diletakkan tepat di samping kanan grafik Kitabah. */}
-          <GrafikGaris
-            judul="Kehadiran (Hadir)"
-            titik={titikHadir()}
-            satuan="hari"
-            warna="#b45309"
-          />
-        </div>
-      )}
+        <GrafikGaris
+          judul="Kehadiran (Hadir)"
+          titik={titikHadir()}
+          satuan="hari"
+          warna="#b45309"
+        />
+      </div>
 
       <div className="rounded-xl bg-white ring-1 ring-black/5">
         <div className="border-b border-black/5 px-4 py-3">

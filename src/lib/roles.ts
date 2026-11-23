@@ -56,6 +56,34 @@ export interface NavItem {
 }
 
 /**
+ * Apakah role ini hanya boleh MENULIS capaian/kehadiran/catatan pada halaqah
+ * yang diampu (docs/SPEC.md bagian 3)? Berlaku untuk Masul, Musyrif/ah, dan
+ * Mudarris/ah. Hanya Mudir/Admin yang boleh menulis semua halaqah.
+ *
+ * Database tetap penjaga terakhir (RLS `student_in_taught_halaqah`); ini hanya
+ * agar tampilan tidak menawarkan halaqah di luar amanah.
+ */
+export function hanyaHalaqahDiampu(role: AppRole): boolean {
+  return (
+    role === "masul_alquran" ||
+    role === "masul_wasilah" ||
+    role === "masul_ghayah" ||
+    role === "musyrif" ||
+    role === "mudarris"
+  );
+}
+
+/** Pemberitahuan "data belum lengkap" dibatasi ke halaqah sendiri untuk guru pengampu. */
+export function batasiPemberitahuan(role: AppRole): boolean {
+  return role === "musyrif" || role === "mudarris";
+}
+
+/** Siapa yang boleh melihat pemberitahuan "data belum lengkap" seluruh sekolah. */
+export function isPeninjau(role: AppRole): boolean {
+  return role === "mudir" || role === "admin" || role.startsWith("masul_");
+}
+
+/**
  * Menu yang tampil untuk sebuah role, mengikuti docs/SPEC.md bagian 3.
  * Ini hanya kenyamanan tampilan: penjagaan sebenarnya ada di RLS database.
  */

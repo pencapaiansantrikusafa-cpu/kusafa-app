@@ -181,22 +181,15 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       <div className="rounded-xl bg-white p-4 ring-1 ring-black/5">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <label htmlFor={`halaqah-${domain}`} className="block text-sm font-medium text-gray-800">
-              {domain === "wasilah" ? "Level" : domain === "ghayah" ? "Kelompok" : "Halaqah"}
-            </label>
-            <select
+            <PemilihHalaqah
               id={`halaqah-${domain}`}
-              value={halaqahId}
-              onChange={(e) => setHalaqahId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-            >
-              {halaqahList.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.code}
-                  {pengampu[h.id] ? ` - ${pengampu[h.id]}` : ""}
-                </option>
-              ))}
-            </select>
+              label={domain === "wasilah" ? "Level" : domain === "ghayah" ? "Kelompok" : "Halaqah"}
+              halaqah={halaqahList}
+              pengampu={pengampu}
+              nilai={halaqahId}
+              onChange={setHalaqahId}
+              keterangan={pengampu[halaqahId] ? `Pengampu: ${pengampu[halaqahId]}` : "Pengampu belum ditetapkan"}
+            />
           </div>
 
           <PemilihTahunBulan

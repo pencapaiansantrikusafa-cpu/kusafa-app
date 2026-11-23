@@ -1,4 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import DropdownCari from "./DropdownCari";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/auth-context";
+import { isPeninjau } from "../lib/roles";
 
 export interface BulanData {
   id: string;
@@ -52,42 +56,91 @@ export default function PemilihTahunBulan({
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
+      <DropdownCari
+        id={`${idAwalan}-tahun`}
+        label="Tahun Hijriyah"
+        opsi={daftarTahun.map((t) => ({ nilai: String(t), label: `${t} H` }))}
+        nilai={String(tahun)}
+        onChange={(v) => onTahun(Number(v))}
+        placeholderCari="Ketik tahun..."
+      />
       <div>
-        <label htmlFor={`${idAwalan}-tahun`} className="block text-sm font-medium text-gray-800">
-          Tahun Hijriyah
-        </label>
-        <select
-          id={`${idAwalan}-tahun`}
-          value={tahun}
-          onChange={(e) => onTahun(Number(e.target.value))}
-          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-        >
-          {daftarTahun.map((t) => (
-            <option key={t} value={t}>
-              {t} H
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor={`${idAwalan}-bulan`} className="block text-sm font-medium text-gray-800">
-          Bulan
-        </label>
-        <select
+        <DropdownCari
           id={`${idAwalan}-bulan`}
-          value={bulanId}
-          onChange={(e) => onBulan(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-        >
-          {bulanTahunIni.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+          label="Bulan"
+          opsi={bulanTahunIni.map((b) => ({ nilai: b.id, label: b.name }))}
+          nilai={bulanId}
+          onChange={onBulan}
+          placeholderCari="Ketik bulan..."
+        />
         {catatan && <p className="mt-1 text-xs text-gray-500">{catatan}</p>}
+        {Number(tahun) && <PenandaBelumLengkap bulanId={bulanId} />}
       </div>
     </div>
+  );
+}
+
+interface BarisLengkap {
+  student_id: string;
+  subject_id: string;
+  month_id: string;
+}
+
+/**
+ * Pemberitahuan "data belum lengkap" per bulan untuk laman Capaian.
+ * Hanya untuk Mudir/Admin/Masul (guru lain hanya melihat halaqahnya di halaman Input).
+ * Bulan dikosongkan = belum diisi, bukan 0 (docs/SPEC.md).
+ */
+function PenandaBelumLengkap({ bulanId }: { bulanId: string }) {
+  const { profile } = useAuth();
+  const [jumlah, setJumlah] = useState<{ belum: number; total: number } | null>(null);
+  const boleh = !!profile && isPeninjau(profile.role);
+
+  useEffect(() => {
+    let aktif = true;
+    if (!boleh || !bulanId) {
+      setJumlah(null);
+      return;
+    }
+    void (async () => {
+      const { data, error } = await supabase
+        .from("progress_entries")
+        .select("student_id, subject_id, month_id")
+        .eq("month_id", bulanId);
+      if (!aktif || error) return;
+      const terisi = new Set(
+        ((data ?? []) as BarisLengkap[]).map((r) => `${r.student_id}|${r.subject_id}`),
+      );
+      const { data: santri } = await supabase.from("students").select("id").eq("is_active", true);
+      const { data: bidang } = await supabase
+        .from("subjects")
+        .select("id")
+        .eq("domain", "alquran")
+        .eq("is_active", true);
+      if (!aktif) return;
+      const n = (santri ?? []).length;
+      const kosongSantri = new Set<string>();
+      for (const s of santri ?? []) {
+        const ada = (bidang ?? []).some((bd) => terisi.has(`${s.id}|${bd.id}`));
+        if (!ada) kosongSantri.add(s.id);
+      }
+      setJumlah({ belum: kosongSantri.size, total: n });
+    })();
+    return () => {
+      aktif = false;
+    };
+  }, [bulanId, boleh]);
+
+  if (!jumlah || jumlah.total === 0) return null;
+  return (
+    <p
+      className={
+        "mt-1 text-xs " + (jumlah.belum > 0 ? "text-amber-800" : "text-emerald-800")
+      }
+    >
+      {jumlah.belum > 0
+        ? `Data belum lengkap: ${jumlah.belum} dari ${jumlah.total} santri belum punya capaian Al Qur'an bulan ini.`
+        : "Semua santri sudah punya capaian Al Qur'an bulan ini."}
+    </p>
   );
 }

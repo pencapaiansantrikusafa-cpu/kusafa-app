@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import DropdownCari from "./DropdownCari";
 
 export interface HalaqahData {
   id: string;
@@ -8,6 +9,7 @@ export interface HalaqahData {
 
 export interface GuruBaris {
   halaqah_id: string;
+  profile_id: string;
   full_name: string;
 }
 
@@ -35,18 +37,28 @@ export function petaPengampu(baris: GuruBaris[]): Record<string, string> {
  * Dipakai semua halaman agar label dropdown selalu memuat nama pengampu.
  */
 export async function ambilPengampu(): Promise<Record<string, string>> {
+  return petaPengampu(await ambilGuru());
+}
+
+/** Baris pengampu beserta id profilnya (untuk menyaring halaqah yang diampu). */
+export async function ambilGuru(): Promise<GuruBaris[]> {
   const { data } = await supabase
     .from("halaqah_teachers")
-    .select("halaqah_id, profiles!inner(full_name)")
-    .limit(1000);
-  const baris = ((data ?? []) as unknown as Array<{
+    .select("halaqah_id, profile_id, profiles!inner(full_name)")
+    .limit(2000);
+  return ((data ?? []) as unknown as Array<{
     halaqah_id: string;
+    profile_id: string;
     profiles: { full_name: string } | { full_name: string }[];
   }>).map((r) => {
     const p = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
-    return { halaqah_id: r.halaqah_id, full_name: p?.full_name ?? "" };
+    return { halaqah_id: r.halaqah_id, profile_id: r.profile_id, full_name: p?.full_name ?? "" };
   });
-  return petaPengampu(baris);
+}
+
+/** Halaqah yang diampu oleh satu profil. */
+export function halaqahDiampu(guru: GuruBaris[], profileId: string): Set<string> {
+  return new Set(guru.filter((g) => g.profile_id === profileId).map((g) => g.halaqah_id));
 }
 
 /** Label baku: "HLQ-PA-1 - Ust. Fulan 1" (tanpa kategori Putra/Putri). */
@@ -66,26 +78,22 @@ interface Props {
   keterangan?: string;
 }
 
-/** Dropdown halaqah/level/kelompok yang selalu menampilkan nama pengampu. */
+/** Dropdown halaqah/level/kelompok yang selalu menampilkan nama pengampu, dengan pencarian. */
 export default function PemilihHalaqah({ id, label, halaqah, pengampu, nilai, onChange, keterangan }: Props) {
   return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-800">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={nilai}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-      >
-        {halaqah.map((h) => (
-          <option key={h.id} value={h.id}>
-            {labelHalaqah(h, pengampu)}
-          </option>
-        ))}
-      </select>
-      {keterangan && <p className="mt-1 truncate text-xs text-gray-600">{keterangan}</p>}
-    </div>
+    <DropdownCari
+      id={id}
+      label={label}
+      opsi={halaqah.map((h) => ({
+        nilai: h.id,
+        label: labelHalaqah(h, pengampu),
+        // Pencarian juga mencocokkan kode dan nama pengampu.
+        cariJuga: `${h.name} ${pengampu[h.id] ?? ""}`,
+      }))}
+      nilai={nilai}
+      onChange={onChange}
+      placeholderCari="Ketik halaqah atau nama pengampu..."
+      keterangan={keterangan}
+    />
   );
 }

@@ -39,6 +39,9 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - **Dropdown Tahun dan Bulan selalu terpisah dua dropdown.** Jangan pernah membuat satu dropdown berisi "Bulan + Tahun". Saat berganti tahun ajaran, jumlah pilihan bulan tidak boleh bertambah. Pakai komponen `src/components/PemilihTahunBulan.tsx`.
 - **Dropdown halaqah/level/kelompok selalu menampilkan pengampunya**: "HLQ-PA-1 - Ust. Fulan 1" (Al Qur'an: musyrif/ah; Wasilah: pengampu; Ghayah: muallim/ah). Jangan menampilkan kategori Putra/Putri karena sudah terbaca dari kode. Pakai `src/components/PemilihHalaqah.tsx`.
 - **Semua formulir input (dropdown maupun isian) harus terhubung ke database**: nilai yang tersimpan ditampilkan kembali saat dibuka, dan tombol simpan menulis ke tabel Supabase (bukan sekadar state di browser). Bila hak akses menolak, tampilkan pesan galat dari database apa adanya.
+- **Semua dropdown memakai `src/components/DropdownCari.tsx`** (ada kotak pencarian; pengguna cukup mengetik sebagian teks, mis. "qura" menampilkan Quraisy ayat 1, 2, ...). Jangan memakai `<select>` biasa untuk daftar halaqah, santri, item, level, atau bidang.
+- **Pengampu hanya ditawari halaqah yang diampu**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat halaqahnya di halaman Input (`hanyaHalaqahDiampu` di `src/lib/roles.ts`). Hanya Mudir/Admin mengisi semua halaqah. Database (RLS) tetap penjaga terakhir.
+- **Jangan pernah mengambil daftar panjang dengan satu query tanpa batas**: Supabase mengembalikan maksimal 1.000 baris per permintaan. Pakai `ambilSemua` di `src/lib/ambil-semua.ts` atau `range` yang cukup besar.
 
 ## Perintah
 ```

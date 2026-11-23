@@ -4,7 +4,15 @@ import { supabase } from "../lib/supabase";
 import { angka } from "../lib/laporan";
 import { bolehKhatam, putaranUntukSimpan } from "../lib/putaran";
 import { posisiItem } from "../lib/posisi";
+import DropdownCari from "../components/DropdownCari";
 import KonfirmasiPutaran, { type KasusTurun } from "../components/KonfirmasiPutaran";
+
+export interface InfoLalu {
+  /** Teks capaian bulan lalu (label item dari view), bukan angka posisi. */
+  teks: string | null;
+  putaran: number | null;
+  pos: number | null;
+}
 
 export interface BarisInput {
   santri_id: string;
@@ -52,7 +60,7 @@ interface Props {
   setBaris: (b: BarisInput[]) => void;
   items: Item[];
   /** Teks capaian bulan lalu per `santri_id|bidang_id` (label dari view, bukan angka posisi). */
-  labelLalu: Record<string, string | null>;
+  infoLalu: Record<string, InfoLalu>;
   hariEfektif: number | null;
   terkunci: boolean;
   bolehHariEfektifKhusus: boolean;
@@ -72,7 +80,7 @@ export default function FormInputAlQuran({
   baris,
   setBaris,
   items,
-  labelLalu,
+  infoLalu,
   hariEfektif,
   terkunci,
   bolehHariEfektifKhusus,
@@ -420,33 +428,26 @@ export default function FormInputAlQuran({
                       const khatam = !!b.khatamPerBidang[bd.id];
                       return (
                         <div key={bd.id}>
-                          <label
-                            htmlFor={`item-${b.santri_id}-${bd.id}`}
-                            className="block text-xs font-medium text-gray-800"
-                          >
-                            {bd.name}
-                          </label>
-                          <select
+                          <DropdownCari
                             id={`item-${b.santri_id}-${bd.id}`}
-                            value={itemId ?? ""}
-                            onChange={(e) => ubahBidang(b.santri_id, bd.id, e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
-                          >
-                            <option value="">— belum diisi —</option>
-                            {(itemPerBidang[bd.id] ?? []).map((it) => (
-                              <option key={it.id} value={it.id}>
-                                {it.label}
-                              </option>
-                            ))}
-                          </select>
+                            label={bd.name}
+                            opsi={(itemPerBidang[bd.id] ?? []).map((it) => ({
+                              nilai: it.id,
+                              label: it.label,
+                            }))}
+                            nilai={itemId ?? ""}
+                            onChange={(v) => ubahBidang(b.santri_id, bd.id, v)}
+                            opsiKosong="— belum diisi —"
+                            placeholderCari={`Cari ${bd.name} (mis. "qura")...`}
+                          />
                           {item && (
                             <p className="mt-1 text-[11px] text-gray-600">
                               {(() => {
-                                const teksLalu = labelLalu[`${b.santri_id}|${bd.id}`];
-                                if (teksLalu) {
+                                const info = infoLalu[`${b.santri_id}|${bd.id}`];
+                                if (info?.teks) {
                                   return (
                                     <>
-                                      Bulan lalu: <span className="text-gray-800">{teksLalu}</span>
+                                      Bulan lalu: <span className="text-gray-800">{info.teks}</span>
                                       {pLalu !== null ? ` (putaran ${pLalu})` : ""}
                                     </>
                                   );
