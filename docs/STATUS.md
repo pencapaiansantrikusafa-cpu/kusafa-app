@@ -78,7 +78,7 @@ Tidak ada migrasi baru setelah T1. Perubahan skema berikutnya wajib memakai nomo
 - Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **19 fungsi** di skema `public` (daftar lengkap di `docs/FILE-MAP.md`).
+- **18 fungsi** di skema `public` (daftar lengkap di `docs/FILE-MAP.md`).
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`.
 
 ### Isi seed (data dummy, hasil hitung langsung)
