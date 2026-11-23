@@ -10,6 +10,7 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 3. `supabase/migrations/*.sql` - skema database yang sudah ditetapkan.
 4. `prompts/OPENCODE.md` - urutan tugas. Kerjakan satu tugas per sesi.
    Keputusan dan catatan per tahap (T6-T10) ada di `docs/CATATAN-TAHAPAN.md`; baca sebelum mulai tahap terkait. Urutan tugas tidak berubah.
+5. `docs/HANDOVER.md` - serah terima keadaan proyek: status tiap tahap, berkas yang diubah, keputusan yang tidak boleh berubah, status Supabase, dan perintah.
 
 ## Stack
 - Frontend: Vite + React + TypeScript + Tailwind CSS + react-router-dom. Hasil build berupa file statis (`dist/`).

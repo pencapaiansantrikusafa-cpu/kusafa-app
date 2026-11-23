@@ -9,6 +9,27 @@ Dokumen acuan (di akun Claude pemilik proyek): "KUSAFA - System Design" dan papa
 Diperbarui: 23 November 2026. Bagian ini diperbarui setiap selesai satu tahap atau satu tugas.
 Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 
+**Ringkas:** T1-T5 **SELESAI** (termasuk T5b dan perbaikan masukan 23 Nov 2026). **T6-T10 BELUM** dan dikerjakan berurutan sesuai `prompts/OPENCODE.md`.
+Serah terima lengkap (daftar berkas per tahap, keputusan teknis yang tidak boleh berubah, status Supabase, langkah berikutnya, perintah) ada di **`docs/HANDOVER.md`**. Catatan khusus per tahap T6-T10 ada di **`docs/CATATAN-TAHAPAN.md`**.
+
+| Bagian | Status |
+|---|---|
+| A-G (alat, proyek, Git, Supabase, seed, uji lokal, Vercel) | Selesai |
+| T1 (migrasi + seed) | Selesai |
+| T2 Login & menu per role | Selesai |
+| T3 Tabel capaian Al Qur'an | Selesai |
+| T4 Halaman satu santri | Selesai |
+| T5 Input capaian Al Qur'an (+ T5b) | Selesai |
+| T6 Wasilah & Ghayah | Belum |
+| T7 Target dinamis | Belum |
+| T8 Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | Belum |
+| T9 Pengujian & QA (RLS otomatis) | Belum |
+| T10 Deploy akhir (hapus data dummy, repo privat) | Belum |
+
+Pemeriksaan terakhir (23 Nov 2026): `npm run typecheck` hijau, `npm run test` 6/6 lulus, `npm run build` berhasil, `python scripts/check_repo_safety.py` lolos. Rincian tiap tahap ada di `docs/HANDOVER.md` bagian 1-2.
+
+**Tabel rincian tahap A-G** (arsip)
+
 | Tahap | Status | Hasil |
 |---|---|---|
 | A - Pemeriksaan alat | Selesai | Node 26.13, npm 11.20, Python 3.12.16, git 2.39, gh 2.105. Tidak ada yang perlu dipasang. |
@@ -18,12 +39,9 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 | E - Seed data uji | Selesai | `build_seed.py`: BERHASIL, 0 galat, 25 peringatan (Tilawah mundur/khatam, wajar). Data masuk ke Supabase: 9 bidang, 158 buku, 10954 item, 109 santri, 38 halaqah, 327 target, 2036 capaian, 599 presensi, 24 akun dummy. |
 | F - Uji lokal | Selesai | `npm run dev` jalan di http://localhost:5173/ ; halaman menampilkan "Tersambung ke Supabase." tanpa galat konsol. |
 | G - Vercel | Selesai | Situs live: https://kusafa-app.vercel.app — "Tersambung ke Supabase." tanpa galat. Repo GitHub terhubung (deploy otomatis tiap push). Environment di Vercel hanya `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` (Production/Preview/Development). Site URL Supabase diatur manual di dashboard. |
-| H - Laporan akhir & T2-T10 | Berjalan | T2, T3, T4, T5 selesai; T6-T10 belum. |
 | T2 - Login & kerangka | Selesai | Halaman login bahasa Indonesia, profil dari `profiles`, menu sesuai role (Mudir/Admin 6 menu; Masul 5; Musyrif/ah, Mudarris/ah 3). Diuji: 7 role login OK, form login OK, pesan galat saat sandi salah OK. `typecheck` & `build` hijau. |
 | T3 - Tabel capaian Al Qur'an | Selesai | Tabel per halaqah + bulan (bulan pembanding otomatis), kolom Hadir/HE, Lalu/Kini/Selisih per bidang, target bulanan. Sorotan `di bawah target` (merah muda) dan `⚠ kurang` (kuning) disertai teks. Sel kosong tampil "belum diisi", bukan 0. Bulan default = bulan terakhir yang berisi data. Tabel Wasilah & Ghayah masih versi dasar (dirapikan di T6). |
 | T4 - Halaman satu santri | Selesai | `/santri/:id` — pilih domain (Al Qur'an/Wasilah/Ghayah) dan rentang (Semester 1 / Semester 2 / Satu tahun). Grafik (SVG sendiri, tanpa pustaka), garis diputus pada bulan kosong. Sejak 23 Nov: **Tilawah, Tahfidz, dan Kitabah dalam satu kotak grafik**, dan **kehadiran di grafik terpisah** (pilihan "satu kotak gabungan semua" dihapus). Tabel riwayat dengan posisi kumulatif, selisih, Hadir/HE, target. Nama santri di tabel capaian bisa diketuk. |
-| T5 - Input capaian Al Qur'an | Selesai | Pilih halaqah dan Tahun/Bulan (dua dropdown terpisah), daftar santri per halaqah, isian per bidang (Tilawah, Tahfidz, Kitabah) dari item aktif, izin/sakit/alpha, Hari Efektif khusus (hanya Mudir/Admin), catatan, saringan "Semua / Belum lengkap / Sudah ada data", penanda warna disertai teks. Simpan ke `attendance`, `monthly_notes`, `progress_entries`; nilai tersimpan tampil lagi saat dibuka; bulan terkunci ditolak database dan pesannya ditampilkan apa adanya. **Putaran Tilawah:** centang "khatam, mulai putaran baru" hanya muncul untuk item di buku siklik (Tilawah Al Qur'an) dan selalu memakai putaran bulan lalu + 1. Bila capaian lebih kecil dari bulan lalu, aplikasi berhenti dan bertanya "Pengulangan atau khatam?" (tidak menebak). Mengubah bulan lampau yang bulan sesudahnya sudah terisi memunculkan peringatan agar putaran bulan berikutnya ditinjau. Berkas utama: `src/lib/putaran.ts` (aturan putaran), `src/components/KonfirmasiPutaran.tsx` (konfirmasi sebelum simpan), `src/pages/FormInputAlQuran.tsx` (formulir). Diuji dengan `npm run test`. |
-| T5b - Perbaikan masukan 23 Nov 2026 | Selesai | (1) **Dropdown pencarian** di semua dropdown (`src/components/DropdownCari.tsx`): tahun, bulan, halaqah (kode atau nama pengampu), dan setiap bidang (mis. ketik "qura" → hanya "Juz 'Amma - Quraisy : 1..4"). Komponen ini wajib dipakai untuk dropdown baru. (2) **Hak isi sesuai amanah**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat dan mengisi halaqah yang diampu di halaman Input; database (RLS) sudah menolak halaqah lain dan diuji ulang — insert capaian, kehadiran, dan catatan ke halaqah guru lain ditolak. (3) **Notifikasi "Data belum lengkap"** di halaman Input: daftar santri per halaqah yang belum punya capaian dari awal tahun sampai bulan terpilih (bisa ditutup), dibatasi halaqah sendiri untuk pengampu. (4) Grafik santri: satu kotak untuk Tilawah/Tahfidz/Kitabah, kehadiran terpisah. (5) **Bug data terpotong**: Supabase hanya mengembalikan maksimal 1.000 baris per permintaan; pilihan Tilawah sebelumnya terpotong (74 dari 1.464) dan notifikasi bisa salah menghitung. Kini semua daftar panjang diambil bertahap (`src/lib/ambil-semua.ts`). |
 
 **Pemeriksaan serah terima 22 November 2026**
 - `npm run typecheck` hijau, `npm run build` berhasil, dan `npm run test` lulus 6 uji (99 modul; bundel 460,65 kB, gzip 131,42 kB).
