@@ -151,12 +151,9 @@ export default function NavLinks({ items, ringkas = false, onNavigate }: Props) 
             {bukaSub && item.children && (
               <ul
                 id={`submenu-${item.key}`}
-                className={
-                  ringkas
-                    ? // Mode ikon: submenu melayang ke samping agar tetap terbaca.
-                      "absolute left-full top-0 z-30 ml-2 w-44 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/10"
-                    : "mt-1 ml-3 space-y-0.5 border-l border-kusafa/20 pl-3"
-                }
+                // Submenu di pohon menu disimpan dalam alur (bukan melayang ke samping),
+                // agar tidak menutupi form di sebelahnya (dulu menumpuk dropdown Tahun).
+                className="relative z-10 mt-1 ml-2 space-y-0.5 rounded-lg border-l border-kusafa/20 py-1 pl-3"
               >
                 {item.children.map((c) => {
                   const sa = subAktif(c.path, pathname);

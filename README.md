@@ -45,6 +45,9 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - **Ringkasan "x/y terisi" per bulan** tampil sebagai deretan label per bulan ("Muharram 99/109"), hijau bila tuntas, kuning bila belum. Angkanya dihitung dari santri dalam lingkup yang boleh dilihat.
 - **Lingkup dan saringan:** Mudir, Admin, dan Masul Al Quran melihat seluruh halaqah dan bisa **menyaring per halaqah** (dropdown pencarian "Lihat per halaqah"). Musyrif/ah (dan Mudarris/ah) hanya melihat halaqahnya sendiri, dengan ringkasan "N santri yang Anda ampu belum lengkap".
 - **"Lengkap"** = santri punya capaian di **semua bidang aktif** bulan itu (Tilawah + Tahfidz + Kitabah). Santri yang hanya terisi satu bidang tetap dihitung belum lengkap.
+- **Dropdown halaqah di notifikasi** selalu memuat nama musyrif/ah ("HLQ-PA-4 - Ust. Fulan 3"; "musyrif/ah belum ditetapkan" bila kosong), sesuai aturan AGENTS.md.
+- **Tabel notifikasi:** kepala kolom tetap terlihat saat digulir ke bawah dan kolom Santri dibekukan di kiri saat digeser ke samping (HP sempit).
+- **Submenu Capaian di menu samping** kini ikut alur menu (tidak melayang ke samping), sehingga tidak lagi menutupi dropdown Tahun Hijriyah.
 
 **Pertanyaan terbuka**
 - **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.

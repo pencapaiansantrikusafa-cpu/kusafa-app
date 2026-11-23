@@ -35,6 +35,11 @@ interface SantriKurang {
   jumlahBulan: number;
 }
 
+/** Label baku halaqah: "HLQ-PA-4 - Ust. Fulan 3" (nama musyrif/ah selalu ikut). */
+function labelHalaqahNotif(code: string, musyrif: string): string {
+  return musyrif ? `${code} - ${musyrif}` : `${code} - musyrif/ah belum ditetapkan`;
+}
+
 /**
  * Pemberitahuan "data belum lengkap" dari awal tahun sampai bulan berjalan.
  *
@@ -61,6 +66,8 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     bulan: RingkasBulan[];
     santri: SantriKurang[];
     halaqah: { id: string; code: string }[];
+    /** Peta halaqah -> nama musyrif/ah (untuk label dropdown). */
+    musyrif: Record<string, string[]>;
   } | null>(null);
 
   const boleh = !!profile;
@@ -133,7 +140,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
         }
         const idHalaqah = halaqah.map((h) => h.id);
         if (idHalaqah.length === 0 || bidang.length === 0) {
-          if (aktif) setData({ bulan: [], santri: [], halaqah: [] });
+          if (aktif) setData({ bulan: [], santri: [], halaqah: [], musyrif: {} });
           return;
         }
 
@@ -202,7 +209,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
         });
 
         if (!aktif) return;
-        setData({ bulan: ringkas, santri, halaqah });
+        setData({ bulan: ringkas, santri, halaqah, musyrif: Object.fromEntries(musyrifPeta) });
       } catch (e) {
         if (aktif) setGalat(e instanceof Error ? e.message : String(e));
       } finally {
@@ -215,10 +222,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
   }, [bulanId, boleh, batasiAmanah, profile]);
 
   // Halaqah yang boleh dipilih di saringan.
-  const pilihanHalaqah = useMemo(() => {
-    if (!data) return [];
-    return data.halaqah;
-  }, [data]);
+  const musyrifMap = data?.musyrif ?? {};
 
   const santriTampil = useMemo(() => {
     if (!data) return [];
@@ -270,10 +274,18 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
               <DropdownCari
                 id="belum-lengkap-halaqah"
                 label="Lihat per halaqah"
-                opsi={data.halaqah.map((h) => ({ nilai: h.id, label: h.code }))}
+                opsi={data.halaqah.map((h) => ({
+                  nilai: h.id,
+                  label: labelHalaqahNotif(
+                    h.code,
+                    (musyrifMap[h.id] ?? []).join(", "),
+                  ),
+                  cariJuga: (musyrifMap[h.id] ?? []).join(", "),
+                }))}
                 nilai={saringHalaqah}
                 onChange={setSaringHalaqah}
                 opsiKosong="Semua halaqah"
+                placeholderCari="Ketik kode halaqah atau nama musyrif/ah..."
               />
             </div>
           )}
@@ -321,11 +333,18 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
                 Kosong berarti belum diisi, bukan 0. Hubungi musyrif/ah terkait, atau isi sendiri bila
                 Anda berhak. Total {santriTampil.length} santri belum lengkap.
               </p>
-              <div className="max-h-80 overflow-y-auto">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
+              {/* Kepala tabel tetap terlihat saat daftar digulir; kolom Santri
+                  dibekukan di kiri agar tetap terbaca di HP sempit. */}
+              <div className="max-h-80 overflow-auto rounded-lg ring-1 ring-black/5">
+                <table className="w-full min-w-[640px] border-collapse text-sm">
+                  <thead className="sticky top-0 z-10">
                     <tr className="bg-kusafa-light text-left text-xs uppercase tracking-wide text-kusafa">
-                      <th scope="col" className="px-2 py-2">Santri</th>
+                      <th
+                        scope="col"
+                        className="sticky left-0 z-20 bg-kusafa-light px-2 py-2 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+                      >
+                        Santri
+                      </th>
                       <th scope="col" className="px-2 py-2">Halaqah</th>
                       <th scope="col" className="px-2 py-2">Musyrif/ah</th>
                       <th scope="col" className="px-2 py-2">Bulan belum lengkap</th>
@@ -334,7 +353,10 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
                   <tbody>
                     {santriTampil.slice(0, 200).map((s) => (
                       <tr key={s.id} className="border-t border-black/5 align-top">
-                        <th scope="row" className="px-2 py-2 text-left font-medium text-gray-900">
+                        <th
+                          scope="row"
+                          className="sticky left-0 z-10 whitespace-nowrap bg-white px-2 py-2 text-left font-medium text-gray-900 shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+                        >
                           {s.nama}
                         </th>
                         <td className="whitespace-nowrap px-2 py-2 text-gray-700">{s.halaqah}</td>
