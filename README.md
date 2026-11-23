@@ -57,11 +57,18 @@ Pemeriksaan terakhir (23 Nov 2026, sesi uji T5 di browser): `npm run typecheck` 
 - Catatan untuk pengembangan berikutnya: setiap query Supabase **wajib** memakai `ambilSemua` (atau `range` yang cukup besar) bila barisnya bisa lebih dari 1.000.
 
 **Pemeriksaan 23 November 2026 (uji browser T5, akun Musyrif/ah HLQ-PA-1)**
-- Simpan sungguhan dari browser berhasil: 3 bidang terisi → tertulis ke `progress_entries`, tampil lagi setelah muat ulang, halaqah menjadi 7/7 terisi. Data uji sudah dihapus kembali (2.036 capaian, 606 presensi).
+- Simpan sungguhan dari browser berhasil: 3 bidang terisi → tertulis ke `progress_entries`, tampil lagi setelah muat ulang, halaqah menjadi 7/7 terisi. Data uji sudah dihapus kembali (2.036 capaian, 599 presensi).
 - Konfirmasi "Pengulangan atau khatam?" muncul untuk capaian yang lebih kecil dari bulan lalu dan menahan simpan sampai dijawab.
 - Dua cacat diperbaiki: ringkasan kehadiran menampilkan "0" untuk bulan yang belum diisi (kini "—"), dan item dropdown terduplikasi (kunci ganda React) karena memo mengubah state.
-- Diketahui, belum diperbaiki (menunggu keputusan): dropdown item hanya menampilkan 60 hasil pertama; label item Al Qur'an dan Tahfidz tumpang tindih.
 
+**Perbaikan 23 November 2026 (lanjutan, keputusan Mudir)**
+- **Dropdown selalu melayang di atas semua isi** (portal ke `<body>`, lapisan 60). Sebelumnya panel Bulan tertutup kotak notifikasi dan bisa terpotong kartu. Bila ruang di bawah sempit, panel terbuka ke atas. Berlaku untuk semua dropdown, termasuk yang dibuat nanti.
+- **Cari dengan nomor**: `88` → "Kitabah · Menyalin - 88" peringkat pertama; `menyalin 88` juga ketemu. Panel menulis "Menampilkan 60 dari N".
+- **Label item memakai mata pelajaran**: "Tahfidz · An Naba' - 40". Buku Juz 'Amma dipakai Tilawah dan Kitabah sehingga label mentah bisa sama.
+- **Dialog konfirmasi memakai teks dropdown**, bukan angka posisi.
+- **Konfirmasi hanya untuk bidang yang diubah**; bidang yang sudah mundur tetapi tidak disentuh diberi penanda ⚠ (bukan pertanyaan). Selisih dibaca dari `v_monthly_report`.
+- **Data Ramadhan dirapikan**: 7 baris presensi nol tanpa capaian dihapus. Presensi 606 → 599.
+- Data uji yang mundur (43 kejadian) **dibiarkan** atas keputusan Mudir karena dummy (dihapus di T10).
 **Notifikasi "Data belum lengkap" — keputusan Mudir 23 Nov 2026**
 - **Batas bulan (opsi B):** yang diperiksa hanya bulan dari awal tahun sampai **bulan yang sudah berjalan**. Penandanya: bulan itu sudah punya Hari Efektif di `month_domain_settings` untuk domain tersebut. Bulan yang belum dimulai tidak dihitung, sehingga tidak dianggap kelalaian. Judul kotak: "awal tahun sampai bulan berjalan".
 - **Kolom musyrif/ah** ada di tabel (nama dari `halaqah_teachers`; "belum ditetapkan" bila kosong). Kolom pengampu Wasilah/Ghayah ditambahkan saat T6.

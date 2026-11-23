@@ -54,6 +54,16 @@ Catatan: T5 sudah ditutup atas permintaan pemilik proyek, lalu ditegaskan lagi o
   1. Ringkasan baris menulis `izin 0, sakit 0, alpha 0` untuk bulan yang belum diisi kehadiran (melanggar "kosong bukan 0"). Kini kosong tampil "—" (`FormInputAlQuran.tsx`).
   2. Peringatan React "dua anak dengan kunci sama" di dropdown item: `useMemo` `itemPerBidang` ikut mengubah array state, sehingga Mode Ketat React menduplikasi item. Kini memo murni. Sebelumnya ini membuat satu pilihan bisa muncul/terpilih ganda.
 
+### Perbaikan 23 Nov 2026 (sesi lanjutan, atas keputusan Mudir)
+1. **Dropdown selalu melayang di atas semua isi.** Panel pilihan kini dipindahkan ke `<body>` (portal) dan diberi lapisan tertinggi `LAPISAN_DROPDOWN = 60` di `src/components/DropdownCari.tsx`. Sebelumnya `absolute z-30` sehingga terpotong bingkai bergulir/`rounded-xl` kartu dan tertutup kotak notifikasi. Bila ruang di bawah sempit, panel terbuka ke atas agar tetap tampil lengkap. Berlaku untuk semua dropdown lama maupun yang dibuat nanti.
+2. **Pencarian dropdown mengutamakan nomor.** Mengetik `88` atau `menyalin 88` menampilkan "Kitabah · Menyalin - 88" di urutan pertama. Bisa beberapa kata (semua harus cocok). Bila hasil terpotong, panel menulis "Menampilkan 60 dari N. Ketik nomor atau nama untuk mempersempit." (sebelumnya tidak ada keterangan, sehingga terasa item hilang).
+3. **Label item memakai nama mata pelajaran**: "Tilawah · Al Qur'an - 29", "Tahfidz · An Naba' - 40", "Kitabah · Menyalin - 88". Alasan: buku yang sama dipakai lebih dari satu mata pelajaran (mis. Juz 'Amma di Tilawah dan Kitabah) dengan urutan dan fokus berbeda, sehingga label mentah bisa sama.
+4. **Dialog konfirmasi memakai teks dropdown, bukan angka posisi**: "Bulan lalu Al Qur'an - 380 → dipilih Tilawah · Juz 'Amma - Quraisy : 1 (selisih -397)". Judul baris memakai nama mata pelajaran agar tidak tertukar.
+5. **Konfirmasi hanya untuk bidang yang benar-benar diubah** pada kunjungan itu (keputusan Mudir: opsi C). Bidang yang capaiannya sudah lebih kecil dari bulan lalu tetapi **tidak disentuh** diberi **penanda teks** ⚠ ("Tersimpan lebih kecil dari bulan lalu (selisih -116). Tidak diubah — pilih ulang bila ini pengulangan yang disengaja."), bukan pertanyaan. Selisihnya dibaca dari `v_monthly_report.selisih` (tidak dihitung di React).
+6. **Data Ramadhan dirapikan**: 7 baris `attendance` Ramadhan 1447 (izin/sakit/alpha semuanya 0, tanpa Hari Efektif, tanpa capaian) dihapus atas persetujuan Mudir. Presensi kembali **599** baris, capaian tetap **2.036**.
+
+Diuji di browser (Musyrif/ah HLQ-PA-1, Rabiul Akhir 1447 H): dropdown Bulan tidak terpotong; `88` → "Menyalin - 88" peringkat pertama; klik Simpan tanpa mengubah apa pun **tidak** memunculkan pertanyaan; mengubah satu bidang memunculkan pertanyaan **hanya** untuk bidang itu dengan teks dropdown; panel di bagian bawah halaman terbuka ke atas dan tampil penuh; konsol tanpa galat.
+
 ### Belum
 - **Belum ada layar untuk mengisi Hari Efektif** (menu Pengaturan masih kosong). Sampai T8, Hari Efektif hanya diisi lewat SQL/dashboard. Akibatnya bulan yang belum diisi Hari Efektifnya tidak diperiksa oleh notifikasi.
 - Hanya domain Al Qur'an; input Wasilah & Ghayah di T6.
@@ -63,9 +73,10 @@ Catatan: T5 sudah ditutup atas permintaan pemilik proyek, lalu ditegaskan lagi o
 - Batas **1.000 baris** per permintaan Supabase; semua daftar panjang sudah memakai `ambilSemua`.
 - Query item ±4,7 detik untuk ~1.000 baris (butuh beberapa permintaan karena diambil per buku). Bisa dipercepat dengan view/migrasi baru bila perlu (belum dikerjakan, perlu izin karena menambah migrasi).
 - Kolom pengampu di notifikasi baru musyrif/ah Al Qur'an (pengampu Wasilah, muallim/ah Ghayah menyusul T6).
-- **Dropdown item hanya menampilkan 60 hasil pertama** yang cocok (`batasTampil`, belum ada gulir-tambah). Contoh: pada Kitabah, mencari "menyalin" berhenti di "Menyalin - 60" sehingga "Menyalin - 88" tidak tercapai; harus mengetik label utuh. Saran perbaikan: tampilkan lebih banyak saat kata kunci mendekati label, atau "muat lebih banyak". Belum dikerjakan (perlu keputusan Mudir).
-- **Label item Al Qur'an dan Tahfidz tumpang tindih** ("Al Ghasyiyah - 26" ada di dua bidang). Aman karena dropdown dipisah per bidang, tetapi bisa membingungkan pengguna. Perlu keputusan apakah label diberi nama buku di depan.
-- **Bulan 12 (Ramadhan) punya 7 baris presensi tanpa capaian dan tanpa Hari Efektif**. Untuk data uji ini tidak masalah; Mohon dipastikan ini memang disengaja sebelum T9.
+- **Dropdown item hanya menampilkan 60 hasil pertama** yang cocok (`batasTampil`). Sudah diringankan dengan pencarian nomor dan keterangan "Menampilkan 60 dari N", tetapi memilih item ke-61 dan seterusnya tetap harus lewat pencarian yang lebih spesifik. Bila nanti terasa menghambat, pertimbangkan "muat lebih banyak".
+- **Label item Al Qur'an dan Tahfidz tumpang tindih** ("Al Ghasyiyah - 26" ada di dua bidang). Sudah diatasi dengan awalan nama mata pelajaran; label di dalam database tidak diubah.
+- **43 capaian pada data uji lebih kecil dari bulan sebelumnya** (Tahfidz 27, Kitabah 26, Tilawah 16). Keputusan Mudir: **dibiarkan** karena data dummy dan akan dihapus di T10 (opsi B). Efeknya: bidang seperti ini tampil dengan penanda ⚠, dan tidak lagi ditanyakan bila tidak diubah.
+- **Bulan 12 (Ramadhan) dulu punya 7 baris presensi tanpa capaian dan tanpa Hari Efektif** — sudah dihapus 23 Nov 2026 (semuanya nol).
 
 ### Langkah berikutnya yang konkret
 1. Mulai **T6**: tabel & input Wasilah/Ghayah sesuai `docs/SPEC.md` §2 dan §5.6. Satu isian per halaqah + mata pelajaran, disalin ke semua anggota aktif; perubahan anggota kemudian tidak mengubah baris lama.
@@ -88,7 +99,7 @@ Catatan: T5 sudah ditutup atas permintaan pemilik proyek, lalu ditegaskan lagi o
 - `month_domain_settings.effective_days` = Hari Efektif per bulan per domain; **dipakai sebagai penanda "bulan sudah berjalan"** pada notifikasi (keputusan opsi B, 23 Nov 2026).
 
 ### Komponen dan pola frontend yang wajib dipakai
-- `src/components/DropdownCari.tsx` - **semua** dropdown (pencarian). Jangan `<select>` biasa.
+- `src/components/DropdownCari.tsx` - **semua** dropdown (pencarian). Jangan `<select>` biasa. Panel dilayangkan ke `<body>` dengan `LAPISAN_DROPDOWN = 60`; jangan dikembalikan ke `absolute z-30` (terpotong bingkai/tertutup notifikasi).
 - `src/components/PemilihTahunBulan.tsx` - dua dropdown terpisah; tidak pernah digabung.
 - `src/components/PemilihHalaqah.tsx` - label "HLQ-PA-1 - Ust. Fulan 1"; `ambilGuru()`/`halaqahDiampu()` untuk menyaring amanah.
 - `src/lib/roles.ts` - `hanyaHalaqahDiampu()` (Masul/Musyrif/Mudarris), `batasiPemberitahuan()`, `isPeninjau()`.

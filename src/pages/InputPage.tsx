@@ -153,7 +153,7 @@ export default function InputPage() {
     const bulanLaluNama = idx > 0 ? bulanList[idx - 1].name : "";
     const bulanSetelahIds = idx >= 0 ? bulanList.slice(idx + 1).map((b) => b.id) : [];
 
-    const [st, capaian, presensi, catatan, itemBuku, laporanLalu, setelah] = await Promise.all([
+    const [st, capaian, presensi, catatan, itemBuku, laporanLalu, laporanKini, setelah] = await Promise.all([
       supabase.from("students").select("id, full_name").in("id", anggota).order("full_name"),
       supabase
         .from("progress_entries")
@@ -212,6 +212,14 @@ export default function InputPage() {
             .eq("month_id", bulanLaluId)
             .eq("domain", DOMAIN)
         : Promise.resolve({ data: [], error: null }),
+      // Isi tersimpan bulan ini menurut database (pos, selisih, teks). Dipakai untuk
+      // menandai bidang yang sudah mundur tetapi tidak diubah — tanpa menghitung di React.
+      supabase
+        .from("v_monthly_report")
+        .select("student_id, subject_id, pos, putaran, item_label, prev_item_label, selisih")
+        .eq("halaqah_id", halaqahId)
+        .eq("month_id", bulanId)
+        .eq("domain", DOMAIN),
       // Apakah bulan sesudahnya sudah terisi (untuk peringatan peninjauan putaran).
       bulanSetelahIds.length > 0 && anggota.length > 0
         ? ambilSemua<{ student_id: string; subject_id: string }>((awal, jumlah) =>
@@ -233,6 +241,7 @@ export default function InputPage() {
       catatan.error ??
       itemBuku.error?.message ??
       laporanLalu.error ??
+      laporanKini.error ??
       setelah.error;
     if (galat2) {
       setGalat(typeof galat2 === "string" ? galat2 : galat2.message);
@@ -241,6 +250,14 @@ export default function InputPage() {
     }
 
     // Gabungkan item per buku menjadi satu daftar sesuai urutan buku.
+    // Label diberi nama mata pelajaran di depan ("Tahfidz · An Naba' - 40"): beberapa
+    // buku dipakai lebih dari satu mata pelajaran (mis. Juz 'Amma di Tilawah dan
+    // Kitabah), sehingga label mentah bisa sama dan membingungkan.
+    const namaBidang = new Map(bidangList.map((b) => [b.id, b.name]));
+    const berlabel = (subjectId: string, label: string) => {
+      const nama = namaBidang.get(subjectId);
+      return nama ? `${nama} · ${label}` : label;
+    };
     const daftarItem: Item[] = [];
     if ("buku" in itemBuku && itemBuku.buku && itemBuku.perBuku) {
       itemBuku.buku.forEach((bk, i) => {
@@ -248,7 +265,7 @@ export default function InputPage() {
           daftarItem.push({
             id: it.id,
             subject_id: bk.subject_id,
-            label: it.label,
+            label: berlabel(bk.subject_id, it.label),
             value: it.value,
             siklik: !!bk.is_cyclic,
           });
@@ -288,7 +305,13 @@ export default function InputPage() {
     for (const c of barisCapaian) {
       const ci = Array.isArray(c.curriculum_items) ? c.curriculum_items[0] : c.curriculum_items;
       if (ci?.label)
-        tambahan.push({ id: c.item_id, subject_id: c.subject_id, label: ci.label, value: null, siklik: false });
+        tambahan.push({
+          id: c.item_id,
+          subject_id: c.subject_id,
+          label: berlabel(c.subject_id, ci.label),
+          value: null,
+          siklik: false,
+        });
     }
     setItemTambahan(tambahan);
 
@@ -298,6 +321,19 @@ export default function InputPage() {
       petaInfo[kunci] = { teks: r.item_label ?? null, putaran: r.putaran ?? null, pos: r.pos ?? null };
     }
     setInfoLalu(petaInfo);
+
+    // Isi tersimpan bulan ini menurut view (pos, selisih, teks) — untuk penanda "sudah mundur".
+    const petaKini = new Map(
+      ((laporanKini.data ?? []) as unknown as Array<{
+        student_id: string;
+        subject_id: string;
+        pos: number | null;
+        putaran: number | null;
+        item_label: string | null;
+        prev_item_label: string | null;
+        selisih: number | null;
+      }>).map((r) => [`${r.student_id}|${r.subject_id}`, r]),
+    );
 
     // Hanya baris pada bulan yang sedang dibuka (jaga-jaga bila ada baris lain).
     const barisPresensi = (presensi.data ?? []).filter((p) => p.month_id === bulanId);
@@ -314,6 +350,7 @@ export default function InputPage() {
         const posLalu: Record<string, number | null> = {};
         const putaranLalu: Record<string, number | null> = {};
         const adaBulanSetelah: Record<string, boolean> = {};
+        const selisihTersimpan: Record<string, number | null> = {};
         for (const bd of bidangList) {
           const kunci = `${s.id}|${bd.id}`;
           itemPerBidang[bd.id] = petaCapaian.get(kunci) ?? null;
@@ -324,6 +361,7 @@ export default function InputPage() {
           posLalu[bd.id] = lalu?.pos ?? null;
           putaranLalu[bd.id] = lalu?.putaran ?? null;
           adaBulanSetelah[bd.id] = petaSetelah.has(kunci);
+          selisihTersimpan[bd.id] = petaKini.get(kunci)?.selisih ?? null;
         }
         return {
           santri_id: s.id,
@@ -342,6 +380,7 @@ export default function InputPage() {
           posLalu,
           putaranLalu,
           adaBulanSetelah,
+          selisihTersimpan,
         };
       }),
     );

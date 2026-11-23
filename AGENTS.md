@@ -26,6 +26,7 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
   Jangan membuat asumsi sendiri, termasuk saat seed.
 - Tulis nama role selengkapnya di kode, teks UI, dan dokumen: **Masul Al Quran**, **Masul Wasilah**, **Masul Ghayah** (enum: `masul_alquran`, `masul_wasilah`, `masul_ghayah`). Jangan menulis "masul" saja.
 - Selisih capaian **boleh negatif** (santri mengulang). Tampilkan apa adanya; jangan dianggap galat dan jangan dipaksa 0.
+- Konfirmasi "pengulangan atau khatam" **hanya ditanyakan untuk bidang yang benar-benar diubah pada kunjungan itu**. Bidang yang capaiannya sudah lebih kecil dari bulan lalu tetapi tidak disentuh cukup diberi **penanda teks** (⚠), bukan pertanyaan.
 - Bulan yang belum diinput **kosong**, bukan 0 (di tabel dan grafik).
 - Item kurikulum yang sudah dipakai capaian tidak boleh dihapus, hanya dinonaktifkan (`is_active = false`).
 - Data santri (nama, NIS, capaian) adalah data pribadi anak-anak: jangan di-commit, jangan dikirim ke layanan pihak ketiga, jangan masuk log.
@@ -42,6 +43,9 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - **Dropdown halaqah/level/kelompok selalu menampilkan pengampunya**: "HLQ-PA-1 - Ust. Fulan 1" (Al Qur'an: musyrif/ah; Wasilah: pengampu; Ghayah: muallim/ah). Jangan menampilkan kategori Putra/Putri karena sudah terbaca dari kode. Pakai `src/components/PemilihHalaqah.tsx`.
 - **Semua formulir input (dropdown maupun isian) harus terhubung ke database**: nilai yang tersimpan ditampilkan kembali saat dibuka, dan tombol simpan menulis ke tabel Supabase (bukan sekadar state di browser). Bila hak akses menolak, tampilkan pesan galat dari database apa adanya.
 - **Semua dropdown memakai `src/components/DropdownCari.tsx`** (ada kotak pencarian; pengguna cukup mengetik sebagian teks, mis. "qura" menampilkan Quraisy ayat 1, 2, ...). Jangan memakai `<select>` biasa untuk daftar halaqah, santri, item, level, atau bidang.
+- **Panel dropdown selalu melayang di lapisan tertinggi** (`LAPISAN_DROPDOWN = 60` di `DropdownCari`), karena panelnya dipindahkan ke `<body>` (portal) dan diposisikan sendiri. Jangan kembali ke `absolute z-30`: panel seperti itu terpotong oleh kartu/tabel/bingkai bergulir dan tertutup notifikasi. Halaman atau komponen baru tidak perlu mengurus lapisan ini — cukup memakai `DropdownCari`.
+- **Pencarian dropdown mengutamakan nomor**: mengetik "88" atau "menyalin 88" langsung menampilkan "Kitabah · Menyalin - 88" di urutan pertama. Bila hasil terpotong, panel menulis "Menampilkan 60 dari N" — jangan menghapus keterangan itu.
+- **Label item selalu memakai nama mata pelajaran di depan**: "Tahfidz · An Naba' - 40". Buku yang sama dipakai lebih dari satu mata pelajaran (mis. Juz 'Amma di Tilawah dan Kitabah) dengan urutan dan fokus berbeda, sehingga label mentah bisa sama. Aturan ini berlaku untuk halaman Input dan halaman lain yang menampilkan pilihan item.
 - **Pengampu hanya ditawari halaqah yang diampu**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat halaqahnya di halaman Input (`hanyaHalaqahDiampu` di `src/lib/roles.ts`). Hanya Mudir/Admin mengisi semua halaqah. Database (RLS) tetap penjaga terakhir.
 - **Jangan pernah mengambil daftar panjang dengan satu query tanpa batas**: Supabase mengembalikan maksimal 1.000 baris per permintaan. Pakai `ambilSemua` di `src/lib/ambil-semua.ts` atau `range` yang cukup besar.
 

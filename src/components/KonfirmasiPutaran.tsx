@@ -5,9 +5,14 @@ export interface KasusTurun {
   /** Kunci unik `${santri_id}|${bidang_id}`. */
   kunci: string;
   santriNama: string;
-  bidangNama: string;
+  /** Nama mata pelajaran (Tilawah/Tahfidz/Kitabah) agar tidak tertukar dengan bidang lain. */
+  mataPelajaran: string;
   posLalu: number;
   posKini: number;
+  /** Teks pilihan bulan lalu (label dropdown), bukan angka posisi. */
+  teksLalu: string | null;
+  /** Teks pilihan yang baru dipilih (label dropdown), bukan angka posisi. */
+  teksKini: string | null;
   /** Buku siklik (Tilawah Al Qur'an): pilihan Khatam menaikkan putaran. */
   siklik: boolean;
 }
@@ -56,10 +61,10 @@ export default function KonfirmasiPutaran({ kasus, dijawab, onJawab, onTutup, on
             return (
               <li key={k.kunci} className="rounded-lg bg-gray-50 p-3">
                 <p className="text-sm font-medium text-gray-900">
-                  {k.santriNama} · {k.bidangNama}
+                  {k.santriNama} · {k.mataPelajaran}
                 </p>
                 <p className="mt-0.5 text-xs text-gray-700">
-                  Bulan lalu {angka(k.posLalu)} → dipilih {angka(k.posKini)} (selisih{" "}
+                  Bulan lalu {k.teksLalu ?? "—"} → dipilih {k.teksKini ?? "—"} (selisih{" "}
                   {k.posKini - k.posLalu > 0 ? "+" : ""}
                   {angka(k.posKini - k.posLalu)})
                 </p>

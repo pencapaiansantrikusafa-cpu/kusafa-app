@@ -35,6 +35,8 @@ export interface BarisInput {
   putaranLalu: Record<string, number | null>;
   /** Bulan-bulan setelah bulan ini sudah terisi untuk bidang ini. */
   adaBulanSetelah: Record<string, boolean>;
+  /** Selisih bulan ini menurut database (`v_monthly_report`). Negatif = sudah mundur. */
+  selisihTersimpan: Record<string, number | null>;
 }
 
 export interface BidangInput {
@@ -96,6 +98,12 @@ export default function FormInputAlQuran({
   const [jawaban, setJawaban] = useState<Record<string, "ulang" | "khatam">>({});
   /** Ada isian yang diubah pada kunjungan ini (dipakai peringatan bulan lampau). */
   const [berubah, setBerubah] = useState(false);
+  /**
+   * Bidang yang benar-benar diubah pada kunjungan ini (`santri_id|bidang_id`).
+   * Konfirmasi pengulangan hanya ditanyakan untuk bidang ini: bidang yang tidak
+   * disentuh tidak boleh ditanyakan, karena gurunya memang tidak mengubah apa pun.
+   */
+  const [diubahBidang, setDiubahBidang] = useState<Record<string, true>>({});
 
   // Memo ini harus murni (tidak memodifikasi state `items`). React Mode Ketat
   // memanggilnya dua kali; bila array state ikut diubah, item terduplikasi
@@ -156,6 +164,7 @@ export default function FormInputAlQuran({
   function ubahBidang(santriId: string, bidangId: string, itemId: string) {
     const b = baris.find((x) => x.santri_id === santriId);
     if (!b) return;
+    setDiubahBidang((d) => ({ ...d, [`${santriId}|${bidangId}`]: true }));
     ubah(santriId, {
       itemPerBidang: { ...b.itemPerBidang, [bidangId]: itemId || null },
       // Ganti item = pilihan khatam lama tidak berlaku lagi.
@@ -166,6 +175,7 @@ export default function FormInputAlQuran({
   function ubahKhatam(santriId: string, bidangId: string, nilai: boolean) {
     const b = baris.find((x) => x.santri_id === santriId);
     if (!b) return;
+    setDiubahBidang((d) => ({ ...d, [`${santriId}|${bidangId}`]: true }));
     ubah(santriId, { khatamPerBidang: { ...b.khatamPerBidang, [bidangId]: nilai } });
   }
 
@@ -191,8 +201,10 @@ export default function FormInputAlQuran({
       const kandidat: Array<{
         kunci: string;
         santriNama: string;
-        bidangNama: string;
+        mataPelajaran: string;
         posLalu: number;
+        teksLalu: string | null;
+        teksKini: string | null;
         itemId: string;
         putaran: number;
         siklik: boolean;
@@ -202,13 +214,18 @@ export default function FormInputAlQuran({
           const itemId = b.itemPerBidang[bd.id];
           if (!itemId) continue;
           const kunci = `${b.santri_id}|${bd.id}`;
+          // Hanya bidang yang diubah pada kunjungan ini. Bidang yang sudah mundur
+          // dari data lama tetapi tidak disentuh cukup diberi penanda, bukan pertanyaan.
+          if (!diubahBidang[kunci]) continue;
           const posLalu = b.posLalu[bd.id] ?? null;
           if (posLalu === null || jawaban[kunci]) continue;
           kandidat.push({
             kunci,
             santriNama: b.santri_nama,
-            bidangNama: bd.name,
+            mataPelajaran: bd.name,
             posLalu,
+            teksLalu: infoLalu[kunci]?.teks ?? null,
+            teksKini: petaItem.get(itemId)?.label ?? null,
             itemId,
             putaran: putaranEfektif(b, bd.id),
             siklik: !!petaItem.get(itemId)?.siklik,
@@ -225,9 +242,11 @@ export default function FormInputAlQuran({
           {
             kunci: k.kunci,
             santriNama: k.santriNama,
-            bidangNama: k.bidangNama,
+            mataPelajaran: k.mataPelajaran,
             posLalu: k.posLalu,
             posKini,
+            teksLalu: k.teksLalu,
+            teksKini: k.teksKini,
             siklik: k.siklik,
           },
         ];
@@ -292,6 +311,7 @@ export default function FormInputAlQuran({
       setKasus(null);
       setJawaban({});
       setBerubah(false);
+      setDiubahBidang({});
       setPesan({ jenis: "ok", teks: "Data tersimpan." });
       onSelesai();
     } catch (e) {
@@ -466,6 +486,20 @@ export default function FormInputAlQuran({
                               })()}
                             </p>
                           )}
+                          {/* Penanda, bukan pertanyaan: capaian tersimpan sudah lebih kecil dari
+                              bulan lalu tetapi bidang ini tidak diubah pada kunjungan ini. */}
+                          {(() => {
+                            const selisih = b.selisihTersimpan[bd.id];
+                            const kunci = `${b.santri_id}|${bd.id}`;
+                            if (selisih === null || selisih === undefined || selisih >= 0) return null;
+                            if (diubahBidang[kunci]) return null;
+                            return (
+                              <p className="mt-1 text-[11px] text-pink-900">
+                                ⚠ Tersimpan lebih kecil dari bulan lalu (selisih {angka(selisih)}). Tidak
+                                diubah — pilih ulang bila ini pengulangan yang disengaja.
+                              </p>
+                            );
+                          })()}
                           {bisaKhatam && (
                             <label
                               htmlFor={`khatam-${b.santri_id}-${bd.id}`}

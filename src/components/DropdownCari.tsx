@@ -1,4 +1,23 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
+/**
+ * Lapisan tertinggi aplikasi untuk semua dropdown.
+ *
+ * Dipakai agar daftar pilihan SELALU melayang di atas bagian lain, tidak peduli
+ * berada di dalam kartu/tabel/bingkai bergulir mana pun. Bila angka lapisan ini
+ * diubah, ubah juga di `AGENTS.md` (aturan tampilan) supaya halaman baru mengikuti.
+ */
+export const LAPISAN_DROPDOWN = 60;
+
+/**
+ * Nomor di ujung label: "Menyalin - 88" -> 88, "Quraisy : 12" -> 12, "An Naba' - 40" -> 40.
+ * Dipakai agar guru cukup mengetik nomor untuk menemukan item.
+ */
+function nomorAkhir(label: string): number | null {
+  const m = label.match(/-\s*(\d+)\s*$/) ?? label.match(/:\s*(\d+)\s*$/);
+  return m ? Number(m[1]) : null;
+}
 
 export interface OpsiCari {
   nilai: string;
@@ -44,25 +63,89 @@ export default function DropdownCari({
   const [cari, setCari] = useState("");
   const [sorot, setSorot] = useState(0);
   const kotakRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const idLab = `${id}-label`;
   const idDaftar = useId();
+  /** Posisi panel (diukur dari tombol), karena panel dilayangkan ke <body> lewat portal. */
+  const [posisi, setPosisi] = useState({ top: 0, left: 0, lebar: 0, keAtas: false });
+
+  /** Ukur ulang posisi panel terhadap tombol; dipanggil saat dibuka, digulir, dan diubah ukuran layar. */
+  useEffect(() => {
+    if (!terbuka) return;
+    function ukur() {
+      const kotak = kotakRef.current;
+      if (!kotak) return;
+      const r = kotak.getBoundingClientRect();
+      // Panel butuh tinggi; bila ruang di bawah sempit tetapi di atas lapang,
+      // panel dibuka ke atas supaya tetap tampil lengkap (tidak terpotong layar).
+      const PERKIRAAN_TINGGI = 320;
+      const ruangBawah = window.innerHeight - r.bottom;
+      const ruangAtas = r.top;
+      const keAtas = ruangBawah < PERKIRAAN_TINGGI && ruangAtas > ruangBawah;
+      setPosisi({
+        top: keAtas ? r.top - 4 : r.bottom + 4,
+        left: r.left,
+        lebar: r.width,
+        keAtas,
+      });
+    }
+    ukur();
+    window.addEventListener("scroll", ukur, true);
+    window.addEventListener("resize", ukur);
+    return () => {
+      window.removeEventListener("scroll", ukur, true);
+      window.removeEventListener("resize", ukur);
+    };
+  }, [terbuka]);
 
   const terpilih = opsi.find((o) => o.nilai === nilai);
 
   const tersaring = useMemo(() => {
     const k = cari.trim().toLowerCase();
-    const dasar = k
-      ? opsi.filter((o) => `${o.label} ${o.cariJuga ?? ""}`.toLowerCase().includes(k))
-      : opsi;
-    return dasar.slice(0, batasTampil);
+    if (!k) return { daftar: opsi.slice(0, batasTampil), jumlah: opsi.length };
+
+    // Kata kunci boleh lebih dari satu, mis. "menyalin 88" atau "naba 40".
+    // Semua kata harus cocok (DAN), sehingga hasilnya menyempit dengan cepat.
+    const kata = k.split(/\s+/).filter(Boolean);
+    const angkaTerakhir = /^\d+$/.test(kata[kata.length - 1] ?? "")
+      ? Number(kata[kata.length - 1])
+      : null;
+
+    const skor = (o: OpsiCari): number => {
+      const teks = `${o.label} ${o.cariJuga ?? ""}`.toLowerCase();
+      const nomor = nomorAkhir(o.label);
+      // Semua kata harus ada di label; bila tidak, tapi nomornya persis, tetap ditawarkan.
+      const semuaCocok = kata.every((w) => teks.includes(w));
+      if (!semuaCocok) {
+        return angkaTerakhir !== null && kata.length === 1 && nomor === angkaTerakhir ? 1 : -1;
+      }
+      if (angkaTerakhir !== null && nomor === angkaTerakhir) return 0; // nomor persis
+      if (teks.startsWith(k)) return 2; // diawali seluruh kata kunci
+      const batasKata = new RegExp(`(^|[\\s'\\-:·])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+      if (batasKata.test(teks)) return 3; // awal kata
+      return 4; // mengandung
+    };
+
+    const cocok: Array<{ o: OpsiCari; s: number; i: number }> = [];
+    opsi.forEach((o, i) => {
+      const s = skor(o);
+      if (s >= 0) cocok.push({ o, s, i });
+    });
+    // Urutan: skor, lalu urutan asli (buku) agar stabil.
+    cocok.sort((a, b) => a.s - b.s || a.i - b.i);
+    return { daftar: cocok.slice(0, batasTampil).map((x) => x.o), jumlah: cocok.length };
   }, [opsi, cari, batasTampil]);
+  const jumlahCocok = tersaring.jumlah;
+  const daftarTampil = tersaring.daftar;
 
   // Tutup bila mengetuk di luar.
   useEffect(() => {
     if (!terbuka) return;
     function onTutup(e: MouseEvent) {
-      if (kotakRef.current && !kotakRef.current.contains(e.target as Node)) setTerbuka(false);
+      const t = e.target as Node;
+      if (kotakRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setTerbuka(false);
     }
     document.addEventListener("mousedown", onTutup);
     return () => document.removeEventListener("mousedown", onTutup);
@@ -81,13 +164,13 @@ export default function DropdownCari({
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSorot((s) => Math.min(s + 1, tersaring.length - 1));
+      setSorot((s) => Math.min(s + 1, daftarTampil.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSorot((s) => Math.max(s - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const pilihOpsi = tersaring[sorot];
+      const pilihOpsi = daftarTampil[sorot];
       if (pilihOpsi) pilih(pilihOpsi.nilai);
     } else if (e.key === "Escape") {
       setTerbuka(false);
@@ -124,69 +207,83 @@ export default function DropdownCari({
         </span>
       </button>
 
-      {terbuka && (
-        <div className="absolute z-30 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="border-b border-gray-100 p-2">
-            <input
-              ref={inputRef}
-              type="search"
-              value={cari}
-              onChange={(e) => {
-                setCari(e.target.value);
-                setSorot(0);
-              }}
-              onKeyDown={onKeyDown}
-              placeholder={placeholderCari}
-              aria-label={`Cari ${label}`}
-              aria-controls={idDaftar}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-            />
-          </div>
-          <ul id={idDaftar} role="listbox" aria-labelledby={idLab} className="max-h-64 overflow-y-auto py-1">
-            {opsiKosong && !cari && (
-              <li role="option" aria-selected={nilai === ""}>
-                <button
-                  type="button"
-                  onClick={() => pilih("")}
-                  className={
-                    "block w-full px-3 py-1.5 text-left text-sm " +
-                    (nilai === "" ? "bg-kusafa-light font-medium text-kusafa" : "text-gray-600 hover:bg-gray-50")
-                  }
-                >
-                  {opsiKosong}
-                </button>
-              </li>
+      {terbuka &&
+        createPortal(
+          <div
+            className="fixed rounded-lg border border-gray-200 bg-white shadow-lg"
+            style={{
+              zIndex: LAPISAN_DROPDOWN,
+              top: posisi.top,
+              left: posisi.left,
+              width: posisi.lebar,
+              transform: posisi.keAtas ? "translateY(-100%)" : undefined,
+            }}
+            ref={panelRef}
+          >
+            <div className="border-b border-gray-100 p-2">
+              <input
+                ref={inputRef}
+                type="search"
+                value={cari}
+                onChange={(e) => {
+                  setCari(e.target.value);
+                  setSorot(0);
+                }}
+                onKeyDown={onKeyDown}
+                placeholder={placeholderCari}
+                aria-label={`Cari ${label}`}
+                aria-controls={idDaftar}
+                className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <ul id={idDaftar} role="listbox" aria-labelledby={idLab} className="max-h-64 overflow-y-auto py-1">
+              {opsiKosong && !cari && (
+                <li role="option" aria-selected={nilai === ""}>
+                  <button
+                    type="button"
+                    onClick={() => pilih("")}
+                    className={
+                      "block w-full px-3 py-1.5 text-left text-sm " +
+                      (nilai === "" ? "bg-kusafa-light font-medium text-kusafa" : "text-gray-600 hover:bg-gray-50")
+                    }
+                  >
+                    {opsiKosong}
+                  </button>
+                </li>
+              )}
+              {daftarTampil.length === 0 && (
+                <li className="px-3 py-2 text-sm text-gray-500">
+                  {cari ? "Tidak ada yang cocok. Coba nomor atau sebagian nama." : "Tidak ada pilihan."}
+                </li>
+              )}
+              {daftarTampil.map((o, i) => (
+                <li key={o.nilai} role="option" aria-selected={o.nilai === nilai}>
+                  <button
+                    type="button"
+                    onClick={() => pilih(o.nilai)}
+                    onMouseEnter={() => setSorot(i)}
+                    className={
+                      "block w-full px-3 py-1.5 text-left text-sm " +
+                      (o.nilai === nilai
+                        ? "bg-kusafa-light font-medium text-kusafa"
+                        : i === sorot
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-800 hover:bg-gray-50")
+                    }
+                  >
+                    {o.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {jumlahCocok > daftarTampil.length && (
+              <p className="border-t border-gray-100 px-3 py-1.5 text-xs text-gray-600">
+                Menampilkan {daftarTampil.length} dari {jumlahCocok}. Ketik nomor atau nama untuk mempersempit.
+              </p>
             )}
-            {!cari && tersaring.length === 0 && (
-              <li className="px-3 py-2 text-sm text-gray-500">Tidak ada pilihan yang cocok.</li>
-            )}
-            {tersaring.map((o, i) => (
-              <li key={o.nilai} role="option" aria-selected={o.nilai === nilai}>
-                <button
-                  type="button"
-                  onClick={() => pilih(o.nilai)}
-                  onMouseEnter={() => setSorot(i)}
-                  className={
-                    "block w-full px-3 py-1.5 text-left text-sm " +
-                    (o.nilai === nilai
-                      ? "bg-kusafa-light font-medium text-kusafa"
-                      : i === sorot
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-gray-800 hover:bg-gray-50")
-                  }
-                >
-                  {o.label}
-                </button>
-              </li>
-            ))}
-            {!cari && opsi.length > tersaring.length && (
-              <li className="px-3 py-1.5 text-xs text-gray-500">
-                Menampilkan {tersaring.length} dari {opsi.length}. Ketik untuk mempersempit.
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
 
       {keterangan && <p className="mt-1 truncate text-xs text-gray-600">{keterangan}</p>}
     </div>
