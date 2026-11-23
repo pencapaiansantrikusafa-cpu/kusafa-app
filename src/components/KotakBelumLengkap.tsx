@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth-context";
 import { ambilSemua } from "../lib/ambil-semua";
-import { batasiPemberitahuan, hanyaHalaqahDiampu } from "../lib/roles";
+import { hanyaHalaqahDiampu, isPeninjau } from "../lib/roles";
 import { ambilGuru, halaqahDiampu } from "./PemilihHalaqah";
 import DropdownCari from "./DropdownCari";
 
@@ -10,64 +10,78 @@ interface Baris {
   student_id: string;
   subject_id: string;
   month_id: string;
-  halaqah_id: string | null;
-}
-
-interface Halaqah {
-  id: string;
-  code: string;
 }
 
 interface Bidang {
   id: string;
   name: string;
-  domain: string;
+}
+
+/** Ringkasan "x/y terisi" untuk satu bulan, per halaqah. */
+interface RingkasBulan {
+  monthId: string;
+  nama: string;
+  total: number;
+  terisi: number;
+}
+
+interface SantriKurang {
+  id: string;
+  nama: string;
+  halaqahId: string;
+  halaqah: string;
+  musyrif: string;
+  kosong: string[];
+  jumlahBulan: number;
 }
 
 /**
- * Pemberitahuan "data belum lengkap" dari awal tahun sampai bulan ini.
- * Menampilkan halaqah dan santri yang belum punya capaian pada bulan-bulan
- * yang seharusnya sudah diisi. Bulan kosong = belum diisi, bukan 0.
+ * Pemberitahuan "data belum lengkap" dari awal tahun sampai bulan berjalan.
  *
- * Sumber: `progress_entries` dan `v_months_ordered` (urutan bulan lintas tahun).
- * Tidak ada perhitungan selisih di sini.
+ * Sumber data (semuanya dari database, tidak ada perhitungan di luar):
+ * - `v_months_ordered` : urutan bulan lintas tahun ajaran;
+ * - `month_domain_settings` : Hari Efektif tiap bulan per domain, dipakai sebagai
+ *   penanda "bulan ini sudah berjalan" (opsi B yang dipilih Mudir 23 Nov 2026).
+ *   Bulan yang belum punya Hari Efektif tidak dihitung, jadi bulan yang belum
+ *   dimulai tidak membuat santri terlihat lalai.
+ * - `progress_entries` : capaian yang sudah ada;
+ * - `halaqah_members`, `halaqahs`, `halaqah_teachers`, `profiles` : santri, halaqah, musyrif.
+ *
+ * Hak lihat: Mudir/Admin/Masul Al Quran melihat semua halaqah dan boleh menyaring
+ * per halaqah; musyrif/ah hanya halaqahnya sendiri (jumlah santri yang diampu).
  */
-export default function KotakBelumLengkap({
-  bulanId,
-  domain = "alquran",
-}: {
-  /** Bulan batas atas (bulan yang sedang dipilih). */
-  bulanId: string;
-  domain?: string;
-}) {
+export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
   const { profile } = useAuth();
   const [buka, setBuka] = useState(true);
   const [memuat, setMemuat] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
-  const [daftar, setDaftar] = useState<{
-    bulan: { id: string; nama: string }[];
-    santri: { id: string; nama: string; halaqah: string; kosong: string[] }[];
+  /** Saringan halaqah; "" = semua halaqah. */
+  const [saringHalaqah, setSaringHalaqah] = useState("");
+  const [data, setData] = useState<{
+    bulan: RingkasBulan[];
+    santri: SantriKurang[];
+    halaqah: { id: string; code: string }[];
   } | null>(null);
 
-  // Hanya untuk peninjau (Mudir/Admin/Masul) dan pengampu yang dibatasi amanah.
   const boleh = !!profile;
-  const batasiSemua = profile ? hanyaHalaqahDiampu(profile.role) : false;
-  const batasiPemberitahuanGuru = profile ? batasiPemberitahuan(profile.role) : false;
+  const semuaHalaqah = profile ? isPeninjau(profile.role) : false;
+  const batasiAmanah = profile ? hanyaHalaqahDiampu(profile.role) : false;
 
   useEffect(() => {
     let aktif = true;
     if (!boleh || !bulanId) {
-      setDaftar(null);
+      setData(null);
       return;
     }
     void (async () => {
       setMemuat(true);
       setGalat(null);
       try {
-        // Semua bulan (termasuk Data Awal bulan_no 0) sampai bulan terpilih.
+        const DOMAIN = "alquran";
+        // 1. Urutan bulan lintas tahun.
         const { data: urutan, error: e1 } = await supabase
           .from("v_months_ordered")
-          .select("id, month_no, name, hijri_year, ord, prev_month_id");
+          .select("id, month_no, name, hijri_year, ord");
         if (e1) throw new Error(e1.message);
         const semua = (urutan ?? []) as Array<{
           id: string;
@@ -78,102 +92,117 @@ export default function KotakBelumLengkap({
         }>;
         const batas = semua.find((m) => m.id === bulanId);
         if (!batas) throw new Error("Bulan tidak ditemukan.");
-        // Bulan yang harus sudah diisi: bulan_no > 0 sampai batas (Data Awal manual tidak dihitung).
-        const bulanWajib = semua
-          .filter((m) => m.month_no > 0 && m.ord <= batas.ord)
+
+        // 2. Bulan yang sudah berjalan: punya Hari Efektif di domain ini.
+        //    (Opsi B: bulan yang belum dimulai tidak dihitung sebagai kekurangan.)
+        const { data: setelan, error: e2 } = await supabase
+          .from("month_domain_settings")
+          .select("month_id, effective_days")
+          .eq("domain", DOMAIN);
+        if (e2) throw new Error(e2.message);
+        const berjalan = new Set(
+          (setelan ?? []).filter((s) => s.effective_days !== null).map((s) => s.month_id as string),
+        );
+        const bulanDiperiksa = semua
+          .filter((m) => m.month_no > 0 && m.ord <= batas.ord && berjalan.has(m.id))
           .sort((a, b) => a.ord - b.ord);
 
-        const { data: bidang, error: e2 } = await supabase
-          .from("subjects")
-          .select("id, name, domain")
-          .eq("domain", domain)
-          .eq("is_active", true)
-          .order("sort_order");
-        if (e2) throw new Error(e2.message);
+        // 3. Bidang, halaqah, dan santri.
+        const [bidangRes, halaqahRes] = await Promise.all([
+          supabase.from("subjects").select("id, name").eq("domain", DOMAIN).eq("is_active", true).order("sort_order"),
+          supabase.from("halaqahs").select("id, code").eq("domain", DOMAIN).eq("is_active", true).order("code"),
+        ]);
+        if (bidangRes.error) throw new Error(bidangRes.error.message);
+        if (halaqahRes.error) throw new Error(halaqahRes.error.message);
+        const bidang = (bidangRes.data ?? []) as Bidang[];
+        let halaqah = (halaqahRes.data ?? []) as { id: string; code: string }[];
 
-        const { data: halaqah, error: e3 } = await supabase
-          .from("halaqahs")
-          .select("id, code")
-          .eq("domain", domain)
-          .eq("is_active", true)
-          .order("code");
-        if (e3) throw new Error(e3.message);
+        // 4. Musyrif/ah tiap halaqah (kolom pengampu).
+        const guru = await ambilGuru();
+        const musyrifPeta = new Map<string, string[]>();
+        for (const g of guru) {
+          const arr = musyrifPeta.get(g.halaqah_id) ?? [];
+          if (g.full_name && !arr.includes(g.full_name)) arr.push(g.full_name);
+          musyrifPeta.set(g.halaqah_id, arr);
+        }
 
-        // Anggota aktif hanya dari halaqah domain ini.
-        const idHalaqah = (halaqah ?? []).map((h) => h.id);
-        if (idHalaqah.length === 0) {
-          if (aktif) setDaftar({ bulan: bulanWajib.map((b) => ({ id: b.id, nama: b.name })), santri: [] });
+        // 5. Hak lihat.
+        if (batasiAmanah && profile) {
+          const diampu = halaqahDiampu(guru, profile.id);
+          halaqah = halaqah.filter((h) => diampu.has(h.id));
+        }
+        const idHalaqah = halaqah.map((h) => h.id);
+        if (idHalaqah.length === 0 || bidang.length === 0) {
+          if (aktif) setData({ bulan: [], santri: [], halaqah: [] });
           return;
         }
-        const { data: anggota, error: e4 } = await supabase
+
+        const { data: anggota, error: e3 } = await supabase
           .from("halaqah_members")
           .select("student_id, halaqah_id")
           .is("left_on", null)
           .in("halaqah_id", idHalaqah)
           .order("student_id", { ascending: true })
           .range(0, 9999);
-        if (e4) throw new Error(e4.message);
-        let daftarAnggota = (anggota ?? []) as Array<{ student_id: string; halaqah_id: string }>;
-        // Semua role pengampu (termasuk Masul) hanya membaca pemberitahuan halaqahnya.
-        if (batasiSemua && profile) {
-          const diampu = halaqahDiampu(await ambilGuru(), profile.id);
-          daftarAnggota = daftarAnggota.filter((x) => diampu.has(x.halaqah_id));
-        }
+        if (e3) throw new Error(e3.message);
+        const daftarAnggota = (anggota ?? []) as Array<{ student_id: string; halaqah_id: string }>;
 
-        // Capaian yang sudah ada pada bulan-bulan itu (diambil bertahap: batas server 1.000 baris).
-        const bulanIds = bulanWajib.map((b) => b.id);
-        const { data: capaian, error: e5 } = bulanIds.length
+        // 6. Capaian yang sudah ada pada bulan-bulan yang diperiksa.
+        const bulanIds = bulanDiperiksa.map((b) => b.id);
+        const { data: capaian, error: e4 } = bulanIds.length
           ? await ambilSemua<Baris>((awal, jumlah) =>
               supabase
                 .from("progress_entries")
-                .select("student_id, subject_id, month_id, halaqah_id")
+                .select("student_id, subject_id, month_id")
                 .in("month_id", bulanIds)
                 .order("id", { ascending: true })
                 .range(awal, awal + jumlah - 1),
             )
           : { data: [], error: null };
-        if (e5) throw new Error(e5.message);
+        if (e4) throw new Error(e4.message);
         const ada = new Set(
           ((capaian ?? []) as Baris[]).map((c) => `${c.student_id}|${c.subject_id}|${c.month_id}`),
         );
+        /** Santri lengkap bila punya capaian di semua bidang aktif bulan itu. */
+        const lengkap = (studentId: string, monthId: string) =>
+          bidang.every((bd) => ada.has(`${studentId}|${bd.id}|${monthId}`));
 
-        // Capaian yang diisi boleh hanya salah satu bidang; yang dianggap lengkap
-        // harus punya capaian di setiap bidang aktif pada bulan itu (sesuai form input).
-        const bidangDomain = (bidang ?? []) as Bidang[];
-        const daftarSantri = daftarAnggota.map((a) => {
-          const h = (halaqah ?? []).find((x) => x.id === a.halaqah_id);
-          return { ...a, kode: h?.code ?? "" };
-        });
-
-        const { data: siswa, error: e6 } = await supabase
+        const { data: siswa, error: e5 } = await supabase
           .from("students")
           .select("id, full_name, is_active")
           .eq("is_active", true)
-          .in("id", daftarSantri.map((a) => a.student_id))
+          .in("id", daftarAnggota.map((a) => a.student_id))
           .order("full_name", { ascending: true })
           .range(0, 9999);
-        if (e6) throw new Error(e6.message);
+        if (e5) throw new Error(e5.message);
         const petaNama = new Map((siswa ?? []).map((s) => [s.id, s.full_name]));
+        const petaHalaqah = new Map(halaqah.map((h) => [h.id, h.code]));
 
-        const keluaran = daftarSantri
+        // 7. Daftar santri yang belum lengkap.
+        const santri: SantriKurang[] = daftarAnggota
           .map((a) => {
-            const bulanKosong = bulanWajib.filter((b) => {
-              // Bulan dianggap belum lengkap bila ada bidang yang belum terisi.
-              return bidangDomain.some((bd) => !ada.has(`${a.student_id}|${bd.id}|${b.id}`));
-            });
+            const kosong = bulanDiperiksa.filter((b) => !lengkap(a.student_id, b.id));
             return {
               id: a.student_id,
               nama: petaNama.get(a.student_id) ?? a.student_id,
-              halaqah: a.kode,
-              kosong: bulanKosong.map((b) => b.name),
-              jumlahBulan: bulanKosong.length,
+              halaqahId: a.halaqah_id,
+              halaqah: petaHalaqah.get(a.halaqah_id) ?? "",
+              musyrif: (musyrifPeta.get(a.halaqah_id) ?? []).join(", "),
+              kosong: kosong.map((b) => b.name),
+              jumlahBulan: kosong.length,
             };
           })
           .filter((x) => x.jumlahBulan > 0)
           .sort((a, b) => b.jumlahBulan - a.jumlahBulan || a.nama.localeCompare(b.nama));
 
+        // 8. Ringkasan "x/y terisi" per bulan.
+        const ringkas: RingkasBulan[] = bulanDiperiksa.map((b) => {
+          const terisi = daftarAnggota.filter((a) => lengkap(a.student_id, b.id)).length;
+          return { monthId: b.id, nama: b.name, total: daftarAnggota.length, terisi };
+        });
+
         if (!aktif) return;
-        setDaftar({ bulan: bulanWajib.map((b) => ({ id: b.id, nama: b.name })), santri: keluaran });
+        setData({ bulan: ringkas, santri, halaqah });
       } catch (e) {
         if (aktif) setGalat(e instanceof Error ? e.message : String(e));
       } finally {
@@ -183,14 +212,18 @@ export default function KotakBelumLengkap({
     return () => {
       aktif = false;
     };
-  }, [bulanId, domain, boleh, batasiSemua, profile]);
+  }, [bulanId, boleh, batasiAmanah, profile]);
 
-  const ringkas = useMemo(() => {
-    if (!daftar) return null;
-    const total = daftar.santri.length;
-    const halaqahKena = new Set(daftar.santri.map((s) => s.halaqah));
-    return { total, halaqah: halaqahKena.size };
-  }, [daftar]);
+  // Halaqah yang boleh dipilih di saringan.
+  const pilihanHalaqah = useMemo(() => {
+    if (!data) return [];
+    return data.halaqah;
+  }, [data]);
+
+  const santriTampil = useMemo(() => {
+    if (!data) return [];
+    return saringHalaqah ? data.santri.filter((s) => s.halaqahId === saringHalaqah) : data.santri;
+  }, [data, saringHalaqah]);
 
   if (!boleh) return null;
 
@@ -204,15 +237,17 @@ export default function KotakBelumLengkap({
       >
         <span>
           <span className="block text-sm font-bold text-gray-900">
-            Data belum lengkap — awal tahun sampai bulan ini
+            Data belum lengkap — awal tahun sampai bulan berjalan
           </span>
           <span className="block text-xs text-gray-600">
             {memuat
               ? "Memeriksa..."
               : galat
                 ? "Gagal memeriksa."
-                : ringkas
-                  ? `${ringkas.total} santri di ${ringkas.halaqah} halaqah belum lengkap.`
+                : data
+                  ? semuaHalaqah
+                    ? `${data.santri.length} santri di ${new Set(data.santri.map((s) => s.halaqahId)).size} halaqah belum lengkap.`
+                    : `${data.santri.length} santri yang Anda ampu belum lengkap.`
                   : "Tidak ada data."}
           </span>
         </span>
@@ -228,14 +263,63 @@ export default function KotakBelumLengkap({
               {galat}
             </p>
           )}
-          {!galat && daftar && daftar.santri.length === 0 && (
-            <p className="text-sm text-emerald-800">Semua santri lengkap sampai bulan ini.</p>
+
+          {/* Saringan halaqah: hanya untuk Mudir/Admin/Masul Al Quran. */}
+          {!galat && data && semuaHalaqah && data.halaqah.length > 1 && (
+            <div className="mb-3 max-w-md">
+              <DropdownCari
+                id="belum-lengkap-halaqah"
+                label="Lihat per halaqah"
+                opsi={data.halaqah.map((h) => ({ nilai: h.id, label: h.code }))}
+                nilai={saringHalaqah}
+                onChange={setSaringHalaqah}
+                opsiKosong="Semua halaqah"
+              />
+            </div>
           )}
-          {!galat && daftar && daftar.santri.length > 0 && (
+
+          {/* Ringkasan x/y terisi per bulan. */}
+          {!galat && data && data.bulan.length > 0 && (
+            <div className="mb-3 overflow-x-auto rounded-lg bg-gray-50 p-2 ring-1 ring-black/5">
+              <p className="mb-1 text-xs font-medium text-gray-800">
+                Jumlah santri terisi per bulan{" "}
+                <span className="font-normal text-gray-600">
+                  ({semuaHalaqah ? "seluruh halaqah" : "halaqah yang Anda ampu"}; lengkap = semua
+                  bidang terisi)
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.bulan.map((b) => {
+                  const persen = b.total === 0 ? 0 : Math.round((b.terisi / b.total) * 100);
+                  const tuntas = b.terisi === b.total;
+                  return (
+                    <span
+                      key={b.monthId}
+                      title={`${b.nama}: ${b.terisi} dari ${b.total} santri lengkap (${persen}%)`}
+                      className={
+                        "rounded px-2 py-1 text-xs " +
+                        (tuntas
+                          ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
+                          : "bg-amber-50 text-amber-900 ring-1 ring-amber-200")
+                      }
+                    >
+                      <strong className="font-semibold">{b.nama}</strong> {b.terisi}/{b.total}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!galat && data && santriTampil.length === 0 && (
+            <p className="text-sm text-emerald-800">Semua santri lengkap sampai bulan berjalan.</p>
+          )}
+
+          {!galat && data && santriTampil.length > 0 && (
             <>
               <p className="mb-2 text-xs text-gray-700">
-                Kosong berarti belum diisi, bukan 0. Hubungi pengampu halaqah terkait, atau isi
-                sendiri bila Anda berhak.
+                Kosong berarti belum diisi, bukan 0. Hubungi musyrif/ah terkait, atau isi sendiri bila
+                Anda berhak. Total {santriTampil.length} santri belum lengkap.
               </p>
               <div className="max-h-80 overflow-y-auto">
                 <table className="w-full border-collapse text-sm">
@@ -243,16 +327,20 @@ export default function KotakBelumLengkap({
                     <tr className="bg-kusafa-light text-left text-xs uppercase tracking-wide text-kusafa">
                       <th scope="col" className="px-2 py-2">Santri</th>
                       <th scope="col" className="px-2 py-2">Halaqah</th>
+                      <th scope="col" className="px-2 py-2">Musyrif/ah</th>
                       <th scope="col" className="px-2 py-2">Bulan belum lengkap</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {daftar.santri.slice(0, 200).map((s) => (
+                    {santriTampil.slice(0, 200).map((s) => (
                       <tr key={s.id} className="border-t border-black/5 align-top">
                         <th scope="row" className="px-2 py-2 text-left font-medium text-gray-900">
                           {s.nama}
                         </th>
-                        <td className="px-2 py-2 text-gray-700">{s.halaqah}</td>
+                        <td className="whitespace-nowrap px-2 py-2 text-gray-700">{s.halaqah}</td>
+                        <td className="px-2 py-2 text-gray-700">
+                          {s.musyrif || <span className="text-gray-500">belum ditetapkan</span>}
+                        </td>
                         <td className="px-2 py-2 text-xs">
                           <span className="rounded bg-amber-100 px-1.5 py-0.5 font-medium text-amber-900">
                             {s.kosong.length} bulan
@@ -265,9 +353,9 @@ export default function KotakBelumLengkap({
                   </tbody>
                 </table>
               </div>
-              {daftar.santri.length > 200 && (
+              {santriTampil.length > 200 && (
                 <p className="mt-2 text-xs text-gray-600">
-                  Ditampilkan 200 pertama dari {daftar.santri.length} santri.
+                  Ditampilkan 200 pertama dari {santriTampil.length} santri.
                 </p>
               )}
             </>

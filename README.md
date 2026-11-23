@@ -39,6 +39,13 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - Jumlah item Tilawah aktif yang termuat di dropdown: 1.464 (sama dengan hitungan database); sebelumnya terpotong 74.
 - Catatan untuk pengembangan berikutnya: setiap query Supabase **wajib** memakai `ambilSemua` (atau `range` yang cukup besar) bila barisnya bisa lebih dari 1.000.
 
+**Notifikasi "Data belum lengkap" — keputusan Mudir 23 Nov 2026**
+- **Batas bulan (opsi B):** yang diperiksa hanya bulan dari awal tahun sampai **bulan yang sudah berjalan**. Penandanya: bulan itu sudah punya Hari Efektif di `month_domain_settings` untuk domain tersebut. Bulan yang belum dimulai tidak dihitung, sehingga tidak dianggap kelalaian. Judul kotak: "awal tahun sampai bulan berjalan".
+- **Kolom musyrif/ah** ada di tabel (nama dari `halaqah_teachers`; "belum ditetapkan" bila kosong). Kolom pengampu Wasilah/Ghayah ditambahkan saat T6.
+- **Ringkasan "x/y terisi" per bulan** tampil sebagai deretan label per bulan ("Muharram 99/109"), hijau bila tuntas, kuning bila belum. Angkanya dihitung dari santri dalam lingkup yang boleh dilihat.
+- **Lingkup dan saringan:** Mudir, Admin, dan Masul Al Quran melihat seluruh halaqah dan bisa **menyaring per halaqah** (dropdown pencarian "Lihat per halaqah"). Musyrif/ah (dan Mudarris/ah) hanya melihat halaqahnya sendiri, dengan ringkasan "N santri yang Anda ampu belum lengkap".
+- **"Lengkap"** = santri punya capaian di **semua bidang aktif** bulan itu (Tilawah + Tahfidz + Kitabah). Santri yang hanya terisi satu bidang tetap dihitung belum lengkap.
+
 **Pertanyaan terbuka**
 - **Data kosong di Excel adalah sengaja** (dikonfirmasi Mudir, 22 Nov 2026): sel Hari Efektif/kehadiran yang kosong berarti bulan itu belum diinput.
   Aplikasi **wajib** menampilkan notifikasi "data belum lengkap" kepada **Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, dan Musyrif/ah** yang terkait,
