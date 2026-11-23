@@ -34,6 +34,7 @@ interface LaporanLalu {
   subject_id: string;
   pos: number | null;
   putaran: number | null;
+  item_label: string | null;
 }
 
 const DOMAIN = "alquran" as const;
@@ -52,6 +53,8 @@ export default function InputPage() {
   // Item capaian yang sudah tersimpan tetapi belum ada di daftar aktif (mis. sudah dinonaktifkan).
   const [itemTambahan, setItemTambahan] = useState<Item[]>([]);
   const [baris, setBaris] = useState<BarisInput[]>([]);
+  /** Label item bulan lalu per santri|bidang, dari view (bukan dihitung di sini). */
+  const [labelLalu, setLabelLalu] = useState<Record<string, string | null>>({});
   const [hariEfektif, setHariEfektif] = useState<number | null>(null);
   const [terkunci, setTerkunci] = useState(false);
   const [memuat, setMemuat] = useState(true);
@@ -162,20 +165,36 @@ export default function InputPage() {
         .eq("month_id", bulanId)
         .eq("domain", DOMAIN)
         .in("student_id", anggota),
-      // curriculum_items tidak punya subject_id langsung; bidang diambil lewat books.
-      // is_cyclic menandai buku siklik (Tilawah Al Qur'an) tempat khatam ditawarkan.
-      supabase
-        .from("curriculum_items")
-        .select("id, label, value, is_active, books!inner(subject_id, is_cyclic)")
-        .in("books.subject_id", subjectIds)
-        .eq("is_active", true)
-        .order("seq")
-        .limit(20000),
+      // Item dropdown per buku. `seq` tidak unik antar buku (tiap buku mulai dari 1),
+      // jadi satu query ORDER BY seq akan menghasilkan urutan acak. Urutkan per buku
+      // (buku menurut stage_order, sort_order; item menurut seq), lalu gabungkan.
+      (async () => {
+        const { data: buku, error: eBuku } = await supabase
+          .from("books")
+          .select("id, subject_id, name, is_cyclic, sort_order")
+          .in("subject_id", subjectIds)
+          .eq("is_active", true)
+          .order("stage_order", { ascending: true })
+          .order("sort_order", { ascending: true });
+        if (eBuku || !buku) return { error: eBuku ?? new Error("Daftar buku kosong") };
+        const perBuku = await Promise.all(
+          buku.map((bk) =>
+            supabase
+              .from("curriculum_items")
+              .select("id, label, value")
+              .eq("book_id", bk.id)
+              .eq("is_active", true)
+              .order("seq", { ascending: true })
+              .limit(20000),
+          ),
+        );
+        return { buku, perBuku };
+      })(),
       // Posisi dan putaran bulan lalu (pembanding otomatis). Selalu difilter agar tidak timeout.
       bulanLaluId
         ? supabase
             .from("v_monthly_report")
-            .select("student_id, subject_id, pos, putaran")
+            .select("student_id, subject_id, pos, putaran, item_label")
             .eq("halaqah_id", halaqahId)
             .eq("month_id", bulanLaluId)
             .eq("domain", DOMAIN)
@@ -205,22 +224,21 @@ export default function InputPage() {
       return;
     }
 
-    // Ratakan relasi books.subject_id menjadi subject_id agar mudah dipakai form.
-    const daftarItem: Item[] = ((semuaItem.data ?? []) as unknown as Array<{
-      id: string;
-      label: string;
-      value: string | null;
-      books: { subject_id: string; is_cyclic: boolean } | { subject_id: string; is_cyclic: boolean }[];
-    }>).map((it) => {
-      const bk = Array.isArray(it.books) ? it.books[0] : it.books;
-      return {
-        id: it.id,
-        subject_id: bk?.subject_id ?? "",
-        label: it.label,
-        value: it.value,
-        siklik: !!bk?.is_cyclic,
-      };
-    });
+    // Gabungkan item per buku menjadi satu daftar sesuai urutan buku.
+    const daftarItem: Item[] = [];
+    if ("buku" in semuaItem && semuaItem.buku && semuaItem.perBuku) {
+      semuaItem.buku.forEach((bk, i) => {
+        for (const it of semuaItem.perBuku[i].data ?? []) {
+          daftarItem.push({
+            id: it.id,
+            subject_id: bk.subject_id,
+            label: it.label,
+            value: it.value,
+            siklik: !!bk.is_cyclic,
+          });
+        }
+      });
+    }
     setItems(daftarItem);
 
     const barisCapaian = (capaian.data ?? []) as unknown as Array<{
@@ -254,6 +272,10 @@ export default function InputPage() {
         tambahan.push({ id: c.item_id, subject_id: c.subject_id, label: ci.label, value: null, siklik: false });
     }
     setItemTambahan(tambahan);
+    // Teks capaian bulan lalu (label item, sudah jadi teks di view) untuk ditampilkan di form.
+    const petaLabelLalu: Record<string, string | null> = {};
+    for (const [kunci, r] of petaLalu) petaLabelLalu[kunci] = r.item_label ?? null;
+    setLabelLalu(petaLabelLalu);
     // Hanya baris pada bulan yang sedang dibuka (jaga-jaga bila ada baris lain).
     const barisPresensi = (presensi.data ?? []).filter((p) => p.month_id === bulanId);
     const petaPresensi = new Map(barisPresensi.map((p) => [p.student_id, p]));
@@ -373,6 +395,7 @@ export default function InputPage() {
           baris={baris}
           setBaris={setBaris}
           items={[...items, ...itemTambahan]}
+          labelLalu={labelLalu}
           hariEfektif={hariEfektif}
           terkunci={terkunci}
           bolehHariEfektifKhusus={bolehHeKhusus}

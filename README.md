@@ -49,6 +49,8 @@ Jangan menulis rahasia (kunci, kata sandi) atau data santri di sini.
 - `hijri_months` **tidak punya** kolom `hijri_year`; tahun ada di `academic_years` (ambil lewat relasi `academic_years!inner(hijri_year)`).
 - Query `v_monthly_report` tanpa filter bisa kena *statement timeout*. Selalu filter `halaqah_id` + `month_id`.
 - Posisi capaian dihitung database (`public.item_position`), dipanggil dari form lewat RPC `item_position` hanya saat tombol Simpan — untuk memeriksa apakah capaian lebih kecil dari bulan lalu. Tidak ada perhitungan selisih di React.
+- Dropdown item di halaman Input diambil **per buku** (buku urut `stage_order`, `sort_order`; item urut `seq`), lalu digabung. Satu query `ORDER BY seq` tidak boleh dipakai: `seq` mulai dari 1 di setiap buku dan tidak unik, sehingga urutannya acak.
+- Teks "Bulan lalu" di form memakai `item_label` dari `v_monthly_report` (teks dropdown bulan lalu), bukan angka posisi.
 - Alamat koneksi langsung `db.<ref>.supabase.co` tidak bisa diresolusi di jaringan ini (tanpa IPv6), jadi semua skrip memakai pooler.
 - Data uji sudah dimuat. Kata sandi akun dummy ada di `scripts/seed/output/users.csv` (tidak di git). Laporan seed: `scripts/seed/output/seed-report.md`.
 - Site URL dan Redirect URL Supabase diatur **manual di dashboard** (Authentication → URL Configuration), bukan lewat `supabase config push`, karena perintah itu akan ikut mengubah 11 pengaturan Auth lain (konfirmasi email, MFA, panjang OTP, pooler). Nilai yang diinginkan sudah tercatat di `supabase/config.toml` sebagai acuan.

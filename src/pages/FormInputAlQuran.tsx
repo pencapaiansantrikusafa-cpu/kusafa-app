@@ -51,6 +51,8 @@ interface Props {
   baris: BarisInput[];
   setBaris: (b: BarisInput[]) => void;
   items: Item[];
+  /** Teks capaian bulan lalu per `santri_id|bidang_id` (label dari view, bukan angka posisi). */
+  labelLalu: Record<string, string | null>;
   hariEfektif: number | null;
   terkunci: boolean;
   bolehHariEfektifKhusus: boolean;
@@ -70,6 +72,7 @@ export default function FormInputAlQuran({
   baris,
   setBaris,
   items,
+  labelLalu,
   hariEfektif,
   terkunci,
   bolehHariEfektifKhusus,
@@ -436,10 +439,23 @@ export default function FormInputAlQuran({
                               </option>
                             ))}
                           </select>
-                          {item && b.posLalu[bd.id] !== null && (
+                          {item && (
                             <p className="mt-1 text-[11px] text-gray-600">
-                              Bulan lalu: {angka(b.posLalu[bd.id])}
-                              {pLalu !== null ? ` (putaran ${pLalu})` : ""}
+                              {(() => {
+                                const teksLalu = labelLalu[`${b.santri_id}|${bd.id}`];
+                                if (teksLalu) {
+                                  return (
+                                    <>
+                                      Bulan lalu: <span className="text-gray-800">{teksLalu}</span>
+                                      {pLalu !== null ? ` (putaran ${pLalu})` : ""}
+                                    </>
+                                  );
+                                }
+                                if (b.putaranLalu[bd.id] !== null || b.posLalu[bd.id] !== null) {
+                                  return "Bulan lalu: teks capaian belum tersedia.";
+                                }
+                                return "Bulan lalu: belum diisi.";
+                              })()}
                             </p>
                           )}
                           {bisaKhatam && (
