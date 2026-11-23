@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 23 November 2026, commit `cdb7c98`. Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 23 November 2026, commit `7278113` (audit dokumentasi). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|
@@ -36,9 +36,9 @@ Diperbarui 23 November 2026, commit `cdb7c98`. Rincian dan bukti tiap baris ada 
 | T9 | Pengujian & QA (RLS otomatis, tampilan HP) | BELUM |
 | T10 | Deploy akhir (hapus data dummy, repo privat) | BELUM |
 
-Pemeriksaan terakhir (23 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **6/6 lulus**, `python scripts/check_repo_safety.py` **lolos**. Tidak ada perintah `lint` di proyek ini.
+Pemeriksaan terakhir (23 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **6/6 lulus**, `python scripts/check_repo_safety.py` **lolos**. Tidak ada perintah `lint` di proyek ini. `npm audit --omit=dev` melaporkan 2 kerentanan sedang pada `react-router`/`react-router-dom` (belum diperbaiki).
 
-Situs produksi sudah diuji: login berhasil dan data termuat dari Supabase (23 Nov 2026).
+Situs produksi `https://kusafa-app.vercel.app` **HTTP 200** dan menyajikan bundel yang sama dengan hasil build lokal commit `cdb7c98`. Login/data Supabase diverifikasi pada 23 Nov 2026.
 
 ---
 

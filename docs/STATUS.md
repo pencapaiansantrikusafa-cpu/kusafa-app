@@ -1,14 +1,14 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **23 November 2026, 15.40** (waktu lokal mesin pengembang).
+**Sumber kebenaran status.** Diperbarui: **23 November 2026** (audit dokumentasi dan verifikasi ulang; waktu lokal mesin pengembang).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` (satu-satunya branch; tidak ada branch lain, lokal maupun remote) |
-| Commit terakhir | `cdb7c98` - T5: dropdown melayang di lapisan tertinggi, cari dengan nomor, label bermata-pelajaran, konfirmasi hanya untuk bidang yang diubah, rapikan data Ramadhan |
-| Keadaan Git | bersih (`nothing to commit, working tree clean`), sejajar dengan `origin/main` |
+| Commit terakhir sebelum audit ini | `7278113` - docs: perbarui status, handover, peta kode |
+| Keadaan Git saat audit | bersih setelah commit audit; akan di-push ke `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
 Semua angka di bawah diperiksa langsung pada 23 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
@@ -49,7 +49,7 @@ Catatan kejujuran status:
 | Build | `npm run build` | **BERHASIL**. 102 modul. `dist/index.html` 0,42 kB; CSS 18,11 kB (gzip 4,34 kB); JS 475,43 kB (gzip 136,20 kB) |
 | Uji unit | `npm run test` | **LULUS 6/6** (`tests/putaran.test.mjs`, aturan khatam/pengulangan) |
 | Lint | `npm run lint` | **TIDAK ADA** perintahnya di `package.json`. Tidak ada ESLint di repo. Jadi tidak ada hasil lint |
-| Kerentanan paket | `npm audit --omit=dev` | **2 kerentanan sedang**; `npm audit fix --force` belum dijalankan (berisiko merusak versi paket) |
+| Audit dependensi | `npm audit --omit=dev` | **2 kerentanan sedang** pada `react-router`/`react-router-dom` 6.0.0-7.17.0 (GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). Perbaikan tersedia lewat `npm audit fix --force` (breaking change). Belum dijalankan. |
 | Pemeriksaan keamanan repo | `python scripts/check_repo_safety.py` | **LOLOS** |
 
 ---
@@ -153,6 +153,6 @@ Dari `src/App.tsx`:
 3. **69 capaian pada data dummy lebih kecil dari bulan sebelumnya** (Tahfidz 27, Kitabah 26, Tilawah 16; menyentuh 49 santri). Keputusan Mudir: dibiarkan karena dummy dan akan dihapus di T10. Di aplikasi, bidang seperti ini tampil dengan penanda ⚠ dan tidak ditanyakan bila tidak diubah.
 4. **Hari Efektif belum bisa diisi dari aplikasi** (T8). Akibatnya bulan 8-12 tidak diperiksa oleh notifikasi "data belum lengkap" selama `month_domain_settings` belum punya barisnya. Ini disengaja dan sudah disepakati (opsi B, 23 Nov 2026).
 5. **Kinerja memuat daftar item**: catatan sesi sebelumnya menyebut sekitar 4,7 detik untuk ±1.000 baris karena diambil per buku. **BELUM DIVERIFIKASI ulang** pada sesi ini.
-6. **4 kerentanan npm** menurut README lama (3 sedang, 1 tinggi). Pemeriksaan 23 Nov 2026 dengan `--omit=dev` menunjukkan 2 sedang. Selisih ini belum ditelusuri. `npm audit fix --force` belum dijalankan.
+6. **2 kerentanan npm sedang** (`react-router`/`react-router-dom` 6.0.0-7.17.0; GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). `npm audit fix --force` belum dijalankan karena berpotensi breaking change.
 7. **Level 6 belum punya pengampu dan jadwal** (4 santri). Ini data, bukan kode; menunggu keputusan Mudir.
 8. **Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan lain 15-21. Terlihat janggal; dicatat sebagai pertanyaan terbuka, belum diubah.

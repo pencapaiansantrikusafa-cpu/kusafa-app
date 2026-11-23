@@ -43,6 +43,13 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ## 23 November 2026
 
+### Audit dokumentasi dan verifikasi kondisi nyata (sesi ini)
+- **Diperiksa langsung**: `npx tsc --noEmit` lulus (0 galat), `npm run build` berhasil (2,34 dtk, 475,43 kB/gzip 136,20 kB), `npm run test` 6/6 lulus, `python scripts/check_repo_safety.py` lolos. Tidak ada skrip `lint`.
+- **Supabase diverifikasi via query**: 6 migrasi tercatat, 18 tabel semua RLS aktif (44 kebijakan), 4 view, 18 fungsi `public`, hitung baris tabel sesuai STATUS, `month_domain_settings` hanya domain `alquran` bulan 1-7, 7 presensi Ramadhan tanpa capaian memang sudah 0 (599 presensi).
+- **Vercel/produksi**: situs `https://kusafa-app.vercel.app` HTTP 200; bundel produksi sama dengan build lokal commit `cdb7c98`.
+- **Dokumen diperbarui**: `docs/STATUS.md`, `docs/HANDOVER.md`, `docs/FILE-MAP.md`, `docs/DATA-NOTES.md`, `README.md`, `docs/CHANGELOG.md` disesuaikan dengan fakta terverifikasi. Koreksi: fungsi `public` = 18 (bukan 19); kerentanan npm = 2 sedang (`react-router`/`react-router-dom`).
+- **Tidak ada perubahan logika aplikasi.** Tidak ada rahasia/data santri yang di-commit.
+
 ### T5b - Perbaikan masukan
 - Semua dropdown memakai `DropdownCari` (ada kotak pencarian).
 - Halaqah yang ditawarkan mengikuti amanah (`hanyaHalaqahDiampu`).

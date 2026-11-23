@@ -1,6 +1,7 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-Diperbarui: **23 November 2026, 15.40**. Commit terakhir: `cdb7c98`.
+Diperbarui: **23 November 2026** (audit dokumentasi dan verifikasi ulang).
+Commit terakhir yang sudah ada di remote sebelum commit audit ini: `7278113`.
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berkas ini.
