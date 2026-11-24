@@ -79,12 +79,18 @@ export default function KotakBelumLengkap({
   bulanId,
   halaqahAwal,
   guruAwal,
+  tunda = false,
 }: {
   bulanId: string;
   /** Halaqah yang boleh dilihat (dari halaman induk; tidak diunduh ulang). */
   halaqahAwal?: { id: string; code: string }[];
   /** Pengampu tiap halaqah (dari halaman induk; tidak diunduh ulang). */
   guruAwal?: GuruBaris[];
+  /**
+   * T5c-2: tunggu sampai `tunda` menjadi false sebelum memeriksa. Dipakai halaman Input
+   * agar kotak notifikasi tidak menahan/menyaingi pemuatan form utama (form lebih penting).
+   */
+  tunda?: boolean;
 }) {
   const { profile } = useAuth();
   const [buka, setBuka] = useState(true);
@@ -112,7 +118,7 @@ export default function KotakBelumLengkap({
 
   useEffect(() => {
     let aktif = true;
-    if (!boleh || !bulanId) {
+    if (!boleh || !bulanId || tunda) {
       setData(null);
       return;
     }
@@ -263,7 +269,7 @@ export default function KotakBelumLengkap({
     return () => {
       aktif = false;
     };
-  }, [bulanId, boleh, batasiAmanah, profile, halaqahAwal, guruAwal]);
+  }, [bulanId, boleh, batasiAmanah, profile, halaqahAwal, guruAwal, tunda]);
 
   // Notifikasi turunan: santri aktif yang belum punya halaqah di domain yang
   // boleh dilihat role ini. Hak lihat ditegakkan database (fungsi security
