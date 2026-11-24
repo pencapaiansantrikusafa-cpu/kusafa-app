@@ -1,7 +1,7 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-Diperbarui: **24 November 2026** (pra-T6 langkah [3/5] dan [4/5]).
-Commit terakhir yang sudah ada di remote sebelum commit langkah [4/5]: `e9e292c`.
+Diperbarui: **24 November 2026** (pra-T6 langkah [3/5], [4/5], dan audit [5/5]).
+Commit terakhir yang sudah ada di remote sebelum commit audit [5/5]: `6df3842`.
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berkas ini.
@@ -10,18 +10,19 @@ Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berka
 
 ## 1. Posisi sekarang
 
-**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **Pra-T6 langkah [1]-[4] selesai** pada 24 Nov 2026. **T6 belum dimulai** dan menunggu jawaban Mudir atas laporan audit.
-Build/tsc/uji hijau (lihat STATUS bagian 2, 2a, dan 2b).
+**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **Pra-T6 langkah [1]-[5] selesai** pada 24 Nov 2026. **T6 belum dimulai** dan menunggu jawaban Mudir atas laporan audit.
+Build/tsc/uji hijau (lihat STATUS bagian 2, 2a, 2b, 2c).
 
 Yang berfungsi hari ini:
 - Login dan menu per role (Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyrif/ah, Mudarris/ah).
 - Tabel capaian Al Qur'an per halaqah dan bulan (Lalu/Kini/Selisih, target, Hadir/HE).
 - Halaman satu santri (grafik + riwayat).
-- Input capaian Al Qur'an: simpan ke database, putaran khatam/pengulangan, kehadiran, catatan, notifikasi data belum lengkap.
-- Notifikasi **"santri belum punya halaqah"** per domain (perluasan kotak "data belum lengkap"); lihat `docs/SPEC.md` bagian 9.
-- Deploy Vercel yang benar-benar tersambung ke Supabase (diuji 23 Nov 2026).
+- Input capaian Al Qur'an (putaran khatam/pengulangan, kehadiran, catatan).
+- Notifikasi **"data belum lengkap"** dan **"santri belum punya halaqah"** per domain (`docs/SPEC.md` §8/§9).
+- Matriks RLS otomatis (38 OK / 0 GAGAL) dan uji unit 14/14.
+- Deploy Vercel tersambung ke Supabase (diuji 23 Nov 2026).
 
-Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinamis (T7), semua layar pengelolaan termasuk **Hari Efektif** dan **penugasan halaqah** (T8), uji otomatis dan QA (T9), pembersihan data dummy + repo privat (T10).
+Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinamis (T7), semua layar pengelolaan termasuk **Hari Efektif** dan **penugasan halaqah** (T8), QA penuh (T9), pembersihan data dummy + repo privat (T10).
 
 ---
 
@@ -103,7 +104,9 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 5. **69 capaian data dummy mundur** dari bulan sebelumnya (Tahfidz 27, Kitabah 26, Tilawah 16). Disepakati dibiarkan karena dummy. Konfirmasi ulang sebelum T9, karena uji QA akan sering bertemu angka ini.
 6. **Isi Data Awal (252 capaian)** dipertahankan untuk sekarang. Apakah dikosongkan saat data asli dimuat? Keputusan ditunda ke T10.
 7. **Repo masih publik.** Harus dijadikan privat sebelum data asli dimuat (T10).
-8. **Boleh mulai T6?** Pra-T6 langkah [1]-[4] selesai dan dilaporkan; T6 menunggu jawaban Mudir.
+8. **Boleh mulai T6?** Pra-T6 langkah [1]-[5] selesai dan dilaporkan; T6 menunggu jawaban Mudir.
+9. **Naik react-router ke 7.x?** Kedua kerentanan (`react-router`) hanya tertambal di 7.18.0. Dicoba di branch `chore/react-router-fix`. Keputusan Mudir diperlukan sebelum di-merge karena perubahan mayor.
+10. **Pasang ESLint?** Rencana tertulis di STATUS 2c; butuh persetujuan Mudir (menambah dependensi dev).
 
 ---
 

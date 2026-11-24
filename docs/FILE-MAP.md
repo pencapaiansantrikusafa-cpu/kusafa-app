@@ -97,10 +97,13 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261121000004_targets_progress.sql` | Target, capaian (`progress_entries`), kehadiran, catatan bulanan. |
 | `migrations/20261121000005_functions_views.sql` | Fungsi bantu (posisi, hak akses, urut ulang) dan view laporan. |
 | `migrations/20261121000006_rls.sql` | Semua kebijakan Row Level Security. |
+| `migrations/20261121000007_harden_function_grants.sql` | Hardening fungsi: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` pada fungsi INVOKER. |
+| `migrations/20261121000008_month_zero_not_open.sql` | Bulan 0 (Data Awal) bukan bulan input staf: `month_is_open(bulan 0, domain)` = false; bulan 1-12 tetap ikut `is_locked`. |
+| `migrations/20261121000009_students_without_halaqah.sql` | Notifikasi "santri belum punya halaqah": fungsi `students_without_halaqah`(_count) security definer, periksa `can_manage` di dalam fungsi, `revoke` anon. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261121000007_...`.
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261121000010_...`.
 
 ---
 

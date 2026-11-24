@@ -1,14 +1,14 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5] dan [4/5]).
+**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5], [4/5], dan audit [5/5]).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
-| Branch | `main` (satu-satunya branch; tidak ada branch lain, lokal maupun remote) |
-| Commit terakhir sebelum commit ini | `e9e292c` - pra-T6 [3/5]: koreksi HE Rabiul Awwal + aturan bulan 0 + kasus uji santri tanpa halaqah |
-| Keadaan Git saat pembaruan | perubahan langkah [4/5] dikomit lalu di-push ke `origin/main` |
+| Branch | `main` (+ branch kerja `chore/react-router-fix` untuk uji naik mayor, TIDAK di-merge) |
+| Commit terakhir sebelum commit audit [5/5] | `6df3842` - pra-T6 [4/5]: notifikasi santri belum punya halaqah |
+| Keadaan Git saat pembaruan | perubahan audit [5/5] dikomit lalu di-push ke `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
 Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
@@ -29,7 +29,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah masih pesan "dikerjakan pada T6" |
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
-| **Pra-T6 [1-4/5]** | Audit, hardening, perbaikan data, notifikasi santri tanpa halaqah | **SELESAI untuk langkah [1]-[4]** | `docs/qa/`, `scripts/qa/test_no_halaqah.py`, `scripts/qa/test_students_without_halaqah.py`, migrasi `20261121000007`/`00008`/`00009`, `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | Hasil di bagian 2a; langkah [5] dan T6 menunggu instruksi Mudir |
+| **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs`, branch `chore/react-router-fix` | Hasil di bagian 2a/2b/2c. T6 menunggu instruksi Mudir |
 | **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Rencana kerja di `docs/CATATAN-TAHAPAN.md` |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
@@ -48,7 +48,7 @@ Catatan kejujuran status:
 |---|---|---|
 | TypeScript | `npx tsc --noEmit` | **LULUS**, 0 galat (kode keluar 0) |
 | Build | `npm run build` | **BERHASIL**. 102 modul. `dist/index.html` 0,42 kB; CSS 18,11 kB (gzip 4,34 kB); JS 475,43 kB (gzip 136,20 kB) |
-| Uji unit | `npm run test` | **LULUS 6/6** (`tests/putaran.test.mjs`, aturan khatam/pengulangan) |
+| Uji unit | `npm run test` | **LULUS 14/14** (`tests/putaran.test.mjs` 6 + `tests/audit-rules.test.mjs` 8: lintas buku, target×Hadir, mundur, khatam, bulan terkunci) |
 | Lint | `npm run lint` | **TIDAK ADA** perintahnya di `package.json`. Tidak ada ESLint di repo. Jadi tidak ada hasil lint |
 | Audit dependensi | `npm audit --omit=dev` | **2 kerentanan sedang** pada `react-router`/`react-router-dom` 6.0.0-7.17.0 (GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). Perbaikan tersedia lewat `npm audit fix --force` (breaking change). Belum dijalankan. |
 | Pemeriksaan keamanan repo | `python scripts/check_repo_safety.py` | **LOLOS** |
@@ -78,6 +78,41 @@ Catatan kejujuran: seluruh uji tulis di atas berjalan dalam transaksi lalu `ROLL
 | Frontend | `tsc`, `build`, `npm test` hijau | bagian 2 |
 
 Catatan: prompt menulis "Migrasi 000008", tetapi nomor itu sudah dipakai langkah [3/5] untuk `month_zero_not_open`, sehingga migrasi notifikasi ini memakai nomor berikutnya `20261121000009`.
+
+---
+
+## 2c. Audit pra-T6 langkah [5/5] — hasil dan keterbatasan (24 November 2026)
+
+### Matriks RLS otomatis (item 1) — `scripts/qa/rls_matrix.py`, `docs/qa/rls_matrix_2026-11-24.json`
+**38/46 OK • 8 SKIP (BELUM DIUJI) • 0 GAGAL.** Semua probe di dalam transaksi lalu `ROLLBACK`.
+- SKIP = wali (3, role belum aktif, tidak ada profil wali) dan penyetujuan target (5, tidak ada target berstatus `diajukan` di data dummy) → **BELUM DIUJI**, bukan lolos.
+- Yang terbukti: semua 7 staf membaca; Musyrif menulis hanya halaqah diampu; Admin/Mudir menulis di mana pun; bulan terkunci menolak Musyrif/Masul dan menerima Admin; Hari Efektif hanya Admin/Mudir; profil hanya Admin/Mudir; anon disembunyikan RLS untuk semua tabel yang diuji.
+- Catatan pengukuran: UPDATE/DELETE yang disembunyikan RLS berhasil "tanpa galat" tapi 0 baris; matriks menilai 0 baris sebagai ditolak. Kalau tidak, hasil palsu "DITERIMA".
+
+### Uji otomatis frontend (item 2) — `tests/audit-rules.test.mjs`
+`npm test` kini **14/14** (6 lama + 8 baru). Yang ditambahkan (cermin rumus `docs/SPEC.md` §5, dijalankan tanpa DB): selisih lintas buku memakai `item_position`, target bulanan = target harian × Hadir (boleh pecahan), capaian mundur/pengulangan tetap selisih negatif, khatam = putaran + 1, bulan terkunci (bulan 0 tutup, bulan efektif ikut `is_locked`, hanya Admin/Mudir yang lolos).
+
+### Kinerja muat item (item 3) — **dianalisis, TIDAK diubah**
+Penyebab: halaman Input Al Qur'an (`InputPage.tsx`) memuat **semua** `curriculum_items` aktif buku-buku domain itu secara eager (per buku via `ambilSemua`). Ukuran nyata di DB: domain Al Qur'an = **128 buku, 9.177 item aktif** (total 10.954 item, 0 non-aktif). Dropdown hanya menampilkan 60 per buka, tapi 9.177 baris tetap diunduh lebih dulu → lambat (~detik).
+- **Opsi A — pencarian di server (RPC)**: tambah fungsi `curriculum_items_search(q)` yang mengembalikan hanya item yang cocok teks/nomor (dibatasi, mis. 100). Dampak: hilang unduh 9 ribu baris; butuh fungsi + RLS + perubahan `DropdownCari` agar memanggil RPC saat mengetik; paling besar dampaknya (disarankan).
+- **Opsi B — muat lazy per buku kapital**: muat item buku hanya saat pengguna membuka/berganti buku itu. Dampak: mengurangi transfer awal, tetapi dropdown lintas buku jadi tidak langsung; perlu state buku aktif.
+- **Opsi C — cache klien lintas halaman**: simpan daftar item di memori sesi agar hanya halaman pertama lambat; ditambah indeks teks (`pg_trgm`/`tsvector`). Dampak: navigasi berikutnya cepat, tapi muat awal tetap berat; paling kecil usaha.
+Rekomendasi: **Opsi A** (paling besar dampak, sesuai kebijakan "ambilSemua untuk daftar 1.000+" dan dropdown 60).
+
+### react-router (item 4) — **diuji di branch `chore/react-router-fix`, TIDAK di-merge**
+- Terpasang `react-router-dom@6.30.6` / `react-router@6.30.6`.
+- **GHSA-wrjc-x8rr-h8h6 (CVE-2026-53669)**: *open redirect* lewat `\` pada `<Link>`/`useNavigate`; terpengaruh `>=6.0.0, <7.18.0`; tertambal **7.18.0**. Dampak pada SPA ini: tidak saat ini dieksploitasi — navigasi memakai rute internal tetap, tidak ada path dari pengguna diteruskan ke `navigate`/`<Link>`; tapi tetap best-practice pindah ke versi tertambal.
+- **GHSA-337j-9hxr-rhxg (CVE-2026-53666)**: *arbitrary constructor injection via deserializeErrors* pada SSR/hydration; terpengaruh `>=6.4.0, <7.18.0`; tertambal **7.18.0**. **TIDAK berpengaruh** pada SPA ini: memakai *Declarative Mode*, tanpa SSR/data-mode (catatan resmi advisory).
+- **Tidak ada versi tertambal "tanpa pindah mayor"**: kedua advisory hanya mencantumkan patched `7.18.0` (mayor 7), jadi perbaikan **wajib naik 6→7**. Hasil uji `tsc`/`build`/`test` di branch tersebut tercatat di `docs/STATUS.md` dan laporan — branch **dibiarkan, tidak di-merge** (keputusan naik mayor untuk Mudir).
+
+### Rencana ESLint (item 5) — **belum dipasang**
+Tidak ada `lint` di `package.json`. Rencana (tanpa mengubah kode sekarang): pasang `eslint` + `@typescript-eslint/*` + `eslint-plugin-react-hooks`; skrip `lint`; mulai dari aturan error ringan (hooks, unused, `any`), lalu tingkatkan. Denda: menunggu keputusan Mudir karena menambah dependensi dev dan bisa memunculkan banyak peringatan baru.
+
+### Secret-scan & gitleaks (item 6)
+`gitleaks` **tidak terpasang** (tidak bisa dipasang tanpa mengubah sistem). Karena itu pola ditambahkan ke `scripts/check_repo_safety.py`: `VERCEL_OIDC_TOKEN` (penugasan/issuer OIDC Vercel), `sb_secret_`, `service_role` mentah, dan `postgres://` (sudah ada, dipertegas). Diverifikasi: string tiruan terdeteksi; penyebutan nama tanpa nilai **tidak** salah-positif; `check_repo_safety.py` **LULUS** (rc 0).
+
+### Kebugaran artefak QA (item 7)
+`grep` pada `docs/qa/` dan `scripts/qa/` hanya menemukan penyebutan pola (metadata audit), **tanpa nilai rahasia nyata**. Semua berkas QA berisi data dummy NIS/nama.
 
 ---
 
@@ -183,7 +218,7 @@ Dari `src/App.tsx`:
 3. **69 capaian pada data dummy lebih kecil dari bulan sebelumnya** (Tahfidz 27, Kitabah 26, Tilawah 16; menyentuh 49 santri). Keputusan Mudir: dibiarkan karena dummy dan akan dihapus di T10. Di aplikasi, bidang seperti ini tampil dengan penanda ⚠ dan tidak ditanyakan bila tidak diubah.
 4. **Hari Efektif belum bisa diisi dari aplikasi** (T8). Akibatnya bulan 8-12 tidak diperiksa oleh notifikasi "data belum lengkap" selama `month_domain_settings` belum punya barisnya. Ini disengaja dan sudah disepakati (opsi B, 23 Nov 2026).
 5. **Kinerja memuat daftar item**: catatan sesi sebelumnya menyebut sekitar 4,7 detik untuk ±1.000 baris karena diambil per buku. **BELUM DIVERIFIKASI ulang** pada sesi ini.
-6. **2 kerentanan npm sedang** (`react-router`/`react-router-dom` 6.0.0-7.17.0; GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). `npm audit fix --force` belum dijalankan karena berpotensi breaking change.
+6. **2 kerentanan npm sedang** (`react-router`/`react-router-dom`; GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). Keduanya tertambal **hanya** di `7.18.0` (mayor 7); tidak ada versi 6.x tertambal. GHSA-337j tidak memengaruhi SPA ini (tanpa SSR); GHSA-wrjc tidak saat ini dieksploitasi (navigasi memakai rute internal tetap). Naik 6→7 dicoba di branch `chore/react-router-fix` (belum di-merge).
 7. **Level 6 belum punya pengampu dan jadwal** (4 santri). Ini data, bukan kode; menunggu keputusan Mudir.
 8. ~~**Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan lain 15-21.~~ **SELESAI 24 Nov 2026:** dikonfirmasi keliru dan dikoreksi menjadi 19 lewat SQL. Excel sumber masih 3; Mudir harus memperbaikinya agar seed ulang tidak mengembalikan 3.
 9. **Pendaftaran (signup) publik di Supabase Auth masih aktif** (`disable_signup = false`). Belum bisa dimatikan dari lingkungan ini karena butuh Dashboard Supabase atau Management API PAT. **Menunggu tindakan Mudir:** Authentication → Providers → Email → matikan "Allow new users to sign up". Setelah nonaktif, akun hanya dibuat Admin.

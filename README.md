@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 23 November 2026, commit `7278113` (audit dokumentasi). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 24 November 2026, commit `6df3842` (pra-T6 [4/5]) → *dengan tambahan audit pra-T6 [5/5]*. Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|
@@ -30,15 +30,16 @@ Diperbarui 23 November 2026, commit `7278113` (audit dokumentasi). Rincian dan b
 | T3 | Tabel capaian halaqah Al Qur'an | SELESAI |
 | T4 | Halaman satu santri | SELESAI |
 | T5 | Input capaian Al Qur'an (+ T5b) | SELESAI |
+| Pra-T6 | Audit & perbaikan data (langkah 1-5) | **SELESAI (langkah [1]-[5])** |
 | T6 | Tabel dan input Wasilah & Ghayah | BELUM |
 | T7 | Target dinamis (ajukan/setujui) | BELUM |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | BELUM |
 | T9 | Pengujian & QA (RLS otomatis, tampilan HP) | BELUM |
 | T10 | Deploy akhir (hapus data dummy, repo privat) | BELUM |
 
-Pemeriksaan terakhir (23 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **6/6 lulus**, `python scripts/check_repo_safety.py` **lolos**. Tidak ada perintah `lint` di proyek ini. `npm audit --omit=dev` melaporkan 2 kerentanan sedang pada `react-router`/`react-router-dom` (belum diperbaiki).
+Pemeriksaan terakhir (24 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **14/14 lulus**, `python scripts/check_repo_safety.py` **lolos**, matriks RLS otomatis **38/46 OK, 8 SKIP, 0 GAGAL**. Tidak ada perintah `lint` di proyek ini. `npm audit` melaporkan 2 kerentanan sedang (`react-router`/`react-router-dom`: GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg) yang **hanya** tertambal di mayor **7.x** (lihat `docs/STATUS.md` bagian 2c dan percobaan di branch `chore/react-router-fix`).
 
-Situs produksi `https://kusafa-app.vercel.app` **HTTP 200** dan menyajikan bundel yang sama dengan hasil build lokal commit `cdb7c98`. Login/data Supabase diverifikasi pada 23 Nov 2026.
+Situs produksi `https://kusafa-app.vercel.app` **HTTP 200**; login/data Supabase diverifikasi 23 Nov 2026.
 
 ---
 

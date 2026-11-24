@@ -5,6 +5,33 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 24 November 2026 - Pra-T6 (audit & perbaikan data sebelum T6)
+
+### Langkah [1] - Audit dan hardening fungsi
+- Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
+- Uji DB pra-T6 (`scripts/qa/run_pre_t6_db_tests.py`).
+
+### Langkah [2] - Keputusan bulan 0 dan santri tanpa halaqah
+- Aturan bulan 0 (Data Awal) ditetapkan: bukan bulan efektif/target, bukan bulan input staf; migrasi `20261121000008_month_zero_not_open.sql` (`month_is_open(bulan 0)=false`).
+- NIS 023/024 dibiarkan sebagai kasus uji "santri yang tidak ikut semua halaqah"; `scripts/qa/test_no_halaqah.py` (9/9 PASS).
+
+### Langkah [3] - Perbaikan data
+- Hari Efektif Rabiul Awwal Al Qur'an 3→19 lewat `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` (Excel sumber masih 3, wajib diperbaiki Mudir).
+
+### Langkah [4] - Notifikasi "santri belum punya halaqah"
+- Migrasi `20261121000009_students_without_halaqah.sql`: fungsi `students_without_halaqah`(_count) security definer, cek `can_manage`, revoke anon.
+- UI di `KotakBelumLengkap.tsx` (perluasan "data belum lengkap", bukan sistem baru). Uji 13/13 PASS.
+
+### Langkah [5] - Audit lengkap + dokumentasi
+- Matriks RLS otomatis `scripts/qa/rls_matrix.py` (38/46 OK, 8 SKIP, 0 GAGAL).
+- Uji unit `tests/audit-rules.test.mjs` (npm test 14/14).
+- Analisis kinerja muat item (9.177 item Al Qur'an) + 3 opsi; **belum diubah**.
+- react-router: kedua advisory tertambal hanya di mayor 7; diuji di branch `chore/react-router-fix` (tidak di-merge).
+- Rencana ESLint; `check_repo_safety.py` diperkuat (pola VERCEL_OIDC_TOKEN, sb_secret, service_role, postgres://).
+- `npm run typecheck` dan `npm run build` lulus.
+
+---
+
 ## 22 November 2026
 
 ### A-G - Persiapan dan rilis awal
