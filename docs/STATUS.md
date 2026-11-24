@@ -7,7 +7,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `c86415c` - T5c percepat halaman Input |
+| Commit terakhir | `35361ab` - T5c-2 satu permintaan per tahap |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
