@@ -1,0 +1,47 @@
+{
+  "ran_at": "2026-11-25T00:03:14.544232",
+  "tests": [
+    {
+      "name": "konteks_admin_semua_domain",
+      "ok": true,
+      "detail": "postgres melihat ['ghayah', 'wasilah'] (Al Qur'an 0 karena 0 santri)",
+      "evidence": {}
+    },
+    {
+      "name": "b_koneksi_admin_melihat_semua_domain",
+      "ok": true,
+      "detail": "service_role melihat ['ghayah', 'wasilah'] == admin ['ghayah', 'wasilah']",
+      "evidence": {}
+    },
+    {
+      "name": "a_authenticated_tanpa_profil_0_baris",
+      "ok": true,
+      "detail": "authenticated(tanpa profil) REST -> detail=0 baris, count=0 baris (harus 0)",
+      "evidence": {}
+    },
+    {
+      "name": "c_musyrif_0_baris",
+      "ok": true,
+      "detail": "musyrif -> detail=0 baris, count=0 baris (harus 0)",
+      "evidence": {}
+    },
+    {
+      "name": "c_mudarris_0_baris",
+      "ok": true,
+      "detail": "mudarris -> detail=0 baris, count=0 baris (harus 0)",
+      "evidence": {}
+    },
+    {
+      "name": "c_wali_0_baris",
+      "ok": null,
+      "detail": "Tidak ada profil aktif wali.",
+      "evidence": {}
+    },
+    {
+      "name": "d_anon_ditolak",
+      "ok": true,
+      "detail": "Anon ditolak (InsufficientPrivilege).",
+      "evidence": {}
+    }
+  ]
+}
