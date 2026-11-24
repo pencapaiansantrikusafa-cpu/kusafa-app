@@ -1,0 +1,110 @@
+[
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.95,
+    "permintaan": 37,
+    "total_kb": 1061.2,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
+    "nav": {
+      "dcl_ms": 27.6,
+      "load_ms": 27.9
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/progress_entries",
+        "bytes": 2,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
+        "status": 200
+      }
+    ],
+    "putaran": 1
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.45,
+    "permintaan": 36,
+    "total_kb": 1059.7,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
+    "nav": {
+      "dcl_ms": 27.3,
+      "load_ms": 27.7
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/progress_entries",
+        "bytes": 2,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
+        "status": 200
+      }
+    ],
+    "putaran": 2
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.95,
+    "permintaan": 33,
+    "total_kb": 1046.5,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
+    "nav": {
+      "dcl_ms": 28.7,
+      "load_ms": 28.9
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/progress_entries",
+        "bytes": 2,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
+        "status": 200
+      }
+    ],
+    "putaran": 3
+  }
+]

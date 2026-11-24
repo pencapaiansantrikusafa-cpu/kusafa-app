@@ -1,0 +1,26 @@
+[
+ {
+  "putaran": 1,
+  "siap_detik": 4.0,
+  "permintaan": 156,
+  "total_kb": 1344.5,
+  "permintaan_items": 128,
+  "items_kb": 783.9
+ },
+ {
+  "putaran": 2,
+  "siap_detik": 3.49,
+  "permintaan": 157,
+  "total_kb": 1499.7,
+  "permintaan_items": 128,
+  "items_kb": 783.9
+ },
+ {
+  "putaran": 3,
+  "siap_detik": 2.99,
+  "permintaan": 156,
+  "total_kb": 1344.5,
+  "permintaan_items": 128,
+  "items_kb": 783.9
+ }
+]

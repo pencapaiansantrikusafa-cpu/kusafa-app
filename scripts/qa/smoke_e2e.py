@@ -143,7 +143,16 @@ def simpan_capaian(page, conn):
         if not dd:
             return "gagal", "dropdown item tidak muncul"
         dd[0].click()
-        page.wait_for_timeout(500)
+        # T5c: daftar awal kini diambil dari server (RPC) setelah panel dibuka;
+        # tunggu sampai pilihan muncul (bukan jeda tetap).
+        try:
+            page.wait_for_function(
+                "() => Array.from(document.querySelectorAll('[role=\"option\"]'))"
+                ".some(o => !o.innerText.includes('belum diisi'))",
+                timeout=20000,
+            )
+        except Exception:  # noqa: BLE001
+            pass
         opsi = [o for o in page.query_selector_all('[role="option"]') if "belum diisi" not in o.inner_text()]
         if not opsi:
             return "gagal", "tidak ada pilihan item"
@@ -206,14 +215,19 @@ def main():
                 ada_notif = ("belum lengkap" in isi.lower()) or ("belum punya halaqah" in isi.lower())
                 page.goto(BASE + "/input", wait_until="load")
                 tunggu_muat(page)
-                page.wait_for_timeout(1500)
-                isi_input = page.inner_text("main")
-                ada_kotak = "belum punya halaqah" in isi_input.lower()
+                # Notifikasi "belum punya halaqah" dimuat dari database. Polling (bukan
+                # wait_for_function pada elemen): elemen dari React baru ada setelah render.
+                ada_kotak = False
+                for _ in range(60):
+                    isi_input = page.inner_text("main")
+                    if "belum punya halaqah" in isi_input.lower() and "Memeriksa..." not in isi_input:
+                        ada_kotak = True
+                        break
+                    page.wait_for_timeout(1000)
                 catat(role, "notifikasi",
                       ada_kotak if role in ("mudir", "admin", "masul_wasilah", "masul_ghayah") else True,
                       ("kotak 'santri belum punya halaqah' tampil" if ada_kotak
-                       else ("tidak tampil (wajar untuk role ini)" if role not in
-                             ("mudir", "admin") else "TIDAK TAMPIL untuk role ini")))
+                       else "tidak tampil (wajar untuk role ini)"))
                 if role == "mudir" and DATA_UJI:
                     status, ket = simpan_capaian(page, conn)
                     catat(role, "simpan_dan_kembalikan", status in ("berhasil", "lompati"), f"[{status}] {ket}")
