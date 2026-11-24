@@ -157,6 +157,7 @@ commit ini. Semua di komputer & jaringan yang sama.
 | Byte data item | **783,9 KB** | **≈0 KB** |
 | Payload REST halaman ini | ~1,34–1,50 MB | **≈0,55 MB** (atau ~1,0 MB bila cache kosong) |
 | Geser horizontal HP 360 px | - | **tidak ada** (`scrollWidth` 360 = lebar layar) |
+| **Produksi (Vercel)** | **3,0–3,9 s**, 129 permintaan item (bundel lama) | **1,51–2,04 s**, **2** permintaan item; HP 360: 1,51–2,63 s; smoke produksi 28/28 |
 
 - **Target "di bawah 1 detik" BELUM tercapai.** Sisa waktu ±1,4 s berasal dari penundaan jaringan ke
   database (`ap-southeast-1`): round-trip REST dari mesin ini **0,24–1,3 s** (median ≈0,4 s), dan halaman

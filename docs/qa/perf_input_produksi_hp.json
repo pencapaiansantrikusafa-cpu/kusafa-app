@@ -1,0 +1,74 @@
+[
+  {
+    "role": "mudir",
+    "viewport": 360,
+    "siap_detik": 2.63,
+    "permintaan": 38,
+    "total_kb": 555.3,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
+    "nav": {
+      "dcl_ms": 1258.2,
+      "load_ms": 1258.4
+    },
+    "lebar": {
+      "inner": 360,
+      "doc": 360
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/progress_entries",
+        "bytes": 2,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
+        "status": 200
+      }
+    ],
+    "putaran": 1
+  },
+  {
+    "role": "mudir",
+    "viewport": 360,
+    "siap_detik": 1.51,
+    "permintaan": 34,
+    "total_kb": 555.1,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
+    "nav": {
+      "dcl_ms": 141.7,
+      "load_ms": 141.9
+    },
+    "lebar": {
+      "inner": 360,
+      "doc": 360
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/progress_entries",
+        "bytes": 2,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
+        "status": 200
+      }
+    ],
+    "putaran": 2
+  }
+]

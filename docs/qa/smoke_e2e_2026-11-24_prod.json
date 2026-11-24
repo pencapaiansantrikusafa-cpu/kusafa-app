@@ -1,6 +1,6 @@
 {
   "base": "https://kusafa-app.vercel.app",
-  "ran_at": "2026-11-24T22:49:36.220496",
+  "ran_at": "2026-11-24T23:52:28.913667",
   "hasil": [
     {
       "role": "mudir",
@@ -70,6 +70,102 @@
     },
     {
       "role": "masul_alquran",
+      "langkah": "konsol_bersih",
+      "ok": true,
+      "pesan": "tanpa galat konsol"
+    },
+    {
+      "role": "masul_wasilah",
+      "langkah": "login+utama",
+      "ok": true,
+      "pesan": "header tampil setelah login"
+    },
+    {
+      "role": "masul_wasilah",
+      "langkah": "notifikasi",
+      "ok": true,
+      "pesan": "kotak 'santri belum punya halaqah' tampil"
+    },
+    {
+      "role": "masul_wasilah",
+      "langkah": "halaman_capaian",
+      "ok": true,
+      "pesan": "termuat tanpa galat"
+    },
+    {
+      "role": "masul_wasilah",
+      "langkah": "konsol_bersih",
+      "ok": true,
+      "pesan": "tanpa galat konsol"
+    },
+    {
+      "role": "masul_ghayah",
+      "langkah": "login+utama",
+      "ok": true,
+      "pesan": "header tampil setelah login"
+    },
+    {
+      "role": "masul_ghayah",
+      "langkah": "notifikasi",
+      "ok": true,
+      "pesan": "kotak 'santri belum punya halaqah' tampil"
+    },
+    {
+      "role": "masul_ghayah",
+      "langkah": "halaman_capaian",
+      "ok": true,
+      "pesan": "termuat tanpa galat"
+    },
+    {
+      "role": "masul_ghayah",
+      "langkah": "konsol_bersih",
+      "ok": true,
+      "pesan": "tanpa galat konsol"
+    },
+    {
+      "role": "musyrif",
+      "langkah": "login+utama",
+      "ok": true,
+      "pesan": "header tampil setelah login"
+    },
+    {
+      "role": "musyrif",
+      "langkah": "notifikasi",
+      "ok": true,
+      "pesan": "tidak tampil (wajar untuk role ini)"
+    },
+    {
+      "role": "musyrif",
+      "langkah": "halaman_capaian",
+      "ok": true,
+      "pesan": "termuat tanpa galat"
+    },
+    {
+      "role": "musyrif",
+      "langkah": "konsol_bersih",
+      "ok": true,
+      "pesan": "tanpa galat konsol"
+    },
+    {
+      "role": "mudarris",
+      "langkah": "login+utama",
+      "ok": true,
+      "pesan": "header tampil setelah login"
+    },
+    {
+      "role": "mudarris",
+      "langkah": "notifikasi",
+      "ok": true,
+      "pesan": "tidak tampil (wajar untuk role ini)"
+    },
+    {
+      "role": "mudarris",
+      "langkah": "halaman_capaian",
+      "ok": true,
+      "pesan": "termuat tanpa galat"
+    },
+    {
+      "role": "mudarris",
       "langkah": "konsol_bersih",
       "ok": true,
       "pesan": "tanpa galat konsol"

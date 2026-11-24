@@ -2,15 +2,15 @@
   {
     "role": "mudir",
     "viewport": 1440,
-    "siap_detik": 3.89,
-    "permintaan": 167,
-    "total_kb": 1503.9,
-    "permintaan_items": 129,
-    "items_kb": 783.9,
-    "permintaan_rpc": 1,
+    "siap_detik": 1.76,
+    "permintaan": 36,
+    "total_kb": 543.5,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
     "nav": {
-      "dcl_ms": 575.9,
-      "load_ms": 577.6
+      "dcl_ms": 495.8,
+      "load_ms": 497.4
     },
     "lebar": {
       "inner": 1440,
@@ -28,53 +28,8 @@
         "status": 200
       },
       {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2553,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 686,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 508,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2479,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 1742,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 3265,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2303,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 586,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 4346,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 326,
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
         "status": 200
       }
     ],
@@ -83,15 +38,15 @@
   {
     "role": "mudir",
     "viewport": 1440,
-    "siap_detik": 3.03,
-    "permintaan": 163,
-    "total_kb": 1502.5,
-    "permintaan_items": 129,
-    "items_kb": 783.9,
-    "permintaan_rpc": 1,
+    "siap_detik": 2.04,
+    "permintaan": 33,
+    "total_kb": 543.5,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
     "nav": {
-      "dcl_ms": 204.6,
-      "load_ms": 206
+      "dcl_ms": 198.3,
+      "load_ms": 198.4
     },
     "lebar": {
       "inner": 1440,
@@ -109,53 +64,8 @@
         "status": 200
       },
       {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2479,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2509,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 4684,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 586,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 480,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2593,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2479,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 334,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2553,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2501,
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
         "status": 200
       }
     ],
@@ -164,15 +74,15 @@
   {
     "role": "mudir",
     "viewport": 1440,
-    "siap_detik": 3.03,
-    "permintaan": 168,
-    "total_kb": 1514.2,
-    "permintaan_items": 129,
-    "items_kb": 783.9,
-    "permintaan_rpc": 1,
+    "siap_detik": 1.51,
+    "permintaan": 37,
+    "total_kb": 557.0,
+    "permintaan_items": 2,
+    "items_kb": 0.0,
+    "permintaan_rpc": 2,
     "nav": {
-      "dcl_ms": 182.3,
-      "load_ms": 183.7
+      "dcl_ms": 212.5,
+      "load_ms": 215.1
     },
     "lebar": {
       "inner": 1440,
@@ -190,53 +100,8 @@
         "status": 200
       },
       {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2479,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2479,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 480,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 9358,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2593,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2553,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2509,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 2501,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 586,
-        "status": 200
-      },
-      {
-        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/curriculum_items",
-        "bytes": 413,
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/curriculum_items_by_ids",
+        "bytes": 2,
         "status": 200
       }
     ],
