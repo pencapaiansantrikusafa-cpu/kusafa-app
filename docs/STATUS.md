@@ -30,7 +30,8 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
 | **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs` | Hasil di bagian 2a/2b/2c |
-| **T5c** | Percepat halaman Input (pencarian item di server) | **SELESAI** (target <1 detik belum; lihat 2e) | `src/pages/InputPage.tsx`, `DropdownCari.tsx`, migrasi `000011`, bagian 2e |
+| **T5c** | Percepat halaman Input (pencarian item di server) | **SELESAI** (lihat 2e) | `src/pages/InputPage.tsx`, `DropdownCari.tsx`, migrasi `000011`, bagian 2e |
+| **T5c-2** | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (lihat 2f) | migrasi `000012`, `InputPage.tsx`, bagian 2f |
 | **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
 | **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (berikutnya; belum boleh dimulai tanpa aba-aba Mudir) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Prasyarat T5c **sudah selesai** |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
@@ -173,6 +174,37 @@ commit ini. Semua di komputer & jaringan yang sama.
   service_role; anon ditolak 42501. `pg_trgm` dipasang di skema **`extensions`** — saat sempat di `public`,
   uji regresi menangkap **31 fungsi ekstensi terbuka ke anon**; kini **0** fungsi public terbuka ke anon.
 
+## 2f. Hasil T5c-2 — satu permintaan per tahap halaman Input (25 November 2026)
+
+**Yang diubah:** `InputPage` tidak lagi menjalankan ±20 permintaan berurutan ke database.
+Sekarang ada **2 RPC**:
+- `input_alquran_boot()` → halaqah, bulan, pengampu (pembukaan halaman);
+- `input_alquran_data(halaqah, bulan, bulan_lalu)` → bidang, Hari Efektif/kunci, santri, capaian,
+  item terpilih, buku, kehadiran, catatan, pos/putaran/teks bulan lalu, pos/selisih bulan ini,
+  dan bulan sesudahnya — **satu baris JSON**.
+
+Migrasi `20261124000012_input_alquran_data.sql`; `SECURITY INVOKER` + cek `is_staff()` (pola koneksi
+admin tanpa JWT seperti 000009/000011); EXECUTE hanya authenticated & service_role; **anon ditolak**.
+Posisi, selisih, putaran, target bulanan, dan Hadir **tetap dibaca dari view**, bukan dihitung ulang.
+
+| Ukuran | T5c (sebelum T5c-2) | T5c-2 (lokal, build) | T5c-2 (produksi) |
+|---|---|---|---|
+| Halaman siap, desktop | 1,44–1,95 s | **0,93–0,99 s** (5 putaran; 1 putaran 1,45 s) | **0,97–1,19 s** (5 putaran; 1 putaran 1,79 s) |
+| Halaman siap, HP 360 px | 1,44 s | 0,93–1,44 s | **0,95–1,05 s** |
+| Permintaan data (REST) | ±20 | **3** (boot, isi form, notifikasi) | **3** |
+| Permintaan `curriculum_items` | 2 | **0** | **0** |
+| Payload halaman | ~0,55 MB | ~0,54 MB | ~0,54 MB |
+
+- **Target < 1 detik tercapai pada kondisi jaringan normal** (median ±0,97 s lokal & produksi).
+  Sebagian pengukuran tertinggal di atas 1 s karena penundaan jaringan ke database (`ap-southeast-1`)
+  yang tidak stabil — dicatat apa adanya, bukan diabaikan.
+- **Perhitungan identik:** 114 baris `v_monthly_report` (3 halaqah × 2 bulan) sama persis sebelum/sesudah,
+  dan setiap baris paket RPC dibandingkan langsung dengan view (`pos`, `putaran`, `item_label`,
+  `prev_item_label`, `selisih`): **0 beda**.
+- **Uji:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; banding Excel 7/7; data awal 5/5;
+  no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP wali); matriks RLS 38/46 OK, 8 SKIP, 0 GAGAL;
+  smoke E2E **29/29** lokal (Mudir menyimpan satu capaian lewat UI lalu dikembalikan) & **28/28** produksi.
+
 ---
 
 ## 3. Status Supabase
@@ -180,7 +212,7 @@ commit ini. Semua di komputer & jaringan yang sama.
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-11 berkas migrasi, **kesebelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+12 berkas migrasi, **keduabelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -195,8 +227,9 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261121000009 | students_without_halaqah |
 | 20261124000010 | attendance_guard_revoke |
 | 20261124000011 | curriculum_search (T5c) |
+| 20261124000012 | input_alquran_data (T5c-2) |
 
-Migrasi berikutnya wajib memakai nomor `20261124000012_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261124000013_...` dan **tidak boleh** mengubah berkas lama.
 (Perhatikan: nomor `000010` di tanggal 24 sudah terpakai, jadi lanjut dari `000011`.)
 
 ### RLS (Row Level Security)
@@ -205,7 +238,7 @@ Migrasi berikutnya wajib memakai nomor `20261124000012_...` dan **tidak boleh** 
 - Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **20 fungsi** di skema `public` - 18 lama + 2 baru (`students_without_halaqah`, `students_without_halaqah_count`). Daftar lengkap di `docs/FILE-MAP.md`.
+- **24 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot`. Daftar lengkap di `docs/FILE-MAP.md`.
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)

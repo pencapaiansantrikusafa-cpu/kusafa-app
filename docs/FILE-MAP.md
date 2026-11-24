@@ -101,12 +101,13 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261121000008_month_zero_not_open.sql` | Bulan 0 (Data Awal) bukan bulan input staf: `month_is_open(bulan 0, domain)` = false; bulan 1-12 tetap ikut `is_locked`. |
 | `migrations/20261121000009_students_without_halaqah.sql` | Notifikasi "santri belum punya halaqah": fungsi `students_without_halaqah`(_count) security definer, periksa `can_manage` di dalam fungsi, `revoke` anon. |
 | `migrations/20261124000010_attendance_guard_revoke.sql` | Cabut `EXECUTE` `attendance_guard_override()` dari authenticated/PUBLIC/anon (fungsi trigger; trigger tetap jalan karena SECURITY DEFINER). |
+| `migrations/20261124000012_input_alquran_data.sql` | T5c-2: RPC `input_alquran_boot()` (halaqah+bulan+pengampu) & `input_alquran_data()` (seluruh isi form dalam satu JSON; angka dari view, tidak dihitung ulang). |
 | `migrations/20261124000011_curriculum_search.sql` | T5c: RPC `curriculum_items_search` (cari item per bidang, maks 60, skor = versi klien) & `curriculum_items_by_ids`; indeks GIN trigram label; `pg_trgm` di skema `extensions`; EXECUTE hanya authenticated/service_role. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000012_...`
-(nomor `000010` dan `000011` bertanggal 24 sudah terpakai).
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000013_...`
+(nomor `000010`-`000012` sudah terpakai).
 
 ---
 

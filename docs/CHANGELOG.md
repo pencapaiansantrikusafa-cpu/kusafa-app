@@ -33,6 +33,14 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - Uji regresi menangkap 31 fungsi ekstensi terbuka ke anon -> dipindah ke skema `extensions`; kini 0.
 - QA: `npm test` 14/14, tsc/build lulus, DB 16/16, regresi 7/7, smoke E2E 29/29.
 
+### T5c-2 - Satu permintaan per tahap halaman Input (25 November 2026)
+- Migrasi `20261124000012_input_alquran_data.sql`: RPC `input_alquran_boot()` dan `input_alquran_data(halaqah, bulan, bulan_lalu)`.
+  `SECURITY INVOKER`, cek `is_staff()`, EXECUTE hanya authenticated/service_role, anon ditolak.
+- `InputPage`: ±20 permintaan berurutan -> **2 RPC**; aturan "hanya halaqah diampu" tetap di React; nama halaqah tidak dikirim.
+- `KotakBelumLengkap`: opsi `tunda` agar tidak menahan form.
+- Hasil: halaman siap **1,44-1,95 s -> 0,97 s median produksi** (0,93-0,99 s lokal); HP 360 ~0,95-1,05 s; permintaan data 3.
+- Perhitungan identik (114 baris; paket RPC vs view: 0 beda). QA: npm test 14/14, DB 16/16, regresi 7/7, smoke 29/29 lokal & 28/28 produksi.
+
 ### Langkah [1] - Audit dan hardening fungsi
 - Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
 - Uji DB pra-T6 (`scripts/qa/run_pre_t6_db_tests.py`).

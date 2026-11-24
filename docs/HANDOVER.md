@@ -20,7 +20,8 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T5 | Input capaian Al Qur'an (+ T5b) | **SELESAI** | `InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`/`posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` |
 | Pra-T6 | Audit & perbaikan data (langkah [1]-[5]) | **SELESAI** | migrasi `000007`–`000009`, `scripts/qa/*`, `scripts/db/fixes/*`, `tests/audit-rules.test.mjs`, `docs/qa/*` |
 | Pra-T6 [6] | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | migrasi `000010`, `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_students_without_halaqah_p6.py`, `test_data_awal_tahun_kedua.py`, `docs/SPEC.md` 4a-1 |
-| T5c | Percepat halaman Input (pencarian item di server) | **SELESAI** (lihat STATUS 2e) | migrasi `000011`, `InputPage.tsx`, `DropdownCari.tsx` (`diServer`), `KotakBelumLengkap.tsx` |
+| T5c | Percepat halaman Input (pencarian item di server) | **SELESAI** (STATUS 2e) | migrasi `000011`, `InputPage.tsx`, `DropdownCari.tsx` (`diServer`), `KotakBelumLengkap.tsx` |
+| T5c-2 | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (STATUS 2f) | migrasi `000012`, `InputPage.tsx` |
 | T6 | Tabel & input Wasilah & Ghayah | **BELUM (next, menunggu aba-aba Mudir)** | - |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
@@ -38,7 +39,7 @@ Pra-T6 rinci:
 
 ## 2. Tahap yang sedang dikerjakan
 
-**T5c SELESAI** (24 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e. Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
+**T5c & T5c-2 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c) dan 2f (T5c-2). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
 
 **Yang sudah jalan** — lihat `docs/STATUS.md`: login/menu per role, tabel & input Al Qur'an, halaman santri,
 notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel tersambung Supabase.
@@ -52,6 +53,7 @@ notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel 
 
 **Langkah berikutnya (berurutan) — keputusan Mudir 24 November 2026:**
 1. ~~Merge react-router 7~~ — **SELESAI** (smoke 29/29 lulus di branch, lalu merge & push).
+1b. ~~T5c-2 — satu permintaan per tahap~~ **SELESAI 25 Nov 2026**: RPC `input_alquran_boot` + `input_alquran_data`; halaman siap **1,4–2,0 s → 0,97 s median produksi** (target <1 detik tercapai pada kondisi jaringan normal; lihat STATUS 2f).
 2. ~~T5c — percepat input~~ **SELESAI 24 Nov 2026**: RPC `curriculum_items_search`/`_by_ids`, halaman siap 3,0–4,0 s → **1,4–2,0 s**, permintaan item 128 → 2. **Target <1 detik belum tercapai** karena penundaan jaringan ke database (±20 permintaan berurutan); lihat `STATUS.md` 2e.
 3. **T6** — tabel & input Wasilah & Ghayah (ganti tulisan "dikerjakan pada T6" di `TabelCapaian.tsx`; input sekali per halaqah × mata pelajaran disalin ke anggota; `hanyaHalaqahDiampu()`).
 4. **T7** — target dinamis (ajukan/setujui); target bulanan = target harian × Hadir, dihitung database.
@@ -102,13 +104,13 @@ Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_yea
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`.
 Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adalah koneksi Postgres Supabase yang dipakai skrip lokal (`scripts/db/run_sql.py`, seed, uji QA); tipe spesifik (pooler langsung vs transaction-pooler) periksa di Dashboard supaya tidak keliru dipakai dari luar.
 
-- **Migrasi dijalankan (11)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search` (T5c).
+- **Migrasi dijalankan (12)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search`, `20261124000012_input_alquran_data` (T5c-2).
 - **Auth**: `disable_signup = true`, provider email **aktif** (`external.email=true`), `mailer_autoconfirm=false`. Signup ditolak `422 signup_disabled`; login 7 role lulus (24 Nov 2026). Diubah lewat Management API (`PATCH /v1/projects/<ref>/config/auth`).
 - **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **38 OK / 8 SKIP / 0 GAGAL**.
 - **Fungsi trigger**: `attendance_guard_override()` kini **tanpa** EXECUTE untuk authenticated/anon/PUBLIC; trigger tetap berjalan (SECURITY DEFINER).
 - **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=3 karena libur, Syawwal=4); `is_locked` semua `false`.
 - **Ekstensi**: `pg_trgm` dipasang di skema **`extensions`** (bukan `public`) untuk indeks pencarian label.
-- **Fungsi/view**: 22 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
+- **Fungsi/view**: 24 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
 
 ---
 

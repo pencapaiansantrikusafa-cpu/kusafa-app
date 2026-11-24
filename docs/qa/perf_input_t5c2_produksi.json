@@ -1,0 +1,182 @@
+[
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.19,
+    "permintaan": 24,
+    "total_kb": 543.0,
+    "permintaan_items": 0,
+    "items_kb": 0.0,
+    "permintaan_rpc": 3,
+    "nav": {
+      "dcl_ms": 408.5,
+      "load_ms": 408.6
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_boot",
+        "bytes": 10288,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_data",
+        "bytes": 18886,
+        "status": 200
+      }
+    ],
+    "putaran": 1
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 0.97,
+    "permintaan": 22,
+    "total_kb": 540.1,
+    "permintaan_items": 0,
+    "items_kb": 0.0,
+    "permintaan_rpc": 3,
+    "nav": {
+      "dcl_ms": 203.5,
+      "load_ms": 203.6
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_boot",
+        "bytes": 10288,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_data",
+        "bytes": 18886,
+        "status": 200
+      }
+    ],
+    "putaran": 2
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.0,
+    "permintaan": 22,
+    "total_kb": 541.5,
+    "permintaan_items": 0,
+    "items_kb": 0.0,
+    "permintaan_rpc": 3,
+    "nav": {
+      "dcl_ms": 261.9,
+      "load_ms": 262
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_boot",
+        "bytes": 10288,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_data",
+        "bytes": 18886,
+        "status": 200
+      }
+    ],
+    "putaran": 3
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 0.97,
+    "permintaan": 23,
+    "total_kb": 551.4,
+    "permintaan_items": 0,
+    "items_kb": 0.0,
+    "permintaan_rpc": 3,
+    "nav": {
+      "dcl_ms": 141.2,
+      "load_ms": 141.4
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_boot",
+        "bytes": 10288,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_data",
+        "bytes": 18886,
+        "status": 200
+      }
+    ],
+    "putaran": 4
+  },
+  {
+    "role": "mudir",
+    "viewport": 1440,
+    "siap_detik": 1.79,
+    "permintaan": 24,
+    "total_kb": 540.0,
+    "permintaan_items": 0,
+    "items_kb": 0.0,
+    "permintaan_rpc": 3,
+    "nav": {
+      "dcl_ms": 504.7,
+      "load_ms": 506.2
+    },
+    "lebar": {
+      "inner": 1440,
+      "doc": 1440
+    },
+    "urls": [
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_boot",
+        "bytes": 10288,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/students_without_halaqah",
+        "bytes": 689,
+        "status": 200
+      },
+      {
+        "url": "https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/input_alquran_data",
+        "bytes": 18886,
+        "status": 200
+      }
+    ],
+    "putaran": 5
+  }
+]
