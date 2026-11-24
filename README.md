@@ -39,6 +39,8 @@ Diperbarui 24 November 2026, commit `6df3842` (pra-T6 [4/5]) → *dengan tambaha
 
 Pemeriksaan terakhir (24 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **14/14 lulus**, `python scripts/check_repo_safety.py` **lolos**, matriks RLS otomatis **38/46 OK, 8 SKIP, 0 GAGAL**. Tidak ada perintah `lint` di proyek ini. `npm audit` melaporkan 2 kerentanan sedang (`react-router`/`react-router-dom`: GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg) yang **hanya** tertambal di mayor **7.x** (lihat `docs/STATUS.md` bagian 2c dan percobaan di branch `chore/react-router-fix`).
 
+**Serah terima**: keputusan final, tahap yang sedang dikerjakan, status Supabase, pertanyaan terbuka untuk Mudir, dan cara menjalankan/menguji/deploy ada di **`docs/HANDOVER.md`**. Sumber kebenaran kondisi nyata: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
+
 Situs produksi `https://kusafa-app.vercel.app` **HTTP 200**; login/data Supabase diverifikasi 23 Nov 2026.
 
 ---
