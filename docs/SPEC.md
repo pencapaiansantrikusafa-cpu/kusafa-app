@@ -58,6 +58,14 @@ Skema ada di `supabase/migrations/`. Inti:
 - Konsekuensinya: **Syawwal tahun kedua dibandingkan dengan Ramadhan tahun sebelumnya** lewat `v_months_ordered.prev_month_id`, tanpa baris Data Awal baru.
 - Bukti uji (transaksi + ROLLBACK): `scripts/qa/test_data_awal_tahun_kedua.py` — 5/5 lulus 24 Nov 2026. Meliputi: 1448 hanya 12 bulan tanpa bulan 0; `prev_month_id` Syawwal 1448 = Ramadhan 1447; `selisih` di `v_monthly_report` = pos(Syawwal 1448) − pos(Ramadhan 1447) untuk santri yang naik tahun; tidak ada baris Data Awal 1448.
 
+#### 4a-2. Hari Efektif kecil = SAH (koreksi Mudir 24 November 2026)
+
+- **`month_domain_settings.effective_days` boleh kecil karena libur.** Rabiul Awwal 1447 domain Al Qur'an = **3 hari** adalah **benar** (libur sekitar dua pekan lebih); Syawwal = 4 hari (bulan pembuka tahun ajaran).
+- Nilai 19 untuk Rabiul Awwal pernah diterapkan keliru pada 24 Nov 2026 dan **sudah dikembalikan ke 3** (`scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql`). Skrip lama 3→19 **dibatalkan** dan diberi penghenti keras.
+- Akibatnya Hadir bulan itu = 3 − (izin+sakit+alpha), jadi **1–3** untuk data dummy, bukan 17–19.
+- Bukti: `scripts/qa/compare_rabiul_awwal_excel.py` — 7/7 PASS, HE/Hadir/absensi/label+posisi capaian cocok dengan Excel untuk seluruh 109 santri.
+- Jangan menandai nilai kecil sebagai kesalahan dan jangan mengubahnya tanpa konfirmasi Mudir (lihat `AGENTS.md`).
+
 ## 4b. Pengelolaan dropdown (harus tetap bisa diubah setelah aplikasi jadi)
 Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ulang, dan menonaktifkan bidang, buku, dan item, oleh Mudir/Admin atau Masul Al Quran / Masul Wasilah / Masul Ghayah sesuai domain.
 - Item yang sudah dipakai capaian tidak dihapus, hanya dinonaktifkan.
@@ -71,6 +79,7 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 2. **Selisih** = posisi bulan ini - posisi bulan pembanding. Bulan pembanding otomatis bulan sebelumnya (Syawwal dibandingkan dengan Ramadhan tahun lalu; di awal pemakaian, Admin mengisi Data Awal manual). Pengguna hanya memilih bulan yang dilihat.
 3. **Putaran Tilawah** (Al Qur'an, 604 halaman). Form input punya pilihan "khatam, mulai putaran baru" yang menaikkan `putaran`. Tanpa pilihan itu, capaian yang lebih kecil dari bulan lalu adalah pengulangan (selisih negatif). Aplikasi tidak menebak.
 4. **Kehadiran**: Hadir = Hari Efektif - (izin + sakit + alpha). Hari Efektif sama untuk semua santri dalam satu domain dan bulan, bisa berbeda antar domain. Pengecualian: santri yang masuk terlambat punya Hari Efektif khusus (`attendance.effective_days_override`), hanya diisi Mudir/Admin (dijaga trigger); bila ada, angka itu dipakai. Di tabel tampil sebagai Hadir/HE santri itu.
+   **Nilai Hari Efektif yang kecil adalah SAH** bila karena libur panjang; contoh yang sudah final: **Rabiul Awwal 1447 = 3 hari** (libur ~2 pekan lebih) dan **Syawwal 1447 = 4 hari** (bulan pembuka tahun ajaran). Jangan menandainya "janggal", jangan menaikkannya, dan jangan mengubahnya tanpa konfirmasi Mudir. Acuan angkanya adalah Excel sumber (`3-Al Quran (halaqah dan pencapaian).xlsx`, blok `HE` per bulan).
 5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan. Target individu didahulukan dari target halaqah. Status: diajukan, disetujui, ditolak. Hanya yang disetujui dipakai.
 6. **Tampilan halaqah Wasilah dan Ghayah**: per mata pelajaran tampil Capaian Bulan Lalu, Capaian Bulan Ini, Selisih; lalu tabel anggota: Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan.
 

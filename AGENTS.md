@@ -26,6 +26,7 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - **Jangan mengubah migrasi yang sudah dijalankan.** Perubahan skema = file migrasi baru dengan nomor berikutnya.
 - **Jangan menebak data.** Jika data atau aturan tidak jelas atau tidak sinkron, berhenti dan tanyakan kepada Mudir.
   Jangan membuat asumsi sendiri, termasuk saat seed.
+- **Nilai Hari Efektif yang kecil bisa SAH.** Bulan dengan libur panjang (mis. Rabiul Awwal 1447 = **3 hari** karena libur sekitar dua pekan lebih, Syawwal = 4 hari) adalah data yang benar. Jangan menandainya sebagai "janggal"/kesalahan, jangan "memperbaiki" naik, dan jangan mengubahnya tanpa konfirmasi Mudir. Angka Excel sumber adalah acuan.
 - Tulis nama role selengkapnya di kode, teks UI, dan dokumen: **Masul Al Quran**, **Masul Wasilah**, **Masul Ghayah** (enum: `masul_alquran`, `masul_wasilah`, `masul_ghayah`). Jangan menulis "masul" saja.
 - Selisih capaian **boleh negatif** (santri mengulang). Tampilkan apa adanya; jangan dianggap galat dan jangan dipaksa 0.
 - Konfirmasi "pengulangan atau khatam" **hanya ditanyakan untuk bidang yang benar-benar diubah pada kunjungan itu**. Bidang yang capaiannya sudah lebih kecil dari bulan lalu tetapi tidak disentuh cukup diberi **penanda teks** (⚠), bukan pertanyaan.

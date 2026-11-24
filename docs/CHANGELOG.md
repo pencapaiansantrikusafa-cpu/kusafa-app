@@ -12,11 +12,19 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - **`students_without_halaqah`**: jalur "tampil semua" hanya untuk koneksi admin tanpa JWT (skrip lokal/service_role) — dipertahankan; authenticated tanpa profil/musyrif/mudarris **0 baris**, anon ditolak. Uji `test_students_without_halaqah_p6.py` 6/7 (1 SKIP).
 - **`attendance_guard_override`**: migrasi `20261124000010_attendance_guard_revoke.sql` mencabut EXECUTE dari authenticated/PUBLIC/anon; trigger tetap jalan.
 - **Uji regresi** `scripts/qa/regression_execute.py` **7/7**: 20 fungsi public tanpa EXECUTE anon; musyrif tak bisa mengubah data lewat fungsi admin.
-- **Uji DB pra-T6** kini **16/16**; uji Rabiul Awwal mengharapkan 19 (bukan hanya melapor).
+- **Uji DB pra-T6** kini **16/16**; uji Rabiul Awwal mengharapkan 19 — **DIKOREKSI di [6a] menjadi 3**.
 - **Smoke E2E browser** `scripts/qa/smoke_e2e.py`: 29/29 lokal (7 role, Mudir simpan+hapus satu capaian), 29/29 di react-router 7, 28/28 produksi.
 - **react-router 7.18.6 di-merge** ke `main` setelah smoke lulus (izin Mudir); `npm audit` react-router bersih.
 - **Data Awal tahun kedua**: tanpa bulan 0, Syawwal 1448 membandingkan Ramadhan 1447; ditulis di `docs/SPEC.md` 4a-1; uji `test_data_awal_tahun_kedua.py` 5/5.
 - `docs/DATA-NOTES.md`: rentang Excel dikoreksi `BZ5:B113` → `BZ5:BZ113`. Favicon ditambahkan (menghapus 404 konsol).
+
+### Langkah [6a] - Koreksi data: Hari Efektif Rabiul Awwal = 3 (24 November 2026)
+- **Koreksi Mudir:** Hari Efektif Rabiul Awwal (bulan 6, Al Qur'an) = **3 hari** adalah **BENAR** (libur ~2 pekan lebih). Perubahan 3→19 adalah kekeliruan.
+- Pemulihan 19→3: `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql`. Skrip lama 3→19 **dibatalkan** (penghenti keras, hanya riwayat).
+- Bukti: `scripts/qa/compare_rabiul_awwal_excel.py` **7/7 PASS** — HE, Hadir, izin/sakit/alpha, label+posisi capaian cocok dengan Excel untuk 109 santri; sampel 15. Tidak ada kolom turunan tersimpan yang berubah (Hadir/selisih dihitung view).
+- Uji `run_pre_t6_db_tests.py` kembali mengharapkan **3** (`E_hari_efektif_rabiul_awwal_3`), 16/16 PASS. Seluruh QA lain hijau; smoke E2E 29/29.
+- `AGENTS.md`: ditambahkan aturan "nilai Hari Efektif kecil bisa sah (libur); jangan diubah tanpa konfirmasi Mudir".
+- Dokumen diselaraskan: DATA-NOTES 3a, SPEC 4a-2, STATUS, HANDOVER 3b, FILE-MAP.
 
 ### Langkah [1] - Audit dan hardening fungsi
 - Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
@@ -27,7 +35,7 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - NIS 023/024 dibiarkan sebagai kasus uji "santri yang tidak ikut semua halaqah"; `scripts/qa/test_no_halaqah.py` (9/9 PASS).
 
 ### Langkah [3] - Perbaikan data
-- Hari Efektif Rabiul Awwal Al Qur'an 3→19 lewat `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` (Excel sumber masih 3, wajib diperbaiki Mudir).
+- ~~Hari Efektif Rabiul Awwal 3→19~~ **DIBATALKAN 24 Nov 2026:** 3 hari adalah nilai **BENAR** (libur ~2 pekan lebih). Lihat koreksi [6a].
 
 ### Langkah [4] - Notifikasi "santri belum punya halaqah"
 - Migrasi `20261121000009_students_without_halaqah.sql`: fungsi `students_without_halaqah`(_count) security definer, cek `can_manage`, revoke anon.

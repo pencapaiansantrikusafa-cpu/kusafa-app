@@ -38,7 +38,7 @@ Diperbarui 24 November 2026, commit `74287f5` (pra-T6 [6]). Rincian dan bukti ti
 | T9 | Pengujian & QA (RLS otomatis, tampilan HP) | BELUM |
 | T10 | Deploy akhir (hapus data dummy, repo privat) | BELUM |
 
-Pemeriksaan terakhir (24 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **14/14 lulus**, `python scripts/check_repo_safety.py` **lolos**, matriks RLS otomatis **38/46 OK, 8 SKIP, 0 GAGAL**, uji DB pra-T6 **[6] 16/16 lulus**, smoke E2E browser **29/29 (lokal) & 28/28 (produksi)**. Tidak ada perintah `lint` di proyek ini (ESLint ditunda ke T9). `npm audit` sisa **2** (`vite`/`esbuild`, hanya dev server); react-router **bersih** (sudah 7.18.6).
+Pemeriksaan terakhir (24 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **14/14 lulus**, `python scripts/check_repo_safety.py` **lolos**, matriks RLS otomatis **38/46 OK, 8 SKIP, 0 GAGAL**, uji DB pra-T6 **[6] 16/16 lulus**, kecocokan Rabiul Awwal vs Excel **109/109 santri (7/7 uji)**, smoke E2E browser **29/29 (lokal) & 28/28 (produksi)**. Tidak ada perintah `lint` di proyek ini (ESLint ditunda ke T9). `npm audit` sisa **2** (`vite`/`esbuild`, hanya dev server); react-router **bersih** (sudah 7.18.6).
 
 **Serah terima**: keputusan final, tahap yang sedang dikerjakan, status Supabase, pertanyaan terbuka untuk Mudir, dan cara menjalankan/menguji/deploy ada di **`docs/HANDOVER.md`**. Sumber kebenaran kondisi nyata: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
 

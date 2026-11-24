@@ -29,7 +29,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 Pra-T6 rinci:
 - **[1]** hardening fungsi → migrasi `20261121000007_harden_function_grants.sql`; `run_pre_t6_db_tests.py`.
 - **[2]** keputusan bulan 0 & santri tanpa halaqah → `docs/SPEC.md` 4a/9; `test_no_halaqah.py`.
-- **[3]** Hari Efektif Rabiul Awwal 3→19 → `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql`.
+- **[3]** Hari Efektif Rabiul Awwal: nilai **3 hari adalah BENAR** (libur ~2 pekan lebih). Perubahan 3→19 pada 24 Nov 2026 **dibatalkan**; dipulihkan ke 3 lewat `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql`. Skrip lama hanya jejak riwayat.
 - **[4]** notifikasi "santri belum punya halaqah" → migrasi `20261121000009_students_without_halaqah.sql`, `KotakBelumLengkap.tsx`, `test_students_without_halaqah.py`.
 - **[5]** audit + docs → `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs`, `check_repo_safety.py` (diperkuat), `README.md`, `CHANGELOG.md`, `FILE-MAP.md`, `STATUS.md`.
 
@@ -65,7 +65,7 @@ notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel 
 Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - Hadir = Hari Efektif − (izin+sakit+alpha), dihitung database, bukan React.
 - Bulan 0 (Data Awal) = catatan awal, **bukan** bulan efektif/target dan **bukan** bulan input staf; `month_is_open(0,*)=false`. Santri lama memakai Ramadhan tahun lalu sebagai pembanding Syawwal.
-- Hari Efektif Rabiul Awwal (Al Qur'an) = **19** (bukan 3); Excel sumber masih 3, wajib diperbaiki Mudir.
+- Hari Efektif Rabiul Awwal (Al Qur'an) = **3** dan itu **BENAR** (libur ~2 pekan lebih). Tidak ada yang perlu diperbaiki di Excel. Nilai 19 adalah kekeliruan yang sudah dikembalikan. Hadir bulan itu 1–3.
 - Selisih **boleh negatif** (pengulangan); putaran naik **hanya** lewat pilihan eksplisit "khatam" (putaran = bulan lalu + 1).
 - Bulan belum diinput **kosong**, bukan 0. Item kurikulum terpakai **tidak dihapus**, hanya `is_active=false`.
 - Santri yang tidak ikut semua halaqah adalah keadaan **sah** (NIS 023/024 = kasus uji resmi); di domain yang tidak diikuti santri **tidak ditampilkan**, bukan tampil 0.
@@ -78,11 +78,19 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - **Urutan kerja:** pra-T6 [6] → **merge react-router** (bila smoke lulus) → **T5c percepat input** → **T6**. T6 **belum** boleh dimulai sebelum T5c selesai.
 - **react-router 7:** boleh di-merge ke `main` **hanya bila smoke E2E semua role lulus** di branch itu. **Sudah dipenuhi** → di-merge (7.18.6).
 - **ESLint:** ditunda, dipasang di **T9**.
-- **Excel Rabiul Awwal:** Mudir sendiri yang memperbaiki file sumber (`BZ5:BZ113` → 19). Tidak menghalangi pekerjaan.
+- **Excel Rabiul Awwal:** **tidak perlu diubah.** `BZ5:BZ113` = 3 adalah nilai benar (libur ~2 pekan lebih).
 - **Signup publik:** sudah dimatikan Mudir. **Catatan teknis:** yang benar adalah `disable_signup = true` dengan provider email **tetap aktif**. Mematikan provider email (`external.email=false`) **ikut mematikan login**; jangan diulang. Keadaan sekarang: `disable_signup=true`, provider email aktif, signup ditolak `422 signup_disabled`, login 7 role lulus.
 - **Repo tetap PUBLIK sampai T10**; wajib privat sebelum data asli dimuat.
 - **Bulan 0 (Data Awal):** hanya **Admin dan Mudir** yang mengisi, dan **hanya di tahun pertama**. Mulai tahun ajaran kedua Data Awal **tidak diisi manual** — diambil otomatis dari **capaian bulan terakhir (Ramadhan) tahun sebelumnya**, juga untuk santri tahun pertama yang naik ke tahun kedua. `create_academic_year` untuk tahun kedua **tidak boleh** meminta/membuat Data Awal. Rincian + bukti uji: `docs/SPEC.md` bagian 4a-1, `scripts/qa/test_data_awal_tahun_kedua.py`.
 - **Jalur "tampil semua" di `students_without_halaqah` dipertahankan**: hanya berlaku untuk koneksi admin tanpa JWT (skrip lokal/service_role), tidak untuk pengguna aplikasi. Sudah diuji: authenticated tanpa profil, musyrif, mudarris → 0 baris; anon ditolak.
+
+### 3b. Koreksi data Hari Efektif — 24 November 2026 (menimpa instruksi sebelumnya)
+
+- **Hari Efektif Rabiul Awwal (bulan 6, Al Qur'an) = 3 hari adalah BENAR** karena ada **libur sekitar dua pekan lebih**. Perubahan 3 → 19 tanggal 24 Nov 2026 adalah **kekeliruan** dan **sudah dikembalikan ke 3**.
+- Pemulihan: `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql`. Skrip lama `2026-11-24_rabiul_awwal_effective_days.sql` **DIBATALKAN** (diberi penghenti keras, disimpan sebagai riwayat).
+- Bukti: `scripts/qa/compare_rabiul_awwal_excel.py` **7/7 PASS** (HE, Hadir, izin/sakit/alpha, label+posisi capaian cocok dengan Excel untuk **109 santri**; sampel 15 dirinci). Snapshot `attendance`, `progress_entries`, `targets`, `curriculum_items`, `books`, `students` **identik** sebelum/sesudah pemulihan.
+- **Nilai Hari Efektif kecil (mis. Syawwal 4, Rabiul Awwal 3) adalah sah** — jangan ditandai kesalahan dan jangan diubah tanpa konfirmasi Mudir (`AGENTS.md`, `SPEC.md` 4a-2).
+- Excel sumber **tidak perlu diubah**; `BZ5:BZ113` = 3 memang benar.
 
 Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_years`; semua dropdown `DropdownCari` (panel layang `z-60`); tahun & bulan dua dropdown terpisah; label item ber-awalan nama bidang; daftar panjang wajib `ambilSemua`; frontend hanya `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`; migrasi lama **tidak diubah** (berikutnya `20261121000010_...`).
 
@@ -97,7 +105,7 @@ Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adal
 - **Auth**: `disable_signup = true`, provider email **aktif** (`external.email=true`), `mailer_autoconfirm=false`. Signup ditolak `422 signup_disabled`; login 7 role lulus (24 Nov 2026). Diubah lewat Management API (`PATCH /v1/projects/<ref>/config/auth`).
 - **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **38 OK / 8 SKIP / 0 GAGAL**.
 - **Fungsi trigger**: `attendance_guard_override()` kini **tanpa** EXECUTE untuk authenticated/anon/PUBLIC; trigger tetap berjalan (SECURITY DEFINER).
-- **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=19, Syawwal=4); `is_locked` semua `false`.
+- **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=3 karena libur, Syawwal=4); `is_locked` semua `false`.
 - **Fungsi/view**: 20 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
 
 ---
@@ -108,7 +116,7 @@ Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adal
 - ~~Signup publik aktif?~~ — **TERJAWAB & DITUTUP:** `disable_signup=true`, provider email tetap aktif, login jalan.
 - ~~Naik react-router ke 7.x?~~ — **TERJAWAB & SELESAI:** di-merge setelah smoke 29/29 lulus.
 - ~~Pasang ESLint?~~ — **TERJAWAB:** ditunda ke T9.
-- ~~Excel Rabiul Awwal masih 3?~~ — **TERJAWAB:** Mudir memperbaiki sendiri (`BZ5:BZ113` → 19).
+- ~~Excel Rabiul Awwal masih 3?~~ — **BUKAN MASALAH:** 3 adalah nilai benar (libur ~2 pekan lebih). Nilai 19 dibatalkan dan dipulihkan ke 3.
 - ~~Data Awal tahun kedua?~~ — **TERJAWAB:** otomatis dari Ramadhan tahun sebelumnya (HANDOVER 3a, SPEC 4a-1).
 
 Masih terbuka:

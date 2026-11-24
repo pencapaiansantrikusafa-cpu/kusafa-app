@@ -41,27 +41,28 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 | 7 baris `attendance` Ramadhan tanpa capaian (izin/sakit/alpha semuanya 0) | **Dihapus** 23 Nov 2026 atas persetujuan Mudir. Presensi 606 → 599 | 23 Nov 2026 |
 | Ringkasan kehadiran menampilkan "0" untuk bulan yang belum diisi | Diperbaiki: kini tampil "—" (kosong bukan 0) | 23 Nov 2026 |
 | Item dropdown terduplikasi (kunci ganda React) | Diperbaiki: memo tidak lagi mengubah state | 23 Nov 2026 |
-| Hari Efektif Rabiul Awwal (domain Al Qur'an) | **3 → 19 hari** lewat SQL terdokumentasi (lihat 3a). Excel sumber masih 3 dan **wajib diperbaiki Mudir** | 24 Nov 2026 |
+| Hari Efektif Rabiul Awwal (domain Al Qur'an) | **3 hari adalah BENAR** (ada libur ~2 pekan lebih). Nilai 19 sempat diterapkan keliru lalu **dikembalikan ke 3** 24 Nov 2026 (lihat 3a) | 24 Nov 2026 |
 | Bulan 0 (Data Awal) bisa ditulis staf lewat API | **Ditutup**: `month_is_open(bulan 0, domain)` = false (migrasi `20261121000008`) | 24 Nov 2026 |
 | Santri tanpa halaqah di suatu domain | Dinyatakan **kasus uji resmi** (NIS 023/024), ditambah uji otomatis `scripts/qa/test_no_halaqah.py` (9/9 PASS) | 24 Nov 2026 |
 | Notifikasi "santri belum punya halaqah" per domain | Dibuat (fungsi `students_without_halaqah`/`_count`, migrasi 000009); tanpa tabel baru; hilang otomatis saat santri diberi halaqah. Uji 13/13 PASS. Lihat bagian 8 dan SPEC §9 | 24 Nov 2026 |
 
-### 3a. Koreksi Hari Efektif Rabiul Awwal (24 November 2026)
+### 3a. Hari Efektif Rabiul Awwal = 3 hari adalah BENAR (koreksi 24 November 2026)
 
-Keputusan Mudir: Hari Efektif Rabiul Awwal (bulan ke-6) domain Al Qur'an yang benar adalah **19 hari**, bukan 3.
+**Keputusan Mudir (koreksi, menimpa instruksi sebelumnya):** Hari Efektif Rabiul Awwal (bulan ke-6) domain Al Qur'an = **3 hari** adalah **BENAR**, karena ada **libur sekitar dua pekan lebih**. Perubahan 3 → 19 pada 24 November 2026 adalah **kekeliruan** dan sudah **dikembalikan ke 3**.
 
 | Hal | Isi |
 |---|---|
-| Nilai lama di database | `month_domain_settings.effective_days = 3` untuk `month_no = 6`, domain `alquran`, tahun ajaran 1447 |
-| Nilai baru | **19** (diterapkan 24 Nov 2026) |
-| Sumber Excel | `data/source/3-Al Quran (halaqah dan pencapaian).xlsx` |
-| Sheet | `Halaqah Al Quran dan pencapaian` |
-| Sel | `BZ4` = header `HE`; nilai `BZ5:BZ113` = 3 untuk 109 santri (blok Rabiul Awwal: BZ=HE, CA=H, CB=S, CC=I, CD=A) |
-| Cara perbaikan | SQL terdokumentasi `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` (bukan mengedit Excel) |
-| Cek presensi sebelum koreksi | 109 baris presensi Rabiul Awwal, semua `effective_days_override = NULL`, maksimum izin+sakit+alpha = 2, tidak ada yang melebihi 19 |
-| Verifikasi sesudah | DB = 19; `v_attendance` Hadir 17–19 untuk 109 santri, tidak ada hadir negatif |
+| Nilai yang benar | **3 hari** (`month_domain_settings.effective_days` untuk `month_no = 6`, domain `alquran`, tahun 1447) |
+| Alasan | Libur sekitar dua pekan lebih pada Rabiul Awwal |
+| Sumber acuan | `data/source/3-Al Quran (halaqah dan pencapaian).xlsx` → `BZ4` = header `HE`; `BZ5:BZ113` = 3 untuk 109 santri; `CA`=H, `CB`=S, `CC`=I, `CD`=A |
+| Skrip pemulihan | `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql` (19 → 3) |
+| Skrip lama 3 → 19 | `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` — **DIBATALKAN**, diberi penghenti keras; hanya jejak riwayat |
+| Verifikasi sesudah | DB = 3; `v_attendance` Hadir **1–3** untuk 109 santri (Hadir = 3 − izin − sakit − alpha), tidak ada Hadir negatif |
+| Kecocokan dengan Excel | `scripts/qa/compare_rabiul_awwal_excel.py` **7/7 PASS**: HE, Hadir, izin/sakit/alpha, dan label+posisi capaian **cocok untuk seluruh 109 santri**; sampel 15 santri (termasuk Hadir 1 dan 2) dirinci di laporan |
+| Kolom turunan | **Tidak ada yang ikut berubah.** `hadir`, `selisih`, `target_monthly` dihitung view (bukan kolom tersimpan). Snapshot `attendance`, `progress_entries`, `targets`, `curriculum_items`, `books`, `students` identik sebelum/sesudah pemulihan |
+| UI | Halaman Capaian Al Qur'an bulan Rabiul Awwal menampilkan Hadir **3/3** (bukan 17/19) |
 
-**Tindakan yang masih harus dilakukan Mudir:** perbaiki `BZ5:BZ113` di file Excel tersebut menjadi 19. Skrip seed membaca angka dari Excel, jadi selama Excel masih 3, **seed ulang akan mengembalikan nilai 3**. SQL koreksi di atas hanya untuk database yang sekarang; ia tidak mengubah Excel.
+**Catatan:** Hari Efektif kecil (mis. Syawwal = 4, Rabiul Awwal = 3) adalah **data sah** karena libur. Jangan menaikkannya atau menandainya "janggal" tanpa konfirmasi Mudir (lihat `AGENTS.md`).
 
 ## 4. Penyimpangan data dummy yang sudah disepakati (jangan "diperbaiki" tanpa izin)
 
@@ -77,11 +78,11 @@ Keputusan Mudir: Hari Efektif Rabiul Awwal (bulan ke-6) domain Al Qur'an yang be
 1. **Level 6 (4 santri) belum punya pengampu dan jadwal.** Halaqah dibuat tanpa mata pelajaran dan pengampu.
 2. ~~**`1447.dummy-nis.024` hanya ada di Al Qur'an**, dan **`1447.dummy-nis.023` belum ada di Ghayah**.~~ **SELESAI 24 Nov 2026 (keputusan Mudir):** keduanya **dibiarkan** sebagai kasus uji resmi "santri yang tidak ikut semua halaqah". Jangan menambah atau mengarang baris. Perilaku yang benar: di domain yang tidak diikuti, santri **tidak ditampilkan** (bukan tampil 0), dan semua view/fungsi tetap berjalan tanpa galat. Diuji otomatis oleh `scripts/qa/test_no_halaqah.py` (9/9 PASS).
 3. **Hari Efektif hanya terisi untuk domain `alquran`, bulan 1-7** (Syawwal s.d. Rabiul Akhir). Bulan 8-12 dan seluruh domain Wasilah/Ghayah belum punya `month_domain_settings`. Akibatnya notifikasi "data belum lengkap" tidak memeriksa bulan-bulan itu. Penyebabnya: layar pengisiannya baru dibuat di T8.
-4. ~~**Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan sejenis 15-21.~~ **SELESAI 24 Nov 2026:** dikonfirmasi keliru; dikoreksi menjadi 19 lewat SQL (lihat bagian 3a). Excel sumber masih 3 dan wajib diperbaiki Mudir agar seed ulang tidak mengembalikan 3.
+4. ~~**Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan sejenis 15-21.~~ **BUKAN MASALAH (koreksi Mudir 24 Nov 2026):** 3 hari **BENAR** karena libur sekitar dua pekan lebih. Nilai 19 sempat dipakai keliru dan sudah dikembalikan ke 3 (bagian 3a). Jangan diubah tanpa konfirmasi Mudir.
 5. **`guardians` dan `monthly_notes` kosong (0 baris).** Wali belum diisi pada data dummy, dan catatan bulanan belum pernah diisi.
 6. **`is_locked` belum pernah `true`.** Fitur kunci bulan belum dipakai pada data uji.
 7. **Riwayat capaian berhenti di Rabiul Akhir**, dan Hari Efektif juga berhenti di bulan itu. Bulan Jumadal Ula dan sesudahnya kosong (bukan 0).
-8. **Hari Efektif Syawwal 1447 = 4 hari** — paling kecil di antara bulan lain (15–21) dan hanya 7 baris `month_domain_settings` (bulan 1–7). Kemungkinan besar ini bulan pembuka tahun ajaran yang tidak penuh, tetapi **belum dipastikan**. Dicatat sebagai pertanyaan terbuka di `docs/HANDOVER.md` bagian 5; **data tidak diubah**.
+8. **Hari Efektif Syawwal 1447 = 4 hari dan Rabiul Awwal = 3 hari** adalah **data SAH** (bulan pembuka tahun ajaran & bulan dengan libur ~2 pekan lebih). **Bukan kesalahan**, jangan diubah tanpa konfirmasi Mudir (lihat `AGENTS.md`). Hanya 7 baris `month_domain_settings` (bulan 1–7); bulan 8–12 dan Wasilah/Ghayah belum ada (layar T8).
 9. **`students_without_halaqah` mengembalikan semua domain** hanya untuk koneksi admin tanpa JWT (skrip lokal `postgres`, PostgREST `service_role`). Pengguna aplikasi ber-JWT selalu lewat `can_manage(domain)`. Diuji `scripts/qa/test_students_without_halaqah_p6.py`.
 
 ## 6. Bulan 0 (Data Awal) - aturan final dan bukti verifikasi 24 November 2026

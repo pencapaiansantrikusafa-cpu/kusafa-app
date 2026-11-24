@@ -114,18 +114,21 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | Berkas | Fungsi |
 |---|---|
 | `scripts/check_repo_safety.py` | Memeriksa repo sebelum commit: menolak `.env`, `.xlsx`, `.zip`, seed SQL, `users.csv`, token, kunci rahasia. |
+| `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql` | Pemulihan Hari Efektif Rabiul Awwal 19 → 3 (koreksi Mudir). |
+| `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | **DIBATALKAN** — skrip 3→19 keliru; hanya jejak riwayat, diberi penghenti keras. |
 | `scripts/db/run_sql.py` | Menjalankan berkas SQL atau satu query ke database tanpa `psql`; membaca `DATABASE_URL` dari `.env.local` dan tidak pernah mencetaknya. |
 | `scripts/seed/build_seed.py` | Membangun `supabase/seed/*.sql`, `scripts/seed/output/users.csv`, dan `seed-report.md` dari 5 file Excel. |
 | `scripts/seed/create_auth_users.py` | Membuat akun dummy di Supabase Auth (memakai kunci service role di `.env.local`, hanya lokal). |
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
 | `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi; tiap probe transaksi sendiri + ROLLBACK. |
-| `scripts/qa/run_pre_t6_db_tests.py` | Uji DB pra-T6 (16 uji): trigger Hari Efektif, bulan terkunci, RLS lintas halaqah, `can_manage`, Hari Efektif Rabiul Awwal = 19. |
+| `scripts/qa/run_pre_t6_db_tests.py` | Uji DB pra-T6 (16 uji): trigger Hari Efektif, bulan terkunci, RLS lintas halaqah, `can_manage`, Hari Efektif Rabiul Awwal = **3** (libur). |
 | `scripts/qa/test_no_halaqah.py` | Santri tanpa halaqah di suatu domain: tidak tampil, RLS menolak penulisan. |
 | `scripts/qa/test_students_without_halaqah.py` | Notifikasi per role (Mudir/Admin semua domain, Masul domainnya, Musyrif/Mudarris 0). |
 | `scripts/qa/test_students_without_halaqah_p6.py` | Jalur "tampil semua" fungsi: authenticated tanpa profil/musyrif/mudarris 0 baris, koneksi admin melihat semua, anon ditolak. |
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
+| `scripts/qa/compare_rabiul_awwal_excel.py` | Bandingkan HE/Hadir/izin-sakit-alpha/label+posisi capaian Rabiul Awwal DB vs Excel (109 santri, sampel 15); hanya baca. |
 | `scripts/qa/test_data_awal_tahun_kedua.py` | Tahun kedua tanpa bulan 0; Syawwal 1448 membandingkan Ramadhan 1447 (transaksi + ROLLBACK). |
 | `scripts/qa/smoke_e2e.py` | Smoke browser Playwright 7 role; Mudir menulis lalu menghapus satu capaian (`entered_at` baru saja). |
 | `tests/putaran.test.mjs` | 6 uji aturan putaran (khatam +27, pengulangan -577, dll). |
