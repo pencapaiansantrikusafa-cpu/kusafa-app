@@ -1,14 +1,14 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5]: perbaikan data, aturan bulan 0, kasus uji santri tanpa halaqah).
+**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5] dan [4/5]).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` (satu-satunya branch; tidak ada branch lain, lokal maupun remote) |
-| Commit terakhir sebelum commit ini | `b11b90e` - hardening: migrasi 20261121000007 + skrip dan laporan QA pra-T6 |
-| Keadaan Git saat pembaruan | perubahan langkah [3/5] dikomit lalu di-push ke `origin/main` |
+| Commit terakhir sebelum commit ini | `e9e292c` - pra-T6 [3/5]: koreksi HE Rabiul Awwal + aturan bulan 0 + kasus uji santri tanpa halaqah |
+| Keadaan Git saat pembaruan | perubahan langkah [4/5] dikomit lalu di-push ke `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
 Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
@@ -29,7 +29,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah masih pesan "dikerjakan pada T6" |
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
-| **Pra-T6 [1-3/5]** | Audit, hardening fungsi, perbaikan data pra-T6 | **SELESAI untuk langkah [1]-[3]** | `docs/qa/`, `scripts/qa/test_no_halaqah.py`, migrasi `20261121000007` dan `20261121000008`, `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | Hasil di bagian 2a; langkah [4]-[5] menunggu instruksi Mudir |
+| **Pra-T6 [1-4/5]** | Audit, hardening, perbaikan data, notifikasi santri tanpa halaqah | **SELESAI untuk langkah [1]-[4]** | `docs/qa/`, `scripts/qa/test_no_halaqah.py`, `scripts/qa/test_students_without_halaqah.py`, migrasi `20261121000007`/`00008`/`00009`, `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | Hasil di bagian 2a; langkah [5] dan T6 menunggu instruksi Mudir |
 | **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Rencana kerja di `docs/CATATAN-TAHAPAN.md` |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
@@ -67,6 +67,18 @@ Catatan kejujuran status:
 
 Catatan kejujuran: seluruh uji tulis di atas berjalan dalam transaksi lalu `ROLLBACK`; tidak ada baris data yang ditambah atau diubah.
 
+## 2b. Hasil pra-T6 langkah [4/5] — notifikasi santri belum punya halaqah (24 November 2026)
+
+| Butir | Hasil | Bukti |
+|---|---|---|
+| Halaman/komponen | Notifikasi "santri belum punya halaqah" ditambahkan sebagai perluasan kotak "data belum lengkap" (`KotakBelumLengkap.tsx`), bukan sistem baru | `src/components/KotakBelumLengkap.tsx` (memanggil `rpc("students_without_halaqah")`) |
+| Implementasi database | Dua fungsi `security definer` `students_without_halaqah()` dan `students_without_halaqah_count()`, memeriksa `can_manage(domain)` di dalam fungsi; tanpa tabel baru; `revoke from public, anon` | migrasi `20261121000009_students_without_halaqah.sql` |
+| Hitung data dummy | Al Qur'an 0; Wasilah 1 (`...024`); Ghayah 2 (`...023`, `...024`) — sesuai kebutuhan minimal, jauh di bawah 30% | diukur langsung dari DB; `docs/DATA-NOTES.md` bagian 8 |
+| Uji otomatis peran | **13/13 PASS** (Mudir/Admin semua domain; Masul per domain; Musyrif/Mudarris 0 baris; diberi halaqah → hilang; anon ditolak; ROLLBACK mengembalikan) | `scripts/qa/test_students_without_halaqah.py`, `docs/qa/students_without_halaqah_2026-11-24.json` |
+| Frontend | `tsc`, `build`, `npm test` hijau | bagian 2 |
+
+Catatan: prompt menulis "Migrasi 000008", tetapi nomor itu sudah dipakai langkah [3/5] untuk `month_zero_not_open`, sehingga migrasi notifikasi ini memakai nomor berikutnya `20261121000009`.
+
 ---
 
 ## 3. Status Supabase
@@ -74,7 +86,7 @@ Catatan kejujuran: seluruh uji tulis di atas berjalan dalam transaksi lalu `ROLL
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-8 berkas migrasi, **kedelapannya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+9 berkas migrasi, **kesembilannya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -86,8 +98,9 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261121000006 | rls |
 | 20261121000007 | harden_function_grants |
 | 20261121000008 | month_zero_not_open |
+| 20261121000009 | students_without_halaqah |
 
-Migrasi berikutnya wajib memakai nomor `20261121000009_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261121000010_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
 - **18 dari 18 tabel** memiliki `relrowsecurity = true`.
@@ -95,8 +108,8 @@ Migrasi berikutnya wajib memakai nomor `20261121000009_...` dan **tidak boleh** 
 - Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **18 fungsi** di skema `public` (daftar lengkap di `docs/FILE-MAP.md`).
-- **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`.
+- **20 fungsi** di skema `public` - 18 lama + 2 baru (`students_without_halaqah`, `students_without_halaqah_count`). Daftar lengkap di `docs/FILE-MAP.md`.
+- **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)
 

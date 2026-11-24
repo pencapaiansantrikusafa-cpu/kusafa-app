@@ -83,3 +83,15 @@ Login sebagai: Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyri
 - Pengampu ditolak menulis pada bulan terkunci; Mudir/Admin diterima.
 - Pengampu tidak bisa menyetujui target; Masul sesuai domain bisa, Masul domain lain tidak.
 - Hari Efektif hanya bisa diubah Admin/Mudir.
+
+## 9. Notifikasi "santri belum punya halaqah" (keputusan final 24 November 2026)
+Perluasan dari notifikasi "data belum lengkap" (bukan sistem paralel; satu kotak pemberitahuan di `KotakBelumLengkap.tsx`).
+
+- **Definisi "belum punya halaqah di domain D"** (migrasi `20261121000009_students_without_halaqah.sql`):
+  santri **aktif** (`students.is_active`) di **tahun ajaran aktif** (`academic_years.is_active`, tahun terbaru bila lebih dari satu) yang **tidak** punya **keanggotaan aktif** (`halaqah_members.left_on is null`) pada **halaqah aktif** (`halaqahs.is_active`) tahun itu untuk domain D.
+  - `halaqah_subjects`/`subjects` **tidak** dipakai untuk menentukan "punya halaqah": domain sudah tersimpan di `halaqahs.domain`. Level 6 Wasilah yang belum punya mata pelajaran/pengampu tetap dihitung sebagai halaqah.
+  - Level adalah keterangan tampilan saja (dari `student_levels` domain sama; kosong bila tidak ada). Santri tetap muncul.
+- **Hak lihat:** Mudir dan Admin melihat **ketiga** domain; Masul Al Quran hanya Al Qur'an, Masul Wasilah hanya Ilmu Wasilah, Masul Ghayah hanya Ilmu Ghayah; Musyrif/ah dan Mudarris/ah **tidak** melihat; anon ditolak.
+- **Implementasi:** dua fungsi `security definer` `students_without_halaqah()` (daftar: domain, tahun, NIS, nama, level) dan `students_without_halaqah_count()` (ringkasan jumlah per domain, termasuk 0). Keduanya memeriksa `can_manage(domain)` di dalam fungsi; `revoke ... from public, anon` dan `grant ... to authenticated, service_role`. Tidak ada tabel baru, jadi daftar **hilang otomatis** begitu santri dimasukkan ke halaqah.
+- **Penugasan halaqah** adalah pekerjaan T8; halaman ini hanya menampilkan notifikasi, bukan formulir penugasan.
+- **Catatan keamanan:** karena fungsi `security definer`, `current_user` di dalamnya selalu pemilik (postgres). Agar "tampil semua" hanya untuk skrip admin lokal tanpa JWT (bukan pengguna aplikasi), syaratnya `current_app_role() is null and session_user in ('postgres','service_role','supabase_admin')`. Pengguna aplikasi (PostgREST) selalu lewat `can_manage`.

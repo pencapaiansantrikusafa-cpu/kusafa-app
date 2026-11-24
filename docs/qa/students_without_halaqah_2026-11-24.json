@@ -1,0 +1,190 @@
+{
+  "ran_at": "2026-11-24T09:43:14.147913",
+  "tests": [
+    {
+      "name": "data_dummy_alquran_0_wasilah_1_ghayah_2",
+      "ok": true,
+      "detail": "alquran=0, wasilah=1, ghayah=2",
+      "evidence": {
+        "per_domain": {
+          "ghayah": [
+            "1447.dummy-nis.023",
+            "1447.dummy-nis.024"
+          ],
+          "wasilah": [
+            "1447.dummy-nis.024"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mudir_melihat_semua_domain",
+      "ok": true,
+      "detail": "3 baris di domain ['ghayah', 'wasilah'] (Al Qur'an kosong karena 0 santri)",
+      "evidence": {
+        "profil": "M",
+        "baris": [
+          [
+            "ghayah",
+            "1447.dummy-nis.023",
+            "Santriwan fulan 59",
+            null
+          ],
+          [
+            "ghayah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ],
+          [
+            "wasilah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "name": "admin_melihat_semua_domain",
+      "ok": true,
+      "detail": "3 baris di domain ['ghayah', 'wasilah'] (Al Qur'an kosong karena 0 santri)",
+      "evidence": {
+        "profil": "A",
+        "baris": [
+          [
+            "ghayah",
+            "1447.dummy-nis.023",
+            "Santriwan fulan 59",
+            null
+          ],
+          [
+            "ghayah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ],
+          [
+            "wasilah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "name": "mudir_ringkasan_counts",
+      "ok": true,
+      "detail": "ringkasan {'alquran': 0, 'ghayah': 2, 'wasilah': 1}",
+      "evidence": {
+        "profil": "M"
+      }
+    },
+    {
+      "name": "admin_ringkasan_counts",
+      "ok": true,
+      "detail": "ringkasan {'alquran': 0, 'ghayah': 2, 'wasilah': 1}",
+      "evidence": {
+        "profil": "A"
+      }
+    },
+    {
+      "name": "masul_alquran_hanya_domain_alquran",
+      "ok": true,
+      "detail": "0 baris; domain=[]; NIS=[]",
+      "evidence": {
+        "profil": "U",
+        "baris": []
+      }
+    },
+    {
+      "name": "masul_wasilah_hanya_domain_wasilah",
+      "ok": true,
+      "detail": "1 baris; domain=['wasilah']; NIS=['1447.dummy-nis.024']",
+      "evidence": {
+        "profil": "U",
+        "baris": [
+          [
+            "wasilah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "name": "masul_ghayah_hanya_domain_ghayah",
+      "ok": true,
+      "detail": "2 baris; domain=['ghayah']; NIS=['1447.dummy-nis.023', '1447.dummy-nis.024']",
+      "evidence": {
+        "profil": "U",
+        "baris": [
+          [
+            "ghayah",
+            "1447.dummy-nis.023",
+            "Santriwan fulan 59",
+            null
+          ],
+          [
+            "ghayah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "name": "musyrif_tidak_melihat_notifikasi",
+      "ok": true,
+      "detail": "detail=0 baris, count=0 baris (harus 0)",
+      "evidence": {
+        "profil": "U"
+      }
+    },
+    {
+      "name": "mudarris_tidak_melihat_notifikasi",
+      "ok": true,
+      "detail": "detail=0 baris, count=0 baris (harus 0)",
+      "evidence": {
+        "profil": "U"
+      }
+    },
+    {
+      "name": "santri_diberi_halaqah_hilang_dari_notifikasi",
+      "ok": true,
+      "detail": "setelah 023 diberi halaqah Ghayah: 1 baris; NIS=['1447.dummy-nis.024']",
+      "evidence": {
+        "profil": "M",
+        "baris": [
+          [
+            "ghayah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ],
+          [
+            "wasilah",
+            "1447.dummy-nis.024",
+            "Santriwan fulan 60",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "name": "rollback_mengembalikan_data_uji",
+      "ok": true,
+      "detail": "setelah ROLLBACK: Ghayah=['1447.dummy-nis.023', '1447.dummy-nis.024']",
+      "evidence": {}
+    },
+    {
+      "name": "anon_ditolak",
+      "ok": true,
+      "detail": "Ditolak (InsufficientPrivilege / 42501).",
+      "evidence": {}
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-Diperbarui: **24 November 2026** (pra-T6 langkah [3/5]: perbaikan data, aturan bulan 0, kasus uji santri tanpa halaqah).
-Commit terakhir yang sudah ada di remote sebelum commit langkah [3/5]: `b11b90e`.
+Diperbarui: **24 November 2026** (pra-T6 langkah [3/5] dan [4/5]).
+Commit terakhir yang sudah ada di remote sebelum commit langkah [4/5]: `e9e292c`.
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berkas ini.
@@ -10,17 +10,18 @@ Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berka
 
 ## 1. Posisi sekarang
 
-**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **Pra-T6 langkah [1]-[3] selesai** pada 24 Nov 2026. **T6 belum dimulai** dan menunggu jawaban Mudir atas laporan audit.
-Build/tsc/uji hijau (lihat STATUS bagian 2 dan 2a).
+**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **Pra-T6 langkah [1]-[4] selesai** pada 24 Nov 2026. **T6 belum dimulai** dan menunggu jawaban Mudir atas laporan audit.
+Build/tsc/uji hijau (lihat STATUS bagian 2, 2a, dan 2b).
 
 Yang berfungsi hari ini:
 - Login dan menu per role (Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyrif/ah, Mudarris/ah).
 - Tabel capaian Al Qur'an per halaqah dan bulan (Lalu/Kini/Selisih, target, Hadir/HE).
 - Halaman satu santri (grafik + riwayat).
 - Input capaian Al Qur'an: simpan ke database, putaran khatam/pengulangan, kehadiran, catatan, notifikasi data belum lengkap.
+- Notifikasi **"santri belum punya halaqah"** per domain (perluasan kotak "data belum lengkap"); lihat `docs/SPEC.md` bagian 9.
 - Deploy Vercel yang benar-benar tersambung ke Supabase (diuji 23 Nov 2026).
 
-Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinamis (T7), semua layar pengelolaan termasuk **Hari Efektif** (T8), uji otomatis dan QA (T9), pembersihan data dummy + repo privat (T10).
+Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinamis (T7), semua layar pengelolaan termasuk **Hari Efektif** dan **penugasan halaqah** (T8), uji otomatis dan QA (T9), pembersihan data dummy + repo privat (T10).
 
 ---
 
@@ -70,6 +71,7 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 10. **Bulan 0 (Data Awal) adalah catatan awal, bukan bulan efektif dan bukan bulan target.** Ia membandingkan Syawwal tahun pertama; tahun berikutnya Syawwal membandingkan dengan Ramadhan tahun sebelumnya. `month_is_open(bulan 0, domain) = false`; form input menyembunyikan bulan 0; Admin/Mudir tetap bisa mengisi manual. Aturan lengkap di `docs/SPEC.md` bagian 4a.
 11. **Santri yang tidak ikut semua halaqah adalah keadaan sah, bukan data rusak.** NIS `1447.dummy-nis.023` (tanpa Ghayah) dan `1447.dummy-nis.024` (hanya Al Qur'an) **dibiarkan** sebagai kasus uji resmi. Jangan menambah/mengarang baris. Di domain yang tidak diikuti, santri tidak ditampilkan (bukan 0) dan semua view/fungsi tetap jalan.
 12. **Hari Efektif Rabiul Awwal = 19 hari** (bukan 3), keputusan Mudir 24 Nov 2026. Database sudah dikoreksi lewat SQL; **Excel sumber masih 3** dan harus diperbaiki Mudir agar seed ulang tidak mengembalikan 3.
+13. **Notifikasi "santri belum punya halaqah" per domain** (24 Nov 2026): Mudir/Admin melihat semua domain; Masul Al Quran/Wasilah/Ghayah hanya domainnya; Musyrif/Mudarris tidak; anon ditolak. Implementasi: fungsi `students_without_halaqah`(/_count) (migrasi `000009`), definisi "punya halaqah" = keanggotaan aktif pada halaqah aktif di tahun ajaran aktif. Penugasan halaqah adalah T8.
 
 ### Struktur teknis
 1. Migrasi yang sudah dijalankan **tidak boleh diubah**; perubahan skema = `20261121000007_...` dan seterusnya.
@@ -101,7 +103,7 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 5. **69 capaian data dummy mundur** dari bulan sebelumnya (Tahfidz 27, Kitabah 26, Tilawah 16). Disepakati dibiarkan karena dummy. Konfirmasi ulang sebelum T9, karena uji QA akan sering bertemu angka ini.
 6. **Isi Data Awal (252 capaian)** dipertahankan untuk sekarang. Apakah dikosongkan saat data asli dimuat? Keputusan ditunda ke T10.
 7. **Repo masih publik.** Harus dijadikan privat sebelum data asli dimuat (T10).
-8. **Boleh mulai T6?** Pra-T6 langkah [1]-[3] selesai dan dilaporkan; T6 menunggu jawaban Mudir.
+8. **Boleh mulai T6?** Pra-T6 langkah [1]-[4] selesai dan dilaporkan; T6 menunggu jawaban Mudir.
 
 ---
 
@@ -115,8 +117,9 @@ npm run test           # 6 uji aturan putaran
 npm run build          # wajib berhasil, hasil di dist/
 python scripts/check_repo_safety.py   # wajib lolos sebelum push
 git config core.hooksPath .githooks   # sekali saja, mengaktifkan hook keamanan
-python scripts/qa/run_pre_t6_db_tests.py   # uji DB pra-T6 (14 uji; tulis dalam ROLLBACK)
-python scripts/qa/test_no_halaqah.py       # uji santri tanpa halaqah (9 uji; tulis dalam ROLLBACK)
+python scripts/qa/run_pre_t6_db_tests.py   # uji DB pra-T6 (tulis dalam ROLLBACK)
+python scripts/qa/test_no_halaqah.py       # uji santri tanpa halaqah (tulis dalam ROLLBACK)
+python scripts/qa/test_students_without_halaqah.py   # uji notifikasi "belum punya halaqah" (13 uji)
 ```
 
 Data dan database (membaca `DATABASE_URL` dari `.env.local`, tidak pernah dicetak):

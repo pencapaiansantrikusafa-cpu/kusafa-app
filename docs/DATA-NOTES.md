@@ -44,6 +44,7 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 | Hari Efektif Rabiul Awwal (domain Al Qur'an) | **3 → 19 hari** lewat SQL terdokumentasi (lihat 3a). Excel sumber masih 3 dan **wajib diperbaiki Mudir** | 24 Nov 2026 |
 | Bulan 0 (Data Awal) bisa ditulis staf lewat API | **Ditutup**: `month_is_open(bulan 0, domain)` = false (migrasi `20261121000008`) | 24 Nov 2026 |
 | Santri tanpa halaqah di suatu domain | Dinyatakan **kasus uji resmi** (NIS 023/024), ditambah uji otomatis `scripts/qa/test_no_halaqah.py` (9/9 PASS) | 24 Nov 2026 |
+| Notifikasi "santri belum punya halaqah" per domain | Dibuat (fungsi `students_without_halaqah`/`_count`, migrasi 000009); tanpa tabel baru; hilang otomatis saat santri diberi halaqah. Uji 13/13 PASS. Lihat bagian 8 dan SPEC §9 | 24 Nov 2026 |
 
 ### 3a. Koreksi Hari Efektif Rabiul Awwal (24 November 2026)
 
@@ -106,3 +107,33 @@ Yang diperiksa langsung di database pada 24 November 2026:
 - Hasil: **9/9 PASS**.
 - Cakupan: keanggotaan 023 (alquran + wasilah, tanpa ghayah) dan 024 (hanya alquran); `v_monthly_report` tidak error dan **tidak menampilkan** baris untuk domain yang tidak diikuti; domain yang diikuti tetap tampil (024 alquran = 4 baris); `student_in_taught_domain`, `student_in_taught_halaqah`, `can_manage(NULL)` aman; RLS menolak pengampu menulis Ghayah untuk 023.
 - Semua uji tulis berjalan di dalam transaksi lalu `ROLLBACK`; tidak ada baris data yang ditambah atau diubah.
+
+## 8. Notifikasi "santri belum punya halaqah" (24 November 2026, langkah pra-T6 [4/5])
+
+Kebutuhan Mudir: santri yang belum punya halaqah di satu domain dikabarkan ke pengampu domain itu
+(Masul Al Quran / Masul Wasilah / Masul Ghayah); Admin dan Mudir menerima dari ketiga domain;
+Musyrif/ah dan Mudarris/ah tidak.
+
+Hasil hitung langsung di database dummy (tahun ajaran aktif 1447, 109 santri aktif):
+
+| Domain | Tanpa halaqah | Santri |
+|---|---|---|
+| Al Qur'an | **0** | – |
+| Ilmu Wasilah | **1** | `1447.dummy-nis.024` (hanya Al Qur'an) |
+| Ilmu Ghayah | **2** | `1447.dummy-nis.023` (belum di Ghayah), `1447.dummy-nis.024` |
+
+Jumlah ini sesuai kebutuhan minimal (023 tidak di Ghayah; 024 tidak di Wasilah dan Ghayah), jauh di bawah
+ambang 30%, dan tidak memerlukan keputusan tambahan Mudir.
+
+Perilaku yang diverifikasi (uji 13/13 PASS, semua uji tulis di-ROLLBACK):
+- Mudir dan Admin melihat ketiga domain.
+- Masul Al Quran hanya Al Qur'an; Masul Wasilah hanya Wasilah; Masul Ghayah hanya Ghayah.
+- Musyrif/ah dan Mudarris/ah tidak melihat apa pun (0 baris).
+- Setelah santri diberi halaqah (023 ke Ghayah), santri itu hilang otomatis dari notifikasi; ROLLBACK mengembalikan data.
+- anon ditolak.
+
+Catatan implementasi: memakai dua fungsi `security definer` (`students_without_halaqah()` dan
+`students_without_halaqah_count()`), bukan tabel atau view baru; `revoke ... from public, anon`. Karena
+`security definer`, `current_user` di dalam fungsi selalu = pemilik, jadi pengecualian "tampil semua untuk
+skrip lokal" memakai `session_user` yang digabung `current_app_role() is null`. Aturan detail di
+`docs/SPEC.md` bagian 9.

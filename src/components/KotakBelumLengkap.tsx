@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth-context";
 import { ambilSemua } from "../lib/ambil-semua";
-import { hanyaHalaqahDiampu, isPeninjau } from "../lib/roles";
+import { hanyaHalaqahDiampu, isPeninjau, DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { ambilGuru, halaqahDiampu } from "./PemilihHalaqah";
 import DropdownCari from "./DropdownCari";
 
@@ -33,6 +33,26 @@ interface SantriKurang {
   musyrif: string;
   kosong: string[];
   jumlahBulan: number;
+}
+
+/** Baris dari fungsi RPC `students_without_halaqah()` (santri aktif tanpa halaqah di satu domain). */
+interface SantriTanpaHalaqah {
+  domain: Domain;
+  academic_year_id: string;
+  hijri_year: number;
+  student_id: string;
+  nis: string;
+  full_name: string;
+  level_label: string | null;
+}
+
+/** Domain yang notifikasinya boleh dilihat role ini (cermin aturan database). */
+function domainNotifikasi(role: string): Domain[] {
+  if (role === "mudir" || role === "admin") return ["alquran", "wasilah", "ghayah"];
+  if (role === "masul_alquran") return ["alquran"];
+  if (role === "masul_wasilah") return ["wasilah"];
+  if (role === "masul_ghayah") return ["ghayah"];
+  return [];
 }
 
 /** Label baku halaqah: "HLQ-PA-4 - Ust. Fulan 3" (nama musyrif/ah selalu ikut). */
@@ -69,6 +89,12 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     /** Peta halaqah -> nama musyrif/ah (untuk label dropdown). */
     musyrif: Record<string, string[]>;
   } | null>(null);
+  /** Notifikasi santri tanpa halaqah per domain (view v_students_without_halaqah). */
+  const [tanpaHalaqah, setTanpaHalaqah] = useState<{
+    memuat: boolean;
+    galat: string | null;
+    baris: SantriTanpaHalaqah[];
+  }>({ memuat: false, galat: null, baris: [] });
 
   const boleh = !!profile;
   const semuaHalaqah = profile ? isPeninjau(profile.role) : false;
@@ -221,6 +247,37 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     };
   }, [bulanId, boleh, batasiAmanah, profile]);
 
+  // Notifikasi turunan: santri aktif yang belum punya halaqah di domain yang
+  // boleh dilihat role ini. Hak lihat ditegakkan database (fungsi security
+  // definer `students_without_halaqah`, yang memeriksa `can_manage(domain)` di
+  // dalam fungsi). Di sini hanya menyembunyikan bagian untuk musyrif/mudarris/wali
+  // dan menyusun lencana jumlah per domain.
+  useEffect(() => {
+    let aktif = true;
+    if (!profile || !isPeninjau(profile.role)) {
+      setTanpaHalaqah({ memuat: false, galat: null, baris: [] });
+      return;
+    }
+    void (async () => {
+      setTanpaHalaqah({ memuat: true, galat: null, baris: [] });
+      try {
+        const { data: hasil, error } = await supabase.rpc("students_without_halaqah");
+        if (error) throw new Error(error.message);
+        if (aktif) setTanpaHalaqah({ memuat: false, galat: null, baris: (hasil ?? []) as SantriTanpaHalaqah[] });
+      } catch (e) {
+        if (aktif)
+          setTanpaHalaqah({
+            memuat: false,
+            galat: e instanceof Error ? e.message : String(e),
+            baris: [],
+          });
+      }
+    })();
+    return () => {
+      aktif = false;
+    };
+  }, [profile]);
+
   // Halaqah yang boleh dipilih di saringan.
   const musyrifMap = data?.musyrif ?? {};
 
@@ -228,6 +285,9 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     if (!data) return [];
     return saringHalaqah ? data.santri.filter((s) => s.halaqahId === saringHalaqah) : data.santri;
   }, [data, saringHalaqah]);
+
+  const domainTampil = profile ? domainNotifikasi(profile.role) : [];
+  const barisTanpa = tanpaHalaqah.baris.filter((b) => domainTampil.includes(b.domain));
 
   if (!boleh) return null;
 
@@ -262,6 +322,94 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
 
       {buka && (
         <div className="border-t border-black/5 px-4 py-3">
+          {/* Santri belum punya halaqah: perluasan notifikasi yang sama, bukan sistem paralel.
+              Hanya untuk Mudir/Admin/Masul sesuai domain; musyrif/mudarris tidak melihat. */}
+          {profile && isPeninjau(profile.role) && (
+            <div className="mb-4 rounded-lg bg-amber-50 px-3 py-3 ring-1 ring-amber-200">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-sm font-bold text-gray-900">Santri belum punya halaqah</p>
+                <p className="text-xs text-gray-600">
+                  Santri aktif di tahun ajaran aktif yang belum punya halaqah pada domain tersebut.
+                </p>
+              </div>
+
+              {tanpaHalaqah.memuat ? (
+                <p className="mt-2 text-xs text-gray-600">Memeriksa...</p>
+              ) : tanpaHalaqah.galat ? (
+                <p role="alert" className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+                  Gagal memeriksa: {tanpaHalaqah.galat}
+                </p>
+              ) : (
+                <>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {domainTampil.map((d) => {
+                      const jumlah = barisTanpa.filter((b) => b.domain === d).length;
+                      return (
+                        <span
+                          key={d}
+                          className={
+                            "rounded px-2 py-1 text-xs ring-1 " +
+                            (jumlah === 0
+                              ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
+                              : "bg-amber-100 text-amber-900 ring-amber-300")
+                          }
+                        >
+                          <strong className="font-semibold">{DOMAIN_LABEL[d]}</strong>{" "}
+                          {jumlah === 0 ? "0 santri" : `${jumlah} santri`}
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  {barisTanpa.length === 0 ? (
+                    <p className="mt-2 text-sm text-emerald-800">
+                      Semua santri aktif sudah punya halaqah di domain ini.
+                    </p>
+                  ) : (
+                    <div className="mt-3 max-h-60 overflow-auto rounded-lg bg-white ring-1 ring-black/5">
+                      <table className="w-full min-w-[520px] border-collapse text-sm">
+                        <thead className="sticky top-0 z-30 bg-kusafa-light text-left text-xs uppercase tracking-wide text-kusafa">
+                          <tr>
+                            <th scope="col" className="px-2 py-2">Domain</th>
+                            <th scope="col" className="px-2 py-2">NIS</th>
+                            <th scope="col" className="px-2 py-2">Nama</th>
+                            <th scope="col" className="px-2 py-2">Level</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {barisTanpa.slice(0, 200).map((b) => (
+                            <tr key={`${b.domain}|${b.student_id}`} className="border-t border-black/5">
+                              <td className="whitespace-nowrap px-2 py-2 text-gray-700">
+                                {DOMAIN_LABEL[b.domain]}
+                              </td>
+                              <td className="whitespace-nowrap px-2 py-2 font-mono text-xs text-gray-700">
+                                {b.nis}
+                              </td>
+                              <th scope="row" className="px-2 py-2 text-left font-medium text-gray-900">
+                                {b.full_name}
+                              </th>
+                              <td className="px-2 py-2 text-gray-700">
+                                {b.level_label || <span className="text-gray-500">—</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {barisTanpa.length > 200 && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      Ditampilkan 200 pertama dari {barisTanpa.length} santri.
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-gray-600">
+                    Penugasan halaqah dilakukan di menu Halaqah (T8). Daftar ini hilang otomatis
+                    begitu santri dimasukkan ke halaqah.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
           {galat && (
             <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
               {galat}
