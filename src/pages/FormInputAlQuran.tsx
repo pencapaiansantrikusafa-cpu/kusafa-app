@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { angka } from "../lib/laporan";
 import { bolehKhatam, putaranUntukSimpan } from "../lib/putaran";
 import { posisiItem } from "../lib/posisi";
-import DropdownCari from "../components/DropdownCari";
+import DropdownCari, { type CariDiServer } from "../components/DropdownCari";
 import KonfirmasiPutaran, { type KasusTurun } from "../components/KonfirmasiPutaran";
 
 export interface InfoLalu {
@@ -61,6 +61,8 @@ interface Props {
   baris: BarisInput[];
   setBaris: (b: BarisInput[]) => void;
   items: Item[];
+  /** T5c: pencarian item di server per bidang (daftar penuh tidak diunduh lagi). */
+  cariItemServer: (subjectId: string) => CariDiServer;
   /** Teks capaian bulan lalu per `santri_id|bidang_id` (label dari view, bukan angka posisi). */
   infoLalu: Record<string, InfoLalu>;
   hariEfektif: number | null;
@@ -82,6 +84,7 @@ export default function FormInputAlQuran({
   baris,
   setBaris,
   items,
+  cariItemServer,
   infoLalu,
   hariEfektif,
   terkunci,
@@ -105,9 +108,10 @@ export default function FormInputAlQuran({
    */
   const [diubahBidang, setDiubahBidang] = useState<Record<string, true>>({});
 
-  // Memo ini harus murni (tidak memodifikasi state `items`). React Mode Ketat
-  // memanggilnya dua kali; bila array state ikut diubah, item terduplikasi
-  // dan React memperingatkan kunci ganda.
+  /**
+   * T5c: daftar pilihan per bidang datang dari server (60 hasil pertama). `items` hanya
+   * berisi item yang sudah terpilih, jadi tidak dipakai sebagai isi dropdown.
+   */
   const itemPerBidang = useMemo(() => {
     const p: Record<string, Item[]> = {};
     for (const it of items) {
@@ -462,6 +466,7 @@ export default function FormInputAlQuran({
                               nilai: it.id,
                               label: it.label,
                             }))}
+                            diServer={cariItemServer(bd.id)}
                             nilai={itemId ?? ""}
                             onChange={(v) => ubahBidang(b.santri_id, bd.id, v)}
                             opsiKosong="— belum diisi —"

@@ -6,7 +6,13 @@ import FormInputAlQuran, { type BarisInput, type BidangInput, type InfoLalu } fr
 import KotakBelumLengkap from "../components/KotakBelumLengkap";
 import { ambilSemua } from "../lib/ambil-semua";
 import PemilihTahunBulan from "../components/PemilihTahunBulan";
-import PemilihHalaqah, { ambilGuru, ambilPengampu, halaqahDiampu } from "../components/PemilihHalaqah";
+import PemilihHalaqah, {
+  ambilGuru,
+  halaqahDiampu,
+  petaPengampu,
+  type GuruBaris,
+} from "../components/PemilihHalaqah";
+import type { CariDiServer } from "../components/DropdownCari";
 
 interface Halaqah {
   id: string;
@@ -42,6 +48,9 @@ export default function InputPage() {
   const [tahun, setTahun] = useState<number | "">("");
   const [bidang, setBidang] = useState<BidangInput[]>([]);
   const [pengampu, setPengampu] = useState<Record<string, string>>({});
+  /** Data pengampu & halaqah lengkap, dipakai ulang oleh notifikasi (tanpa unduh ulang). */
+  const [guruSemua, setGuruSemua] = useState<GuruBaris[]>([]);
+  const [semuaHalaqah, setSemuaHalaqah] = useState<{ id: string; code: string }[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   // Item capaian yang sudah tersimpan tetapi belum ada di daftar aktif (mis. sudah dinonaktifkan).
   const [itemTambahan, setItemTambahan] = useState<Item[]>([]);
@@ -67,6 +76,9 @@ export default function InputPage() {
           .select("id, month_no, name, academic_years!inner(hijri_year)")
           .order("month_no"),
       ]);
+      // T5c: pengampu diambil SEKALI di sini (dipakai pemilih halaqah & notifikasi),
+      // tidak diunduh ulang oleh komponen lain.
+      const guru = await ambilGuru();
       if (!aktif) return;
       if (h.error || b.error) {
         setGalat(h.error?.message ?? b.error?.message ?? null);
@@ -88,17 +100,19 @@ export default function InputPage() {
       setBulanId((prev) => prev || bulanTerakhir?.id || "");
       setTahun((prev) => (prev !== "" ? prev : bulanTerakhir?.hijri_year ?? ""));
 
-      setPengampu(await ambilPengampu());
+      setPengampu(petaPengampu(guru));
 
       // Musyrif/ah dan Mudarris/ah hanya boleh mengisi halaqah yang diampu.
       // Ini juga ditegakkan database (RLS), tetapi tampilan tidak boleh menawarkan
       // halaqah milik guru lain supaya tidak ada kesan boleh.
       let daftarHalaqah = h.data ?? [];
       if (profile && hanyaHalaqahDiampu(profile.role)) {
-        const diampu = halaqahDiampu(await ambilGuru(), profile.id);
+        const diampu = halaqahDiampu(guru, profile.id);
         daftarHalaqah = daftarHalaqah.filter((x) => diampu.has(x.id));
       }
       setHalaqahList(daftarHalaqah);
+      setGuruSemua(guru);
+      setSemuaHalaqah(h.data ?? []);
       setHalaqahId((prev) =>
         daftarHalaqah.some((x) => x.id === prev) ? prev : (daftarHalaqah[0]?.id ?? ""),
       );
@@ -147,13 +161,21 @@ export default function InputPage() {
     }
 
     const subjectIds = bidangList.map((b) => b.id);
+    // T5c: daftar buku untuk item diambil paralel dengan query form (tidak berurutan).
+    const janjiBuku = supabase
+      .from("books")
+      .select("id, subject_id, is_cyclic, sort_order")
+      .in("subject_id", subjectIds)
+      .eq("is_active", true)
+      .order("stage_order", { ascending: true })
+      .order("sort_order", { ascending: true });
     // Bulan sebelumnya dan bulan-bulan sesudahnya, menurut urutan kalender.
     const idx = bulanList.findIndex((b) => b.id === bulanId);
     const bulanLaluId = idx > 0 ? bulanList[idx - 1].id : null;
     const bulanLaluNama = idx > 0 ? bulanList[idx - 1].name : "";
     const bulanSetelahIds = idx >= 0 ? bulanList.slice(idx + 1).map((b) => b.id) : [];
 
-    const [st, capaian, presensi, catatan, itemBuku, laporanLalu, laporanKini, setelah] = await Promise.all([
+    const [st, capaian, presensi, catatan, laporanLalu, laporanKini, setelah, bukuRes] = await Promise.all([
       supabase.from("students").select("id, full_name").in("id", anggota).order("full_name"),
       supabase
         .from("progress_entries")
@@ -174,35 +196,6 @@ export default function InputPage() {
         .eq("month_id", bulanId)
         .eq("domain", DOMAIN)
         .in("student_id", anggota),
-      // Item dropdown per buku. `seq` tidak unik antar buku (tiap buku mulai dari 1),
-      // jadi satu query ORDER BY seq menghasilkan urutan acak. Ambil per buku
-      // (buku urut stage_order, sort_order; item urut seq), lalu gabungkan.
-      (async () => {
-        const { data: buku, error: eBuku } = await supabase
-          .from("books")
-          .select("id, subject_id, is_cyclic, sort_order")
-          .in("subject_id", subjectIds)
-          .eq("is_active", true)
-          .order("stage_order", { ascending: true })
-          .order("sort_order", { ascending: true });
-        if (eBuku || !buku) return { error: eBuku ?? new Error("Daftar buku kosong") };
-        const perBuku = await Promise.all(
-          buku.map((bk) =>
-            ambilSemua<{ id: string; label: string; value: string | null }>((awal, jumlah) =>
-              supabase
-                .from("curriculum_items")
-                .select("id, label, value")
-                .eq("book_id", bk.id)
-                .eq("is_active", true)
-                .order("seq", { ascending: true })
-                .range(awal, awal + jumlah - 1),
-            ),
-          ),
-        );
-        const galatItem = perBuku.find((h) => h.error)?.error;
-        if (galatItem) return { error: galatItem };
-        return { buku, perBuku };
-      })(),
       // Posisi, putaran, dan teks capaian bulan lalu (pembanding otomatis).
       bulanLaluId
         ? supabase
@@ -233,18 +226,43 @@ export default function InputPage() {
               .range(awal, awal + jumlah - 1),
           )
         : Promise.resolve({ data: [], error: null }),
+      janjiBuku,
     ]);
     const galat2 =
       st.error ??
       capaian.error ??
       presensi.error ??
       catatan.error ??
-      itemBuku.error?.message ??
+      bukuRes.error ??
       laporanLalu.error ??
       laporanKini.error ??
       setelah.error;
     if (galat2) {
       setGalat(typeof galat2 === "string" ? galat2 : galat2.message);
+      setMemuat(false);
+      return;
+    }
+
+    // T5c: hanya item yang SUDAH terpilih bulan ini yang diambil detailnya (lewat RPC),
+    // agar nilai tersimpan tetap tampil walau item itu tidak muncul di hasil cari.
+    if (!Array.isArray(bukuRes.data)) {
+      setGalat("Daftar buku tidak terbaca.");
+      setMemuat(false);
+      return;
+    }
+    const barisCapaianAwal = (capaian.data ?? []) as unknown as Array<{
+      student_id: string;
+      subject_id: string;
+      item_id: string;
+      putaran: number;
+      curriculum_items: { label: string } | { label: string }[] | null;
+    }>;
+    const idTerpilih = [...new Set(barisCapaianAwal.map((c) => c.item_id))];
+    const { data: dataTerpilih, error: eTerpilih } = await supabase.rpc("curriculum_items_by_ids", {
+      p_ids: idTerpilih,
+    });
+    if (eTerpilih) {
+      setGalat(eTerpilih.message);
       setMemuat(false);
       return;
     }
@@ -259,28 +277,20 @@ export default function InputPage() {
       return nama ? `${nama} · ${label}` : label;
     };
     const daftarItem: Item[] = [];
-    if ("buku" in itemBuku && itemBuku.buku && itemBuku.perBuku) {
-      itemBuku.buku.forEach((bk, i) => {
-        for (const it of itemBuku.perBuku[i].data ?? []) {
-          daftarItem.push({
-            id: it.id,
-            subject_id: bk.subject_id,
-            label: berlabel(bk.subject_id, it.label),
-            value: it.value,
-            siklik: !!bk.is_cyclic,
-          });
-        }
-      });
+    if (Array.isArray(dataTerpilih)) {
+      for (const it of dataTerpilih as Item[]) {
+        daftarItem.push({
+          id: it.id,
+          subject_id: it.subject_id,
+          label: it.label,
+          value: it.value,
+          siklik: !!it.siklik,
+        });
+      }
     }
     setItems(daftarItem);
 
-    const barisCapaian = (capaian.data ?? []) as unknown as Array<{
-      student_id: string;
-      subject_id: string;
-      item_id: string;
-      putaran: number;
-      curriculum_items: { label: string } | { label: string }[] | null;
-    }>;
+    const barisCapaian = barisCapaianAwal;
     const petaCapaian = new Map(barisCapaian.map((c) => [`${c.student_id}|${c.subject_id}`, c.item_id]));
     const petaPutaranTersimpan = new Map(
       barisCapaian.map((c) => [`${c.student_id}|${c.subject_id}`, c.putaran]),
@@ -301,9 +311,17 @@ export default function InputPage() {
     );
 
     // Label item tersimpan (dipakai bila item tidak ada di daftar aktif).
+    const petaTerpilih = new Map(
+      ((Array.isArray(dataTerpilih) ? (dataTerpilih as Item[]) : []) as Item[]).map((it) => [it.id, it]),
+    );
     const tambahan: Item[] = [];
     for (const c of barisCapaian) {
       const ci = Array.isArray(c.curriculum_items) ? c.curriculum_items[0] : c.curriculum_items;
+      const dariRpc = petaTerpilih.get(c.item_id);
+      if (dariRpc) {
+        tambahan.push(dariRpc);
+        continue;
+      }
       if (ci?.label)
         tambahan.push({
           id: c.item_id,
@@ -403,6 +421,35 @@ export default function InputPage() {
     return b ? `${b.name} ${b.hijri_year} H` : "";
   }, [bulanList, bulanId]);
 
+  /**
+   * T5c: pencarian item di server. Halaman tidak lagi mengunduh seluruh item domain
+   * (9.177 baris); tiap kotak dropdown mengambil 60 hasil pertama yang cocok dari
+   * database saat pengguna mengetik. Rumus capaian tidak berubah.
+   */
+  const cariItemServer = useCallback(
+    (subjectId: string): CariDiServer => ({
+      awal: async () => {
+        const { data, error } = await supabase.rpc("curriculum_items_search", {
+          p_subject: subjectId,
+          p_q: "",
+          p_limit: 60,
+        });
+        if (error) throw new Error(error.message);
+        return ((data ?? []) as Item[]).map((it) => ({ nilai: it.id, label: it.label }));
+      },
+      cari: async (kata: string) => {
+        const { data, error } = await supabase.rpc("curriculum_items_search", {
+          p_subject: subjectId,
+          p_q: kata,
+          p_limit: 60,
+        });
+        if (error) throw new Error(error.message);
+        return ((data ?? []) as Item[]).map((it) => ({ nilai: it.id, label: it.label }));
+      },
+    }),
+    [],
+  );
+
   return (
     <div className="space-y-4">
       <div>
@@ -451,7 +498,9 @@ export default function InputPage() {
         </p>
       )}
 
-      {bulanId && <KotakBelumLengkap bulanId={bulanId} />}
+      {bulanId && (
+        <KotakBelumLengkap bulanId={bulanId} halaqahAwal={semuaHalaqah} guruAwal={guruSemua} />
+      )}
 
       {memuat ? (
         <p className="rounded-xl bg-white p-6 text-sm text-gray-600 ring-1 ring-black/5">Memuat data...</p>
@@ -468,6 +517,7 @@ export default function InputPage() {
           baris={baris}
           setBaris={setBaris}
           items={[...items, ...itemTambahan]}
+          cariItemServer={cariItemServer}
           infoLalu={infoLalu}
           hariEfektif={hariEfektif}
           terkunci={terkunci}

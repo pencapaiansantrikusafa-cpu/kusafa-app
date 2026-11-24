@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth-context";
 import { ambilSemua } from "../lib/ambil-semua";
 import { hanyaHalaqahDiampu, isPeninjau, DOMAIN_LABEL, type Domain } from "../lib/roles";
-import { ambilGuru, halaqahDiampu } from "./PemilihHalaqah";
+import { ambilGuru, halaqahDiampu, type GuruBaris } from "./PemilihHalaqah";
 import DropdownCari from "./DropdownCari";
 
 interface Baris {
@@ -75,7 +75,17 @@ function labelHalaqahNotif(code: string, musyrif: string): string {
  * Hak lihat: Mudir/Admin/Masul Al Quran melihat semua halaqah dan boleh menyaring
  * per halaqah; musyrif/ah hanya halaqahnya sendiri (jumlah santri yang diampu).
  */
-export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
+export default function KotakBelumLengkap({
+  bulanId,
+  halaqahAwal,
+  guruAwal,
+}: {
+  bulanId: string;
+  /** Halaqah yang boleh dilihat (dari halaman induk; tidak diunduh ulang). */
+  halaqahAwal?: { id: string; code: string }[];
+  /** Pengampu tiap halaqah (dari halaman induk; tidak diunduh ulang). */
+  guruAwal?: GuruBaris[];
+}) {
   const { profile } = useAuth();
   const [buka, setBuka] = useState(true);
   const [memuat, setMemuat] = useState(false);
@@ -109,6 +119,10 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     void (async () => {
       setMemuat(true);
       setGalat(null);
+      // T5c: bila halaman induk sudah mengirim data halaqah & pengampu, tunggu sampai
+      // siap — supaya tidak ada unduhan dobel dan notifikasi tidak menunggu dua kali.
+      if (halaqahAwal !== undefined && halaqahAwal.length === 0) return;
+      if (guruAwal !== undefined && guruAwal.length === 0) return;
       try {
         const DOMAIN = "alquran";
         // 1. Urutan bulan lintas tahun.
@@ -141,9 +155,13 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
           .sort((a, b) => a.ord - b.ord);
 
         // 3. Bidang, halaqah, dan santri.
+        //    T5c: halaqah & pengampu memakai data dari halaman induk bila tersedia,
+        //    supaya tidak ada permintaan ganda yang memperlambat halaman Input.
         const [bidangRes, halaqahRes] = await Promise.all([
           supabase.from("subjects").select("id, name").eq("domain", DOMAIN).eq("is_active", true).order("sort_order"),
-          supabase.from("halaqahs").select("id, code").eq("domain", DOMAIN).eq("is_active", true).order("code"),
+          halaqahAwal && halaqahAwal.length
+            ? Promise.resolve({ data: halaqahAwal, error: null })
+            : supabase.from("halaqahs").select("id, code").eq("domain", DOMAIN).eq("is_active", true).order("code"),
         ]);
         if (bidangRes.error) throw new Error(bidangRes.error.message);
         if (halaqahRes.error) throw new Error(halaqahRes.error.message);
@@ -151,7 +169,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
         let halaqah = (halaqahRes.data ?? []) as { id: string; code: string }[];
 
         // 4. Musyrif/ah tiap halaqah (kolom pengampu).
-        const guru = await ambilGuru();
+        const guru = guruAwal ?? (await ambilGuru());
         const musyrifPeta = new Map<string, string[]>();
         for (const g of guru) {
           const arr = musyrifPeta.get(g.halaqah_id) ?? [];
@@ -245,7 +263,7 @@ export default function KotakBelumLengkap({ bulanId }: { bulanId: string }) {
     return () => {
       aktif = false;
     };
-  }, [bulanId, boleh, batasiAmanah, profile]);
+  }, [bulanId, boleh, batasiAmanah, profile, halaqahAwal, guruAwal]);
 
   // Notifikasi turunan: santri aktif yang belum punya halaqah di domain yang
   // boleh dilihat role ini. Hak lihat ditegakkan database (fungsi security

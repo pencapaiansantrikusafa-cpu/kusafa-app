@@ -26,6 +26,17 @@ export interface OpsiCari {
   cariJuga?: string;
 }
 
+/**
+ * Mode "cari di server": daftar pilihan diambil dari database saat pengguna mengetik,
+ * jadi halaman tidak perlu mengunduh seluruh daftar. Dipakai halaman Input (T5c).
+ * `cari` mengembalikan hasil untuk satu kata kunci (sudah dibatasi di server).
+ */
+export interface CariDiServer {
+  cari: (kata: string) => Promise<OpsiCari[]>;
+  /** Teks saat kotak dibuka sebelum mengetik (mis. item pertama pada urutan buku). */
+  awal?: () => Promise<OpsiCari[]>;
+}
+
 interface Props {
   /** id elemen tombol; label memakai `${id}-label`. */
   id: string;
@@ -40,6 +51,8 @@ interface Props {
   /** Jumlah baris yang ditampilkan sekaligus. */
   batasTampil?: number;
   placeholderCari?: string;
+  /** Bila diisi, pencarian dilakukan di server (daftar lokal `opsi` tidak dipakai untuk mencari). */
+  diServer?: CariDiServer;
 }
 
 /**
@@ -58,6 +71,7 @@ export default function DropdownCari({
   disabled,
   batasTampil = 60,
   placeholderCari = "Ketik untuk mencari...",
+  diServer,
 }: Props) {
   const [terbuka, setTerbuka] = useState(false);
   const [cari, setCari] = useState("");
@@ -67,8 +81,38 @@ export default function DropdownCari({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const idLab = `${id}-label`;
   const idDaftar = useId();
+  /** Hasil pencarian server (hanya dipakai bila `diServer` diisi). */
+  const [hasilServer, setHasilServer] = useState<OpsiCari[]>([]);
+  const [memuatServer, setMemuatServer] = useState(false);
   /** Posisi panel (diukur dari tombol), karena panel dilayangkan ke <body> lewat portal. */
   const [posisi, setPosisi] = useState({ top: 0, left: 0, lebar: 0, keAtas: false });
+
+  /**
+   * Pencarian di server, ditunda 200 ms agar tidak memanggil database setiap ketukan.
+   * Permintaan lama diabaikan bila pengguna sudah mengetik lagi (urutan hasil tetap).
+   */
+  useEffect(() => {
+    if (!diServer || !terbuka) return;
+    let aktif = true;
+    const jeda = setTimeout(() => {
+      setMemuatServer(true);
+      const janji = cari.trim() === "" ? (diServer.awal ? diServer.awal() : Promise.resolve([])) : diServer.cari(cari);
+      janji
+        .then((r) => {
+          if (aktif) setHasilServer(r);
+        })
+        .catch(() => {
+          if (aktif) setHasilServer([]);
+        })
+        .finally(() => {
+          if (aktif) setMemuatServer(false);
+        });
+    }, 200);
+    return () => {
+      aktif = false;
+      clearTimeout(jeda);
+    };
+  }, [diServer, terbuka, cari]);
 
   /** Ukur ulang posisi panel terhadap tombol; dipanggil saat dibuka, digulir, dan diubah ukuran layar. */
   useEffect(() => {
@@ -102,6 +146,9 @@ export default function DropdownCari({
   const terpilih = opsi.find((o) => o.nilai === nilai);
 
   const tersaring = useMemo(() => {
+    // Mode server: hasil sudah disaring & diurutkan database (60 per permintaan).
+    if (diServer) return { daftar: hasilServer.slice(0, batasTampil), jumlah: hasilServer.length };
+
     const k = cari.trim().toLowerCase();
     if (!k) return { daftar: opsi.slice(0, batasTampil), jumlah: opsi.length };
 
@@ -135,7 +182,7 @@ export default function DropdownCari({
     // Urutan: skor, lalu urutan asli (buku) agar stabil.
     cocok.sort((a, b) => a.s - b.s || a.i - b.i);
     return { daftar: cocok.slice(0, batasTampil).map((x) => x.o), jumlah: cocok.length };
-  }, [opsi, cari, batasTampil]);
+  }, [opsi, cari, batasTampil, diServer, hasilServer]);
   const jumlahCocok = tersaring.jumlah;
   const daftarTampil = tersaring.daftar;
 
@@ -251,9 +298,14 @@ export default function DropdownCari({
                   </button>
                 </li>
               )}
-              {daftarTampil.length === 0 && (
+              {memuatServer && (
+                <li className="px-3 py-2 text-sm text-gray-500">Mencari...</li>
+              )}
+              {!memuatServer && daftarTampil.length === 0 && (
                 <li className="px-3 py-2 text-sm text-gray-500">
-                  {cari ? "Tidak ada yang cocok. Coba nomor atau sebagian nama." : "Tidak ada pilihan."}
+                  {cari || !diServer
+                    ? "Tidak ada yang cocok. Coba nomor atau sebagian nama."
+                    : "Tidak ada pilihan."}
                 </li>
               )}
               {daftarTampil.map((o, i) => (
