@@ -56,12 +56,12 @@ Keputusan Mudir: Hari Efektif Rabiul Awwal (bulan ke-6) domain Al Qur'an yang be
 | Nilai baru | **19** (diterapkan 24 Nov 2026) |
 | Sumber Excel | `data/source/3-Al Quran (halaqah dan pencapaian).xlsx` |
 | Sheet | `Halaqah Al Quran dan pencapaian` |
-| Sel | `BZ4` = header `HE`; nilai `BZ5:B113` = 3 untuk 109 santri (blok Rabiul Awwal: BZ=HE, CA=H, CB=S, CC=I, CD=A) |
+| Sel | `BZ4` = header `HE`; nilai `BZ5:BZ113` = 3 untuk 109 santri (blok Rabiul Awwal: BZ=HE, CA=H, CB=S, CC=I, CD=A) |
 | Cara perbaikan | SQL terdokumentasi `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` (bukan mengedit Excel) |
 | Cek presensi sebelum koreksi | 109 baris presensi Rabiul Awwal, semua `effective_days_override = NULL`, maksimum izin+sakit+alpha = 2, tidak ada yang melebihi 19 |
 | Verifikasi sesudah | DB = 19; `v_attendance` Hadir 17–19 untuk 109 santri, tidak ada hadir negatif |
 
-**Tindakan yang masih harus dilakukan Mudir:** perbaiki `BZ5:B113` di file Excel tersebut menjadi 19. Skrip seed membaca angka dari Excel, jadi selama Excel masih 3, **seed ulang akan mengembalikan nilai 3**. SQL koreksi di atas hanya untuk database yang sekarang; ia tidak mengubah Excel.
+**Tindakan yang masih harus dilakukan Mudir:** perbaiki `BZ5:BZ113` di file Excel tersebut menjadi 19. Skrip seed membaca angka dari Excel, jadi selama Excel masih 3, **seed ulang akan mengembalikan nilai 3**. SQL koreksi di atas hanya untuk database yang sekarang; ia tidak mengubah Excel.
 
 ## 4. Penyimpangan data dummy yang sudah disepakati (jangan "diperbaiki" tanpa izin)
 

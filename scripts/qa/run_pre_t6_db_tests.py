@@ -277,9 +277,38 @@ if mudir:
             except Exception: pass
             rec(f"B6_mudir_can_manage_{domain}", False, f"Error: {e}")
 
-# B7: effective_days Rabiul Awwal per domain (report only)
+# B7: effective_days Rabiul Awwal per domain — HARUS 19 (keputusan final Mudir 24 Nov 2026)
 if ra:
-    rec("E_hari_efektif_rabiul_awwal", True, f"Rabiul Awwal alquran effective_days={ra[2]} (domain alquran).", {"month_id": str(ra[0]), "effective_days": ra[2]})
+    rec("E_hari_efektif_rabiul_awwal_19", ra[2] == 19,
+        f"Rabiul Awwal alquran effective_days={ra[2]} (harus 19, bukan 3).",
+        {"month_id": str(ra[0]), "effective_days": ra[2]})
+else:
+    rec("E_hari_efektif_rabiul_awwal_19", False, "Baris Rabiul Awwal alquran tidak ditemukan di month_domain_settings.")
+
+# B7b: tidak ada Hari Efektif yang mustahil secara fisik (harus 1..31).
+try:
+    aneh = fetchall(
+        "select m.name, mds.domain::text, mds.effective_days from public.month_domain_settings mds "
+        "join public.hijri_months m on m.id=mds.month_id "
+        "where m.month_no between 1 and 12 and (mds.effective_days < 1 or mds.effective_days > 31)"
+    )
+    rec("E_tidak_ada_hari_efektif_janggal", aneh == [],
+        f"{len(aneh)} baris Hari Efektif di luar 1..31", {"baris": [list(r) for r in aneh]})
+except Exception as e:  # noqa: BLE001
+    rec("E_tidak_ada_hari_efektif_janggal", False, f"Error: {type(e).__name__}: {e}")
+
+# B7c: laporkan nilai di luar kebiasaan (5..31) sebagai CATATAN, bukan kegagalan,
+# karena boleh jadi bulan pembuka tahun ajaran yang tidak penuh (menunggu jawaban Mudir).
+try:
+    luar_kebiasaan = fetchall(
+        "select m.month_no, m.name, mds.effective_days from public.month_domain_settings mds "
+        "join public.hijri_months m on m.id=mds.month_id "
+        "where m.month_no between 1 and 12 and mds.effective_days < 5 order by m.month_no"
+    )
+    if luar_kebiasaan:
+        print("CATATAN Hari Efektif < 5 hari (perlu konfirmasi Mudir):", [list(r) for r in luar_kebiasaan])
+except Exception as e:  # noqa: BLE001
+    print("CATATAN gagal membaca:", e)
 
 # B8: check month_is_open function
 if any_month:
