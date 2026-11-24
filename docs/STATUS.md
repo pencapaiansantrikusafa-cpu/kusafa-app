@@ -7,7 +7,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir pra-T6 [6] | `0378f87` - pra-T6 [6]: smoke E2E di react-router 7.18.6 |
+| Commit terakhir pra-T6 [6] | `74287f5` - dokumentasi pra-T6 [6] |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
