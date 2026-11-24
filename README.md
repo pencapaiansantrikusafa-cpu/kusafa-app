@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 24 November 2026, commit `74287f5` (pra-T6 [6]). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 24 November 2026, commit `fc0340a` (pra-T6 [6a]). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|
