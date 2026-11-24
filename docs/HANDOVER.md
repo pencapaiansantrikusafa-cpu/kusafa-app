@@ -1,6 +1,6 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-**Terakhir diperbarui**: 24 November 2026, 15:29 WIB, commit `a8b5b45`.
+**Terakhir diperbarui**: 24 November 2026, 15:29 WIB, commit `e0bc3c9`.
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service role) atau data santri asli di berkas ini.
