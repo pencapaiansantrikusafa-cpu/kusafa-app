@@ -277,13 +277,14 @@ if mudir:
             except Exception: pass
             rec(f"B6_mudir_can_manage_{domain}", False, f"Error: {e}")
 
-# B7: effective_days Rabiul Awwal per domain — HARUS 19 (keputusan final Mudir 24 Nov 2026)
+# B7: effective_days Rabiul Awwal per domain — HARUS 3 (nilai BENAR; ada libur ~2 pekan lebih).
+# Koreksi Mudir 24 Nov 2026: nilai 3 sah, bukan kesalahan. Lihat docs/SPEC.md bagian 4a-2.
 if ra:
-    rec("E_hari_efektif_rabiul_awwal_19", ra[2] == 19,
-        f"Rabiul Awwal alquran effective_days={ra[2]} (harus 19, bukan 3).",
+    rec("E_hari_efektif_rabiul_awwal_3", ra[2] == 3,
+        f"Rabiul Awwal alquran effective_days={ra[2]} (harus 3; libur ~2 pekan lebih).",
         {"month_id": str(ra[0]), "effective_days": ra[2]})
 else:
-    rec("E_hari_efektif_rabiul_awwal_19", False, "Baris Rabiul Awwal alquran tidak ditemukan di month_domain_settings.")
+    rec("E_hari_efektif_rabiul_awwal_3", False, "Baris Rabiul Awwal alquran tidak ditemukan di month_domain_settings.")
 
 # B7b: tidak ada Hari Efektif yang mustahil secara fisik (harus 1..31).
 try:
@@ -297,16 +298,18 @@ try:
 except Exception as e:  # noqa: BLE001
     rec("E_tidak_ada_hari_efektif_janggal", False, f"Error: {type(e).__name__}: {e}")
 
-# B7c: laporkan nilai di luar kebiasaan (5..31) sebagai CATATAN, bukan kegagalan,
-# karena boleh jadi bulan pembuka tahun ajaran yang tidak penuh (menunggu jawaban Mudir).
+# B7c: Hari Efektif yang kecil SAH (libur panjang), mis. Rabiul Awwal = 3, Syawwal = 4.
+# Keputusan Mudir 24 Nov 2026: nilai kecil bukan kesalahan; JANGAN diubah tanpa konfirmasi.
+# Di sini hanya dicatat sebagai informasi, tidak pernah gagal.
 try:
-    luar_kebiasaan = fetchall(
+    kecil = fetchall(
         "select m.month_no, m.name, mds.effective_days from public.month_domain_settings mds "
         "join public.hijri_months m on m.id=mds.month_id "
         "where m.month_no between 1 and 12 and mds.effective_days < 5 order by m.month_no"
     )
-    if luar_kebiasaan:
-        print("CATATAN Hari Efektif < 5 hari (perlu konfirmasi Mudir):", [list(r) for r in luar_kebiasaan])
+    if kecil:
+        print("CATATAN Hari Efektif < 5 hari (SAH bila karena libur; jangan diubah tanpa konfirmasi Mudir):",
+              [list(r) for r in kecil])
 except Exception as e:  # noqa: BLE001
     print("CATATAN gagal membaca:", e)
 

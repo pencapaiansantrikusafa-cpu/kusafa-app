@@ -1,14 +1,26 @@
+-- ============================================================================
+-- *** DIBATALKAN - nilai 3 adalah BENAR ***
+--
+-- Skrip ini (3 -> 19) adalah KEKELIRUAN dan TIDAK BOLEH dijalankan lagi.
+-- Koreksi Mudir 24 November 2026: Hari Efektif Rabiul Awwal (month_no 6) domain
+-- Al Qur'an = 3 hari adalah BENAR karena ada libur sekitar dua pekan lebih.
+-- Pemulihan 19 -> 3: scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql
+--
+-- Berkas ini disimpan hanya sebagai jejak riwayat. ============================
+--
 -- Koreksi satu kali: Hari Efektif Rabiul Awwal (month_no 6) domain Al Qur'an 3 -> 19.
 --
 -- Sumber data: data/source/3-Al Quran (halaqah dan pencapaian).xlsx
 --   sheet  : "Halaqah Al Quran dan pencapaian"
---   sel    : BZ4 (header "HE"), nilai BZ5:B113 = 3 untuk 109 santri
+--   sel    : BZ4 (header "HE"), nilai BZ5:BZ113 = 3 untuk 109 santri
+--   BAGIAN INI DIBATALKAN: nilai 3 itu BENAR, tidak perlu diperbaiki menjadi 19.
 --   arti   : blok Rabiul Awwal (indeks bulan ke-6) dimulai di kolom BZ;
 --            BZ=HE, CA=H, CB=S, CC=I, CD=A, lalu pasangan label-nilai capaian.
 --
 -- Keputusan Mudir 24 November 2026: nilai yang benar adalah 19 hari.
 -- Skrip ini TIDAK menyentuh file Excel. Agar seed ulang tidak mengembalikan 3,
 -- Mudir harus memperbaiki sel BZ5:B113 di file Excel tersebut menjadi 19.
+-- DIBATALKAN: nilai 3 adalah BENAR (libur ~2 pekan lebih). Lihat revert_to_3.sql.
 --
 -- Prasyarat yang diperiksa skrip ini:
 --   1. Baris month_domain_settings untuk Rabiul Awwal domain alquran ada.
@@ -18,6 +30,11 @@
 -- Jalankan: python scripts/db/run_sql.py scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql
 
 begin;
+
+do $$
+begin
+  raise exception 'DIBATALKAN: nilai 3 adalah BENAR. Skrip 3->19 ini tidak boleh dijalankan. Pakai 2026-11-24_rabiul_awwal_revert_to_3.sql.';
+end $$;
 
 do $$
 declare

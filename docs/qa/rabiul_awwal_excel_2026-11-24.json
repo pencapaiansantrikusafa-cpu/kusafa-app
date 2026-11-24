@@ -1,0 +1,420 @@
+{
+  "ran_at": "2026-11-24T22:47:56.664634",
+  "tests": [
+    {
+      "name": "1_hari_efektif_cocok_excel",
+      "ok": true,
+      "detail": "109 santri; berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "2_hadir_cocok_excel",
+      "ok": true,
+      "detail": "Hadir DB = HE-(izin+sakit+alpha); berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "3_izin_sakit_alpha_cocok_excel",
+      "ok": true,
+      "detail": "berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "4_capaian_bulan_ini_cocok_excel",
+      "ok": true,
+      "detail": "label & posisi capaian Rabiul Awwal Excel vs DB: berbeda 0; angka manual Excel berbeda dari posisi kumulatif pada 270 baris (dicatat, bukan galat; lihat evidence)",
+      "evidence": {
+        "beda": [],
+        "angka_manual_berbeda": [
+          [
+            "1442.dummy-nis.001",
+            "Tilawah",
+            351.0,
+            485.0,
+            485.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.001",
+            "Tahfidz",
+            179.0,
+            178.0,
+            178.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.001",
+            "Kitabah",
+            69.0,
+            375.0,
+            375.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.002",
+            "Tilawah",
+            103.0,
+            237.0,
+            237.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.002",
+            "Tahfidz",
+            430.0,
+            429.0,
+            429.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.002",
+            "Kitabah",
+            73.0,
+            379.0,
+            379.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.008",
+            "Tilawah",
+            145.0,
+            279.0,
+            279.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.008",
+            "Tahfidz",
+            290.0,
+            289.0,
+            289.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.009",
+            "Tilawah",
+            42.0,
+            780.0,
+            176.0,
+            2
+          ],
+          [
+            "1442.dummy-nis.009",
+            "Tahfidz",
+            433.0,
+            432.0,
+            432.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.009",
+            "Kitabah",
+            57.0,
+            363.0,
+            363.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.010",
+            "Tilawah",
+            177.0,
+            311.0,
+            311.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.010",
+            "Tahfidz",
+            147.0,
+            146.0,
+            146.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.010",
+            "Kitabah",
+            70.0,
+            376.0,
+            376.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.011",
+            "Tilawah",
+            180.0,
+            314.0,
+            314.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.011",
+            "Tahfidz",
+            196.0,
+            195.0,
+            195.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.011",
+            "Kitabah",
+            84.0,
+            390.0,
+            390.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.012",
+            "Tilawah",
+            79.0,
+            213.0,
+            213.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.012",
+            "Tahfidz",
+            159.0,
+            158.0,
+            158.0,
+            1
+          ],
+          [
+            "1442.dummy-nis.012",
+            "Kitabah",
+            146.0,
+            452.0,
+            452.0,
+            1
+          ]
+        ],
+        "jumlah_angka_manual_berbeda": 270
+      }
+    },
+    {
+      "name": "5_selisih_tanpa_pembanding_wajar",
+      "ok": true,
+      "detail": "13 santri tanpa pembanding: 0 santri angkatan baru (sah), 13 baru mulai di Rabiul Awwal (sah), janggal: 0",
+      "evidence": {
+        "santri_tanpa_pembanding": [
+          "1446.dummy-nis.007",
+          "1446.dummy-nis.012",
+          "1446.dummy-nis.017",
+          "1446.dummy-nis.019",
+          "1447.dummy-nis.001",
+          "1447.dummy-nis.002",
+          "1447.dummy-nis.003",
+          "1447.dummy-nis.004",
+          "1447.dummy-nis.005",
+          "1447.dummy-nis.009",
+          "1447.dummy-nis.010",
+          "1447.dummy-nis.012",
+          "1447.dummy-nis.024"
+        ],
+        "angkatan_baru": [],
+        "janggal": []
+      }
+    },
+    {
+      "name": "6_sampel_minimal_10",
+      "ok": true,
+      "detail": "15 santri dibandingkan",
+      "evidence": {
+        "sampel": [
+          {
+            "nis": "1442.dummy-nis.001",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 351",
+            "db_tilawah_pos": "485",
+            "db_tilawah": "Al Qur'an - 351",
+            "db_tilawah_lalu": "Al Qur'an - 351",
+            "selisih": "0"
+          },
+          {
+            "nis": "1442.dummy-nis.002",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 103",
+            "db_tilawah_pos": "237",
+            "db_tilawah": "Al Qur'an - 103",
+            "db_tilawah_lalu": "Al Qur'an - 103",
+            "selisih": "0"
+          },
+          {
+            "nis": "1442.dummy-nis.008",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 145",
+            "db_tilawah_pos": "279",
+            "db_tilawah": "Al Qur'an - 145",
+            "db_tilawah_lalu": "Al Qur'an - 145",
+            "selisih": "0"
+          },
+          {
+            "nis": "1442.dummy-nis.009",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 42",
+            "db_tilawah_pos": "780",
+            "db_tilawah": "Al Qur'an - 42",
+            "db_tilawah_lalu": "Al Qur'an - 40",
+            "selisih": "2"
+          },
+          {
+            "nis": "1442.dummy-nis.010",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 177",
+            "db_tilawah_pos": "311",
+            "db_tilawah": "Al Qur'an - 177",
+            "db_tilawah_lalu": "Al Qur'an - 477",
+            "selisih": "-300"
+          },
+          {
+            "nis": "1442.dummy-nis.011",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 180",
+            "db_tilawah_pos": "314",
+            "db_tilawah": "Al Qur'an - 180",
+            "db_tilawah_lalu": "Al Qur'an - 179",
+            "selisih": "1"
+          },
+          {
+            "nis": "1442.dummy-nis.012",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 79",
+            "db_tilawah_pos": "213",
+            "db_tilawah": "Al Qur'an - 79",
+            "db_tilawah_lalu": "Al Qur'an - 75",
+            "selisih": "4"
+          },
+          {
+            "nis": "1442.dummy-nis.014",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 36",
+            "db_tilawah_pos": "774",
+            "db_tilawah": "Al Qur'an - 36",
+            "db_tilawah_lalu": "Al Qur'an - 36",
+            "selisih": "0"
+          },
+          {
+            "nis": "1442.dummy-nis.017",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 101",
+            "db_tilawah_pos": "235",
+            "db_tilawah": "Al Qur'an - 101",
+            "db_tilawah_lalu": "Al Qur'an - 100",
+            "selisih": "1"
+          },
+          {
+            "nis": "1442.dummy-nis.020",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 3,
+            "db_hadir": 3,
+            "excel_tilawah": "Halaman 116",
+            "db_tilawah_pos": "250",
+            "db_tilawah": "Al Qur'an - 116",
+            "db_tilawah_lalu": "Al Qur'an - 116",
+            "selisih": "0"
+          },
+          {
+            "nis": "1443.dummy-nis.021",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 2,
+            "db_hadir": 2,
+            "excel_tilawah": "Halaman 158",
+            "db_tilawah_pos": "292",
+            "db_tilawah": "Al Qur'an - 158",
+            "db_tilawah_lalu": "Al Qur'an - 156",
+            "selisih": "2"
+          },
+          {
+            "nis": "1443.dummy-nis.025",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 2,
+            "db_hadir": 2,
+            "excel_tilawah": "Halaman 73",
+            "db_tilawah_pos": "207",
+            "db_tilawah": "Al Qur'an - 73",
+            "db_tilawah_lalu": "Al Qur'an - 72",
+            "selisih": "1"
+          },
+          {
+            "nis": "1444.dummy-nis.014",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 2,
+            "db_hadir": 2,
+            "excel_tilawah": "Halaman 159",
+            "db_tilawah_pos": "293",
+            "db_tilawah": "Al Qur'an - 159",
+            "db_tilawah_lalu": "Al Qur'an - 155",
+            "selisih": "4"
+          },
+          {
+            "nis": "1444.dummy-nis.016",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 2,
+            "db_hadir": 2,
+            "excel_tilawah": "Halaman 135",
+            "db_tilawah_pos": "269",
+            "db_tilawah": "Al Qur'an - 135",
+            "db_tilawah_lalu": "Al Qur'an - 132",
+            "selisih": "3"
+          },
+          {
+            "nis": "1444.dummy-nis.023",
+            "excel_he": 3,
+            "db_he": 3,
+            "excel_hadir": 1,
+            "db_hadir": 1,
+            "excel_tilawah": "Halaman 65",
+            "db_tilawah_pos": "199",
+            "db_tilawah": "Al Qur'an - 65",
+            "db_tilawah_lalu": "Al Qur'an - 63",
+            "selisih": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "7_daftar_semua_perbedaan",
+      "ok": true,
+      "detail": "tidak ada perbedaan",
+      "evidence": {
+        "semua_beda": {
+          "he": [],
+          "hadir": [],
+          "absensi": [],
+          "capaian": []
+        }
+      }
+    }
+  ]
+}

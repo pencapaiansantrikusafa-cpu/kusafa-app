@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-24T21:41:42.693585",
+  "ran_at": "2026-11-24T22:47:43.535573",
   "tests": [
     {
       "name": "B2_musyrif_override_ditolak",
@@ -88,12 +88,12 @@
       "evidence": {}
     },
     {
-      "name": "E_hari_efektif_rabiul_awwal_19",
+      "name": "E_hari_efektif_rabiul_awwal_3",
       "ok": true,
-      "detail": "Rabiul Awwal alquran effective_days=19 (harus 19, bukan 3).",
+      "detail": "Rabiul Awwal alquran effective_days=3 (harus 3; libur ~2 pekan lebih).",
       "evidence": {
         "month_id": "9f8ecb75-7480-51b9-910c-3eab4df70237",
-        "effective_days": 19
+        "effective_days": 3
       }
     },
     {
@@ -125,7 +125,7 @@
     "month": "d27a9288-05c8-54b8-9e43-476be8ae7dec",
     "item": "4642c9fb-5035-5aa4-aeba-710296929b48",
     "locked": null,
-    "unlocked": "37ac8917-4c2c-568f-855f-19e333301f6f",
-    "ra_effective_days": 19
+    "unlocked": "42fe3804-492d-5da2-ab50-7385ce68e38e",
+    "ra_effective_days": 3
   }
 }
