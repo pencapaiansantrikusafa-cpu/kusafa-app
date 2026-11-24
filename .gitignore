@@ -14,3 +14,6 @@ supabase/seed/*.sql
 .env*
 # token uji sementara (jangan pernah di-commit)
 .smoke-tokens.js
+
+# Lingkungan uji QA lokal (Playwright)
+.venv-qa/
