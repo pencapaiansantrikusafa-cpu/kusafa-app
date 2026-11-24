@@ -1,7 +1,7 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-Diperbarui: **23 November 2026** (audit dokumentasi dan verifikasi ulang).
-Commit terakhir yang sudah ada di remote sebelum commit audit ini: `7278113`.
+Diperbarui: **24 November 2026** (pra-T6 langkah [3/5]: perbaikan data, aturan bulan 0, kasus uji santri tanpa halaqah).
+Commit terakhir yang sudah ada di remote sebelum commit langkah [3/5]: `b11b90e`.
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berkas ini.
@@ -10,8 +10,8 @@ Jangan menulis rahasia (kata sandi, kunci, token) atau data santri asli di berka
 
 ## 1. Posisi sekarang
 
-**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **T6 belum dimulai.**
-Repo bersih, `main` sejajar dengan `origin/main`, build/tsc/uji hijau (lihat STATUS bagian 2).
+**T5 selesai** (termasuk T5b dan perbaikan 23 Nov 2026). **Pra-T6 langkah [1]-[3] selesai** pada 24 Nov 2026. **T6 belum dimulai** dan menunggu jawaban Mudir atas laporan audit.
+Build/tsc/uji hijau (lihat STATUS bagian 2 dan 2a).
 
 Yang berfungsi hari ini:
 - Login dan menu per role (Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyrif/ah, Mudarris/ah).
@@ -25,6 +25,8 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 ---
 
 ## 2. Langkah berikutnya (kerjakan berurutan)
+
+> **Jangan mulai T6 sebelum Mudir menjawab laporan pra-T6.** Bila diizinkan, mulai dari Langkah 1 di bawah.
 
 ### Langkah 1 - mulai T6: tabel dan input Wasilah serta Ghayah
 1. Baca `docs/CATATAN-TAHAPAN.md` bagian T6 dan `docs/SPEC.md` §2, §5.6.
@@ -65,6 +67,9 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 7. **Konfirmasi "pengulangan atau khatam" hanya untuk bidang yang diubah pada kunjungan itu.** Bidang yang sudah mundur tetapi tidak disentuh diberi penanda ⚠, bukan pertanyaan.
 8. **Item kurikulum yang sudah dipakai tidak dihapus**, hanya `is_active = false`.
 9. **Notifikasi "data belum lengkap"** memeriksa bulan dari awal tahun sampai bulan berjalan; penandanya `month_domain_settings.effective_days` terisi (opsi B, 23 Nov 2026).
+10. **Bulan 0 (Data Awal) adalah catatan awal, bukan bulan efektif dan bukan bulan target.** Ia membandingkan Syawwal tahun pertama; tahun berikutnya Syawwal membandingkan dengan Ramadhan tahun sebelumnya. `month_is_open(bulan 0, domain) = false`; form input menyembunyikan bulan 0; Admin/Mudir tetap bisa mengisi manual. Aturan lengkap di `docs/SPEC.md` bagian 4a.
+11. **Santri yang tidak ikut semua halaqah adalah keadaan sah, bukan data rusak.** NIS `1447.dummy-nis.023` (tanpa Ghayah) dan `1447.dummy-nis.024` (hanya Al Qur'an) **dibiarkan** sebagai kasus uji resmi. Jangan menambah/mengarang baris. Di domain yang tidak diikuti, santri tidak ditampilkan (bukan 0) dan semua view/fungsi tetap jalan.
+12. **Hari Efektif Rabiul Awwal = 19 hari** (bukan 3), keputusan Mudir 24 Nov 2026. Database sudah dikoreksi lewat SQL; **Excel sumber masih 3** dan harus diperbaiki Mudir agar seed ulang tidak mengembalikan 3.
 
 ### Struktur teknis
 1. Migrasi yang sudah dijalankan **tidak boleh diubah**; perubahan skema = `20261121000007_...` dan seterusnya.
@@ -89,13 +94,14 @@ Yang **belum** ada sama sekali: tabel & input Wasilah/Ghayah (T6), target dinami
 
 ## 4. Pertanyaan terbuka (menunggu jawaban Mudir)
 
-1. **Hari Efektif Rabiul Awwal hanya 3 hari**, sedangkan bulan lain 15-21. Apakah memang begitu, atau salah di data Excel?
-2. **Dropdown item dibatasi 60 hasil.** Sudah bisa dicari dengan nomor. Apakah perlu tombol "muat lebih banyak"?
-3. **Level 6 (4 santri)** belum punya pengampu dan jadwal. Apa yang harus ditampilkan?
-4. **Santri `1447.dummy-nis.024`** hanya di Al Qur'an dan **`1447.dummy-nis.023`** belum di Ghayah. Apakah keduanya santri baru yang memang belum ditata?
+1. **Excel Hari Efektif Rabiul Awwal masih 3.** Database sudah 19; Mohon perbaiki `BZ5:B113` di `data/source/3-Al Quran (halaqah dan pencapaian).xlsx` sheet `Halaqah Al Quran dan pencapaian` menjadi 19 agar seed ulang tidak mengembalikan 3.
+2. **Pendaftaran publik Supabase Auth masih aktif.** Mohon matikan di Dashboard (Authentication → Providers → Email → "Allow new users to sign up").
+3. **Dropdown item dibatasi 60 hasil.** Sudah bisa dicari dengan nomor. Apakah perlu tombol "muat lebih banyak"?
+4. **Level 6 (4 santri)** belum punya pengampu dan jadwal. Apa yang harus ditampilkan?
 5. **69 capaian data dummy mundur** dari bulan sebelumnya (Tahfidz 27, Kitabah 26, Tilawah 16). Disepakati dibiarkan karena dummy. Konfirmasi ulang sebelum T9, karena uji QA akan sering bertemu angka ini.
-6. **Data Awal (bulan 0)** berisi 252 capaian. Apakah tetap dipakai sebagai pembanding Syawwal, atau dikosongkan saat data asli dimuat?
+6. **Isi Data Awal (252 capaian)** dipertahankan untuk sekarang. Apakah dikosongkan saat data asli dimuat? Keputusan ditunda ke T10.
 7. **Repo masih publik.** Harus dijadikan privat sebelum data asli dimuat (T10).
+8. **Boleh mulai T6?** Pra-T6 langkah [1]-[3] selesai dan dilaporkan; T6 menunggu jawaban Mudir.
 
 ---
 
@@ -109,6 +115,8 @@ npm run test           # 6 uji aturan putaran
 npm run build          # wajib berhasil, hasil di dist/
 python scripts/check_repo_safety.py   # wajib lolos sebelum push
 git config core.hooksPath .githooks   # sekali saja, mengaktifkan hook keamanan
+python scripts/qa/run_pre_t6_db_tests.py   # uji DB pra-T6 (14 uji; tulis dalam ROLLBACK)
+python scripts/qa/test_no_halaqah.py       # uji santri tanpa halaqah (9 uji; tulis dalam ROLLBACK)
 ```
 
 Data dan database (membaca `DATABASE_URL` dari `.env.local`, tidak pernah dicetak):

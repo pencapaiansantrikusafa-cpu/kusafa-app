@@ -1,17 +1,17 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **23 November 2026** (audit dokumentasi dan verifikasi ulang; waktu lokal mesin pengembang).
+**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5]: perbaikan data, aturan bulan 0, kasus uji santri tanpa halaqah).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` (satu-satunya branch; tidak ada branch lain, lokal maupun remote) |
-| Commit terakhir sebelum audit ini | `7278113` - docs: perbarui status, handover, peta kode |
-| Keadaan Git saat audit | bersih setelah commit audit; akan di-push ke `origin/main` |
+| Commit terakhir sebelum commit ini | `b11b90e` - hardening: migrasi 20261121000007 + skrip dan laporan QA pra-T6 |
+| Keadaan Git saat pembaruan | perubahan langkah [3/5] dikomit lalu di-push ke `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
-Semua angka di bawah diperiksa langsung pada 23 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
+Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
 Sesuatu yang belum dijalankan atau belum diuji ditulis **BELUM DIVERIFIKASI**, bukan SELESAI.
 
 ---
@@ -29,6 +29,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah masih pesan "dikerjakan pada T6" |
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
+| **Pra-T6 [1-3/5]** | Audit, hardening fungsi, perbaikan data pra-T6 | **SELESAI untuk langkah [1]-[3]** | `docs/qa/`, `scripts/qa/test_no_halaqah.py`, migrasi `20261121000007` dan `20261121000008`, `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | Hasil di bagian 2a; langkah [4]-[5] menunggu instruksi Mudir |
 | **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Rencana kerja di `docs/CATATAN-TAHAPAN.md` |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
@@ -54,12 +55,26 @@ Catatan kejujuran status:
 
 ---
 
+## 2a. Hasil pra-T6 langkah [3/5] (24 November 2026)
+
+| Butir | Hasil | Bukti |
+|---|---|---|
+| Hari Efektif Rabiul Awwal 3 → 19 | **SELESAI**. DB = 19; `v_attendance` Hadir 17–19 untuk 109 santri; presensi maksimal izin+sakit+alpha = 2. Excel sumber (`BZ5:B113`) masih 3 dan **wajib diperbaiki Mudir** | `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql`, `docs/DATA-NOTES.md` bagian 3a |
+| Aturan bulan 0 (Data Awal) | **SELESAI**. Bulan 0 bukan bulan efektif/target dan bukan bulan input staf; `month_is_open(bulan 0, domain) = false`; Syawwal 1448 (uji transaksi) membandingkan dengan Ramadhan 1447 | `docs/SPEC.md` bagian 4a, migrasi `20261121000008_month_zero_not_open.sql`, `docs/DATA-NOTES.md` bagian 6 |
+| Santri tanpa halaqah (NIS 023/024) | **SELESAI**. Dibesarkan sebagai kasus uji resmi; di domain yang tidak diikuti santri tidak ditampilkan dan tidak ada galat; RLS menolak pengampu menulis domain itu | `scripts/qa/test_no_halaqah.py` — **9/9 PASS**, `docs/qa/no_halaqah_2026-11-24.json` |
+| Uji DB pra-T6 | **14/14 PASS** | `scripts/qa/run_pre_t6_db_tests.py`, `docs/qa/db_tests_2026-11-24.json` |
+| Uji unit frontend | **6/6 PASS** (`npm test`) | `tests/putaran.test.mjs` |
+
+Catatan kejujuran: seluruh uji tulis di atas berjalan dalam transaksi lalu `ROLLBACK`; tidak ada baris data yang ditambah atau diubah.
+
+---
+
 ## 3. Status Supabase
 
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-6 berkas migrasi, **keenamnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+8 berkas migrasi, **kedelapannya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -69,8 +84,10 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261121000004 | targets_progress |
 | 20261121000005 | functions_views |
 | 20261121000006 | rls |
+| 20261121000007 | harden_function_grants |
+| 20261121000008 | month_zero_not_open |
 
-Tidak ada migrasi baru setelah T1. Perubahan skema berikutnya wajib memakai nomor `20261121000007_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261121000009_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
 - **18 dari 18 tabel** memiliki `relrowsecurity = true`.
@@ -155,4 +172,5 @@ Dari `src/App.tsx`:
 5. **Kinerja memuat daftar item**: catatan sesi sebelumnya menyebut sekitar 4,7 detik untuk ±1.000 baris karena diambil per buku. **BELUM DIVERIFIKASI ulang** pada sesi ini.
 6. **2 kerentanan npm sedang** (`react-router`/`react-router-dom` 6.0.0-7.17.0; GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). `npm audit fix --force` belum dijalankan karena berpotensi breaking change.
 7. **Level 6 belum punya pengampu dan jadwal** (4 santri). Ini data, bukan kode; menunggu keputusan Mudir.
-8. **Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan lain 15-21. Terlihat janggal; dicatat sebagai pertanyaan terbuka, belum diubah.
+8. ~~**Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan lain 15-21.~~ **SELESAI 24 Nov 2026:** dikonfirmasi keliru dan dikoreksi menjadi 19 lewat SQL. Excel sumber masih 3; Mudir harus memperbaikinya agar seed ulang tidak mengembalikan 3.
+9. **Pendaftaran (signup) publik di Supabase Auth masih aktif** (`disable_signup = false`). Belum bisa dimatikan dari lingkungan ini karena butuh Dashboard Supabase atau Management API PAT. **Menunggu tindakan Mudir:** Authentication → Providers → Email → matikan "Allow new users to sign up". Setelah nonaktif, akun hanya dibuat Admin.

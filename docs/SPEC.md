@@ -31,10 +31,24 @@ Pengampu hanya bisa mengisi bulan yang belum terkunci. Mudir dan Admin bisa meng
 ## 4. Model data
 Skema ada di `supabase/migrations/`. Inti:
 - Kalender: `academic_years`, `hijri_months` (`month_no` 0 = Data Awal hanya di tahun pertama pemakaian, diisi manual Admin; 1 = Syawwal ... 12 = Ramadhan; semester 1 = bulan 1-6, semester 2 = bulan 7-12), `month_domain_settings` (Hari Efektif per bulan per domain, kunci bulan).
+
 - Kurikulum: `subjects` > `books` > `curriculum_items` (`value`, `seq`, `label`, `detail`).
 - Halaqah: `halaqahs`, `halaqah_subjects`, `halaqah_teachers` (pengampu per mata pelajaran, hari, sesi), `halaqah_members`.
 - Capaian: `progress_entries` (satu baris per santri, bidang, bulan; `putaran`), `attendance` (izin, sakit, alpha), `monthly_notes`, `targets`.
 - Laporan: `v_monthly_report` (selisih, hadir, target bulanan, `below_target`, `attendance_short`), `v_attendance`.
+
+### 4a. Aturan bulan 0 (Data Awal) - keputusan final 24 November 2026
+`hijri_months` sengaja berisi **13 baris** setiap tahun pertama pemakaian: `month_no` 0 s.d. 12.
+
+- **Bulan 0 adalah catatan awal, bukan bulan efektif.** Ia dipakai sebagai catatan awal santri baru dan pembanding Syawwal pada tahun pertama. Bulan 0 **tidak** punya Hari Efektif, **tidak** dihitung sebagai bulan berjalan oleh notifikasi "data belum lengkap", dan **tidak** menghasilkan target bulanan (Hadir dan Hari Efektifnya kosong, jadi target bulanan kosong).
+- **Bulan 1-12 = Syawwal s.d. Ramadhan.** Ini bulan efektif untuk input, target, kehadiran, dan laporan.
+- **Pembanding Syawwal mengikuti aturan ini:**
+  - Tahun pertama (ada bulan 0): Syawwal dibandingkan dengan **bulan 0 (Data Awal)**.
+  - Tahun berikutnya (tidak dibuat bulan 0): Syawwal dibandingkan dengan **bulan 12 (Ramadhan) tahun sebelumnya**. Santri lama memakai bulan terakhir tahun sebelumnya sebagai catatan awal.
+- **`v_months_ordered`** memberi `ord = hijri_year * 100 + month_no` dan `prev_month_id = lag(...)`. Bulan 0 punya `prev_month_id` kosong; Syawwal tahun pertama memakai bulan 0; Syawwal tahun berikutnya memakai Ramadhan tahun sebelumnya.
+- **`v_monthly_report` / `v_monthly_report_base`**: baris bulan 0 boleh ada (capaian awal), tetapi `selisih`, `hadir`, `effective_days`, dan `target_monthly` bernilai kosong. Baris itu bukan bulan efektif dan bukan target bulanan; hanya pembanding.
+- **Target boleh berlaku dari bulan 0.** `targets.effective_month_id` boleh menunjuk bulan 0 sebagai titik mulai ("berlaku dari Data Awal"), tetapi bulan 0 sendiri tidak menghitung target bulanan karena tidak punya kehadiran.
+- **Bulan 0 bukan bulan input staf.** `month_is_open(bulan 0, domain)` = **false** (migrasi `20261121000008_month_zero_not_open.sql`). Form input menyembunyikan bulan 0 (`tanpaDataAwal`). Admin/Mudir tetap dapat mengisi Data Awal secara manual karena policy memakai `is_full_access()` lebih dahulu.
 
 ## 4b. Pengelolaan dropdown (harus tetap bisa diubah setelah aplikasi jadi)
 Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ulang, dan menonaktifkan bidang, buku, dan item, oleh Mudir/Admin atau Masul Al Quran / Masul Wasilah / Masul Ghayah sesuai domain.

@@ -1,0 +1,65 @@
+{
+  "ran_at": "2026-11-24T08:54:15.892293",
+  "tests": [
+    {
+      "name": "keanggotaan_023_alquran_dan_wasilah_tanpa_ghayah",
+      "ok": true,
+      "detail": "023: alquran=1, wasilah=1, ghayah=0",
+      "evidence": {
+        "anggota": {
+          "1447.dummy-nis.023|wasilah": 1,
+          "1447.dummy-nis.023|alquran": 1,
+          "1447.dummy-nis.024|alquran": 1
+        }
+      }
+    },
+    {
+      "name": "keanggotaan_024_hanya_alquran",
+      "ok": true,
+      "detail": "024: alquran=1, wasilah=0, ghayah=0",
+      "evidence": {}
+    },
+    {
+      "name": "v_monthly_report_023_ghayah_kosong_tanpa_error",
+      "ok": true,
+      "detail": "baris=0 (tidak ditampilkan)",
+      "evidence": {}
+    },
+    {
+      "name": "v_monthly_report_024_wasilah_ghayah_kosong_tanpa_error",
+      "ok": true,
+      "detail": "baris=0 (tidak ditampilkan)",
+      "evidence": {}
+    },
+    {
+      "name": "v_monthly_report_024_alquran_ada",
+      "ok": true,
+      "detail": "baris=4 (domain yang diikuti tetap tampil)",
+      "evidence": {}
+    },
+    {
+      "name": "fungsi_student_in_taught_domain_023_ghayah_false",
+      "ok": true,
+      "detail": "hasil=False",
+      "evidence": {}
+    },
+    {
+      "name": "fungsi_student_in_taught_halaqah_023_ghayah_false",
+      "ok": true,
+      "detail": "hasil=False",
+      "evidence": {}
+    },
+    {
+      "name": "fungsi_can_manage_null_aman",
+      "ok": true,
+      "detail": "hasil=False",
+      "evidence": {}
+    },
+    {
+      "name": "rls_pengampu_tidak_bisa_menulis_ghayah_santri_tanpa_halaqah",
+      "ok": true,
+      "detail": "Ditolak RLS (InsufficientPrivilege), bukan error skema.",
+      "evidence": {}
+    }
+  ]
+}
