@@ -1,14 +1,14 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5], [4/5], dan audit [5/5]).
+**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5], [4/5], audit [5/5], dan **[6]** jawaban Mudir + penutupan celah).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
-| Branch | `main` (+ branch kerja `chore/react-router-fix` untuk uji naik mayor, TIDAK di-merge) |
-| Commit terakhir sebelum commit audit [5/5] | `6df3842` - pra-T6 [4/5]: notifikasi santri belum punya halaqah |
-| Keadaan Git saat pembaruan | perubahan audit [5/5] dikomit lalu di-push ke `origin/main` |
+| Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
+| Commit terakhir pra-T6 [6] | `0378f87` - pra-T6 [6]: smoke E2E di react-router 7.18.6 |
+| Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
 Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
@@ -29,8 +29,9 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah masih pesan "dikerjakan pada T6" |
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
-| **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs`, branch `chore/react-router-fix` | Hasil di bagian 2a/2b/2c. T6 menunggu instruksi Mudir |
-| **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Rencana kerja di `docs/CATATAN-TAHAPAN.md` |
+| **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs` | Hasil di bagian 2a/2b/2c |
+| **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
+| **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (belum boleh dimulai) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Menunggu T5c selesai |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
@@ -50,7 +51,7 @@ Catatan kejujuran status:
 | Build | `npm run build` | **BERHASIL**. 102 modul. `dist/index.html` 0,42 kB; CSS 18,11 kB (gzip 4,34 kB); JS 475,43 kB (gzip 136,20 kB) |
 | Uji unit | `npm run test` | **LULUS 14/14** (`tests/putaran.test.mjs` 6 + `tests/audit-rules.test.mjs` 8: lintas buku, target×Hadir, mundur, khatam, bulan terkunci) |
 | Lint | `npm run lint` | **TIDAK ADA** perintahnya di `package.json`. Tidak ada ESLint di repo. Jadi tidak ada hasil lint |
-| Audit dependensi | `npm audit --omit=dev` | **2 kerentanan sedang** pada `react-router`/`react-router-dom` 6.0.0-7.17.0 (GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). Perbaikan tersedia lewat `npm audit fix --force` (breaking change). Belum dijalankan. |
+| Audit dependensi | `npm audit --omit=dev` | **react-router BERSIH** (6→7.18.6 sudah di-merge 24 Nov 2026). Sisa **2**: `vite` (high) + `esbuild` (moderate) — hanya **dev server**, tidak ikut bundel produksi; perbaikan menuntut `vite@8` (breaking). Belum dijalankan. |
 | Pemeriksaan keamanan repo | `python scripts/check_repo_safety.py` | **LOLOS** |
 
 ---
@@ -99,14 +100,14 @@ Penyebab: halaman Input Al Qur'an (`InputPage.tsx`) memuat **semua** `curriculum
 - **Opsi C — cache klien lintas halaman**: simpan daftar item di memori sesi agar hanya halaman pertama lambat; ditambah indeks teks (`pg_trgm`/`tsvector`). Dampak: navigasi berikutnya cepat, tapi muat awal tetap berat; paling kecil usaha.
 Rekomendasi: **Opsi A** (paling besar dampak, sesuai kebijakan "ambilSemua untuk daftar 1.000+" dan dropdown 60).
 
-### react-router (item 4) — **diuji di branch `chore/react-router-fix`, TIDAK di-merge**
-- Terpasang `react-router-dom@6.30.6` / `react-router@6.30.6`.
-- **GHSA-wrjc-x8rr-h8h6 (CVE-2026-53669)**: *open redirect* lewat `\` pada `<Link>`/`useNavigate`; terpengaruh `>=6.0.0, <7.18.0`; tertambal **7.18.0**. Dampak pada SPA ini: tidak saat ini dieksploitasi — navigasi memakai rute internal tetap, tidak ada path dari pengguna diteruskan ke `navigate`/`<Link>`; tapi tetap best-practice pindah ke versi tertambal.
-- **GHSA-337j-9hxr-rhxg (CVE-2026-53666)**: *arbitrary constructor injection via deserializeErrors* pada SSR/hydration; terpengaruh `>=6.4.0, <7.18.0`; tertambal **7.18.0**. **TIDAK berpengaruh** pada SPA ini: memakai *Declarative Mode*, tanpa SSR/data-mode (catatan resmi advisory).
-- **Tidak ada versi tertambal "tanpa pindah mayor"**: kedua advisory hanya mencantumkan patched `7.18.0` (mayor 7), jadi perbaikan **wajib naik 6→7**. Hasil uji `tsc`/`build`/`test` di branch tersebut tercatat di `docs/STATUS.md` dan laporan — branch **dibiarkan, tidak di-merge** (keputusan naik mayor untuk Mudir).
+### react-router (item 4) — **SUDAH DI-MERGE ke `main` (24 Nov 2026)**
+- Dulu terpasang 6.30.6; kini **`react-router`/`react-router-dom` 7.18.6**.
+- **GHSA-wrjc-x8rr-h8h6 (CVE-2026-53669)** *open redirect* dan **GHSA-337j-9hxr-rhxg (CVE-2026-53666)** *deserializeErrors*: keduanya tertambal di **7.18.0**; naik 6→7 adalah satu-satunya jalan (tidak ada patch mayor 6).
+- **Alasan merge:** Mudir mengizinkan merge **hanya bila smoke E2E semua role lulus** di branch itu. Terbukti: `tsc` + `build` + `npm test 14/14` hijau, dan smoke E2E **29/29 PASS** di branch `test/react-router-7-smoke` (= `main` + react-router 7), lalu di-merge ke `main`.
+- `npm audit`: react-router **tidak lagi** dilaporkan.
 
-### Rencana ESLint (item 5) — **belum dipasang**
-Tidak ada `lint` di `package.json`. Rencana (tanpa mengubah kode sekarang): pasang `eslint` + `@typescript-eslint/*` + `eslint-plugin-react-hooks`; skrip `lint`; mulai dari aturan error ringan (hooks, unused, `any`), lalu tingkatkan. Denda: menunggu keputusan Mudir karena menambah dependensi dev dan bisa memunculkan banyak peringatan baru.
+### Rencana ESLint (item 5) — **ditunda ke T9** (keputusan Mudir 24 Nov 2026)
+Tidak ada `lint` di `package.json`. Rencana (tanpa mengubah kode sekarang): pasang `eslint` + `@typescript-eslint/*` + `eslint-plugin-react-hooks`; skrip `lint`; mulai dari aturan error ringan (hooks, unused, `any`), lalu tingkatkan. Dikerjakan di **T9**.
 
 ### Secret-scan & gitleaks (item 6)
 `gitleaks` **tidak terpasang** (tidak bisa dipasang tanpa mengubah sistem). Karena itu pola ditambahkan ke `scripts/check_repo_safety.py`: `VERCEL_OIDC_TOKEN` (penugasan/issuer OIDC Vercel), `sb_secret_`, `service_role` mentah, dan `postgres://` (sudah ada, dipertegas). Diverifikasi: string tiruan terdeteksi; penyebutan nama tanpa nilai **tidak** salah-positif; `check_repo_safety.py` **LULUS** (rc 0).
@@ -116,12 +117,31 @@ Tidak ada `lint` di `package.json`. Rencana (tanpa mengubah kode sekarang): pasa
 
 ---
 
+## 2d. Hasil pra-T6 langkah [6] — jawaban Mudir + penutupan celah (24 November 2026)
+
+Semua butir dikerjakan; T6 **belum** dimulai (urutan: [6] → merge react-router → T5c percepat input → T6).
+
+| Butir | Hasil | Bukti |
+|---|---|---|
+| 1. Signup tertutup, login tetap jalan | **LULUS 9/9**. **Celah ditemukan & ditutup:** sebelumnya signup hanya tertutup karena seluruh provider email dimatikan (`external.email=false`) — itu **ikut mematikan login** (semua role 422 "Email logins are disabled"); dengan domain email valid signup justru **berhasil**. Kini `disable_signup=true`, provider email **aktif**: signup ditolak `422 signup_disabled`, login 7 role berhasil | `scripts/qa/test_auth_signup_closed.py`, `docs/qa/auth_signup_closed_2026-11-24.json`; diubah lewat Management API Supabase |
+| 2. `students_without_halaqah()/_count()` | **LULUS 6/7 (1 SKIP: tidak ada profil wali)**. Jawaban: fungsi mengembalikan **SEMUA domain tanpa cek role** hanya bila `current_app_role() IS NULL` **dan** `session_user` = `postgres`/`service_role`/`supabase_admin` — yaitu koneksi admin/skrip lokal & PostgREST service_role, **bukan** pengguna aplikasi. authenticated tanpa profil (diuji lewat REST dengan token sungguhan) → **0 baris**; musyrif/mudarris → **0 baris**; anon ditolak 42501. Karena jalur itu **dipakai skrip QA lokal**, fungsi **tidak dihapus** | `scripts/qa/test_students_without_halaqah_p6.py`, `docs/qa/students_without_halaqah_p6_2026-11-24.json` |
+| 3. `attendance_guard_override()` | **SELESAI**. EXECUTE dicabut dari `authenticated`, `public`, `anon`; trigger **tetap jalan** (fungsi `SECURITY DEFINER` → dijalankan sebagai pemilik). Uji B2 (musyrif ditolak, admin diterima) tetap lulus | migrasi `20261124000010_attendance_guard_revoke.sql` |
+| 4. Uji regresi `scripts/qa/` | **LULUS 7/7**. (A) loop `pg_proc`: **20 fungsi** public, **0** punya EXECUTE untuk anon. (B) musyrif memanggil `create_academic_year`/`reorder_items`/`resequence_subject` **tidak mengubah data** (RLS INVOKER: 0 baris berubah; `create_academic_year` ditolak 42501) | `scripts/qa/regression_execute.py`, `docs/qa/regression_execute_2026-11-24.json` |
+| 5. Uji DB pra-T6 16 → 14 | **SELESAI 16/16 PASS**. Penjelasan: tidak pernah ada "16" di repo; yang ada `run_pre_t6_db_tests.py` 14 uji (11-23) → 15 (11-24, +`B4_item_position_function_exists`), tanpa ada yang hilang. Uji `E_hari_efektif_rabiul_awwal` kini **mengharapkan 19** (bukan hanya melaporkan) + uji Hari Efektif mustahil (di luar 1..31). Total kini **16/16** | `docs/qa/db_tests_2026-11-24.json` |
+| 6. Smoke E2E per role | **LULUS 29/29 di `main`**, **29/29 di react-router 7**, **28/28 di produksi** (tanpa tulis data). Per role: login, halaman utama, kotak notifikasi, halaman Capaian, konsol bersih. Mudir juga **menyimpan satu capaian lewat UI** lalu menghapus **hanya** baris uji itu (data kembali bersih) | `scripts/qa/smoke_e2e.py`, `docs/qa/smoke_e2e_2026-11-24.json`, `..._prod.json` |
+| 7. DATA-NOTES rentang Excel | **SELESAI**. `BZ5:B113` → **`BZ5:BZ113`** (dua tempat) | `docs/DATA-NOTES.md` bagian 3a |
+| Jawaban: Bulan 0 | **SESUAI, tanpa ubah kode**. Tahun kedua tanpa bulan 0; Syawwal 1448 memakai Ramadhan 1447; `create_academic_year(...,false)` tidak membuat/meminta Data Awal. Ditulis di SPEC 4a-1 | `scripts/qa/test_data_awal_tahun_kedua.py` — **5/5 PASS** |
+
+Temuan yang perlu jawaban Mudir: **Hari Efektif Syawwal 1447 = 4 hari** (paling kecil di antara bulan lain; mungkin bulan pembuka yang tidak penuh). Dibiarkan, dicatat sebagai pertanyaan terbuka — lihat HANDOVER bagian 5.
+
+---
+
 ## 3. Status Supabase
 
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-9 berkas migrasi, **kesembilannya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+10 berkas migrasi, **kesepuluhnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -134,8 +154,10 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261121000007 | harden_function_grants |
 | 20261121000008 | month_zero_not_open |
 | 20261121000009 | students_without_halaqah |
+| 20261124000010 | attendance_guard_revoke |
 
-Migrasi berikutnya wajib memakai nomor `20261121000010_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261124000011_...` dan **tidak boleh** mengubah berkas lama.
+(Perhatikan: nomor `000010` di tanggal 24 sudah terpakai, jadi lanjut dari `000011`.)
 
 ### RLS (Row Level Security)
 - **18 dari 18 tabel** memiliki `relrowsecurity = true`.
@@ -182,8 +204,8 @@ Catatan:
 | Project | `kusafa-app` (akun `pencapaiansantrikusafa`), terhubung ke repo GitHub |
 | Deploy terakhir | status **Ready** (Production) |
 | Halaman utama | `HTTP 200`, judul "KUSAFA - Evaluasi dan Capaian Santri" |
-| Bundel yang disajikan | `/assets/index-BlqT8R6H.js` dan `/assets/index-JYoo1kxl.css` - **sama persis** dengan hasil `npm run build` lokal dari commit `cdb7c98`, jadi yang tayang adalah kode terbaru |
-| Sambungan Supabase | **TERBUKTI** 23 Nov 2026: login sebagai Mudir di `https://kusafa-app.vercel.app` berhasil dan halaman `/capaian/alquran` memuat data dari Supabase, tanpa galat konsol |
+| Bundel yang disajikan | `/assets/index-BR2k_-OJ.js` (react-router 7.18.6) — **sama persis** dengan hasil `npm run build` lokal dari commit `0378f87` |
+| Sambungan Supabase | **TERBUKTI 24 Nov 2026**: smoke E2E produksi **28/28 PASS** (7 role login, halaman utama, kotak notifikasi, halaman Capaian, konsol bersih) tanpa menulis data |
 | Environment | hanya `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` (menurut catatan setup; isi nilainya tidak diperiksa ulang dan tidak boleh ditulis di repo) |
 
 Catatan: teks "Tersambung ke Supabase." yang dulu dipakai pada tahap F **sudah tidak ada** di kode sumber (itu halaman uji sementara). Halaman pertama sekarang adalah formulir login. Jadi pertanyaan "apakah situs menampilkan 'Tersambung ke Supabase.'" jawabannya: tidak lagi, dan itu wajar - bukti sambungan sekarang adalah login berhasil.

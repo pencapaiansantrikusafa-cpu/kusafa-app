@@ -100,10 +100,12 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261121000007_harden_function_grants.sql` | Hardening fungsi: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` pada fungsi INVOKER. |
 | `migrations/20261121000008_month_zero_not_open.sql` | Bulan 0 (Data Awal) bukan bulan input staf: `month_is_open(bulan 0, domain)` = false; bulan 1-12 tetap ikut `is_locked`. |
 | `migrations/20261121000009_students_without_halaqah.sql` | Notifikasi "santri belum punya halaqah": fungsi `students_without_halaqah`(_count) security definer, periksa `can_manage` di dalam fungsi, `revoke` anon. |
+| `migrations/20261124000010_attendance_guard_revoke.sql` | Cabut `EXECUTE` `attendance_guard_override()` dari authenticated/PUBLIC/anon (fungsi trigger; trigger tetap jalan karena SECURITY DEFINER). |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261121000010_...`.
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000011_...`
+(nomor `000010` bertanggal 24 sudah terpakai).
 
 ---
 
@@ -117,7 +119,17 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/create_auth_users.py` | Membuat akun dummy di Supabase Auth (memakai kunci service role di `.env.local`, hanya lokal). |
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
+| `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi; tiap probe transaksi sendiri + ROLLBACK. |
+| `scripts/qa/run_pre_t6_db_tests.py` | Uji DB pra-T6 (16 uji): trigger Hari Efektif, bulan terkunci, RLS lintas halaqah, `can_manage`, Hari Efektif Rabiul Awwal = 19. |
+| `scripts/qa/test_no_halaqah.py` | Santri tanpa halaqah di suatu domain: tidak tampil, RLS menolak penulisan. |
+| `scripts/qa/test_students_without_halaqah.py` | Notifikasi per role (Mudir/Admin semua domain, Masul domainnya, Musyrif/Mudarris 0). |
+| `scripts/qa/test_students_without_halaqah_p6.py` | Jalur "tampil semua" fungsi: authenticated tanpa profil/musyrif/mudarris 0 baris, koneksi admin melihat semua, anon ditolak. |
+| `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
+| `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
+| `scripts/qa/test_data_awal_tahun_kedua.py` | Tahun kedua tanpa bulan 0; Syawwal 1448 membandingkan Ramadhan 1447 (transaksi + ROLLBACK). |
+| `scripts/qa/smoke_e2e.py` | Smoke browser Playwright 7 role; Mudir menulis lalu menghapus satu capaian (`entered_at` baru saja). |
 | `tests/putaran.test.mjs` | 6 uji aturan putaran (khatam +27, pengulangan -577, dll). |
+| `tests/audit-rules.test.mjs` | 8 uji cermin rumus SPEC (posisi lintas buku, target×Hadir, mundur, khatam, bulan terkunci). |
 
 ---
 

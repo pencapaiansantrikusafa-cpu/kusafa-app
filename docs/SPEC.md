@@ -50,6 +50,14 @@ Skema ada di `supabase/migrations/`. Inti:
 - **Target boleh berlaku dari bulan 0.** `targets.effective_month_id` boleh menunjuk bulan 0 sebagai titik mulai ("berlaku dari Data Awal"), tetapi bulan 0 sendiri tidak menghitung target bulanan karena tidak punya kehadiran.
 - **Bulan 0 bukan bulan input staf.** `month_is_open(bulan 0, domain)` = **false** (migrasi `20261121000008_month_zero_not_open.sql`). Form input menyembunyikan bulan 0 (`tanpaDataAwal`). Admin/Mudir tetap dapat mengisi Data Awal secara manual karena policy memakai `is_full_access()` lebih dahulu.
 
+#### 4a-1. Tahun kedua dan seterusnya — Data Awal otomatis (keputusan Mudir 24 November 2026)
+
+- **Hanya tahun pertama pemakaian** yang memakai bulan 0 "Data Awal" dan diisi manual oleh **Admin/Mudir**.
+- **Mulai tahun ajaran kedua, Data Awal TIDAK diisi manual.** Nilainya otomatis diambil dari capaian **bulan terakhir tahun sebelumnya — Ramadhan** (bulan 12). Aturan ini berlaku juga bagi santri tahun pertama yang naik ke tahun kedua.
+- `create_academic_year(hijri_year, name, with_baseline)` **tidak boleh** membuat/meminta bulan 0 untuk tahun kedua: panggil dengan `with_baseline = false` (12 bulan, `month_no` 1..12). Tidak ada layar yang meminta Data Awal santri lama.
+- Konsekuensinya: **Syawwal tahun kedua dibandingkan dengan Ramadhan tahun sebelumnya** lewat `v_months_ordered.prev_month_id`, tanpa baris Data Awal baru.
+- Bukti uji (transaksi + ROLLBACK): `scripts/qa/test_data_awal_tahun_kedua.py` — 5/5 lulus 24 Nov 2026. Meliputi: 1448 hanya 12 bulan tanpa bulan 0; `prev_month_id` Syawwal 1448 = Ramadhan 1447; `selisih` di `v_monthly_report` = pos(Syawwal 1448) − pos(Ramadhan 1447) untuk santri yang naik tahun; tidak ada baris Data Awal 1448.
+
 ## 4b. Pengelolaan dropdown (harus tetap bisa diubah setelah aplikasi jadi)
 Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ulang, dan menonaktifkan bidang, buku, dan item, oleh Mudir/Admin atau Masul Al Quran / Masul Wasilah / Masul Ghayah sesuai domain.
 - Item yang sudah dipakai capaian tidak dihapus, hanya dinonaktifkan.

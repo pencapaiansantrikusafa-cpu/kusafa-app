@@ -81,6 +81,8 @@ Keputusan Mudir: Hari Efektif Rabiul Awwal (bulan ke-6) domain Al Qur'an yang be
 5. **`guardians` dan `monthly_notes` kosong (0 baris).** Wali belum diisi pada data dummy, dan catatan bulanan belum pernah diisi.
 6. **`is_locked` belum pernah `true`.** Fitur kunci bulan belum dipakai pada data uji.
 7. **Riwayat capaian berhenti di Rabiul Akhir**, dan Hari Efektif juga berhenti di bulan itu. Bulan Jumadal Ula dan sesudahnya kosong (bukan 0).
+8. **Hari Efektif Syawwal 1447 = 4 hari** — paling kecil di antara bulan lain (15–21) dan hanya 7 baris `month_domain_settings` (bulan 1–7). Kemungkinan besar ini bulan pembuka tahun ajaran yang tidak penuh, tetapi **belum dipastikan**. Dicatat sebagai pertanyaan terbuka di `docs/HANDOVER.md` bagian 5; **data tidak diubah**.
+9. **`students_without_halaqah` mengembalikan semua domain** hanya untuk koneksi admin tanpa JWT (skrip lokal `postgres`, PostgREST `service_role`). Pengguna aplikasi ber-JWT selalu lewat `can_manage(domain)`. Diuji `scripts/qa/test_students_without_halaqah_p6.py`.
 
 ## 6. Bulan 0 (Data Awal) - aturan final dan bukti verifikasi 24 November 2026
 

@@ -7,6 +7,17 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ## 24 November 2026 - Pra-T6 (audit & perbaikan data sebelum T6)
 
+### Langkah [6] - Jawaban Mudir + verifikasi & penutupan celah
+- **Signup**: celah ditemukan — signup tertutup hanya karena provider email dimatikan, yang **ikut mematikan login**; dengan email valid signup berhasil. Ditutup dengan `disable_signup=true` (provider email aktif). Uji `scripts/qa/test_auth_signup_closed.py` **9/9**.
+- **`students_without_halaqah`**: jalur "tampil semua" hanya untuk koneksi admin tanpa JWT (skrip lokal/service_role) — dipertahankan; authenticated tanpa profil/musyrif/mudarris **0 baris**, anon ditolak. Uji `test_students_without_halaqah_p6.py` 6/7 (1 SKIP).
+- **`attendance_guard_override`**: migrasi `20261124000010_attendance_guard_revoke.sql` mencabut EXECUTE dari authenticated/PUBLIC/anon; trigger tetap jalan.
+- **Uji regresi** `scripts/qa/regression_execute.py` **7/7**: 20 fungsi public tanpa EXECUTE anon; musyrif tak bisa mengubah data lewat fungsi admin.
+- **Uji DB pra-T6** kini **16/16**; uji Rabiul Awwal mengharapkan 19 (bukan hanya melapor).
+- **Smoke E2E browser** `scripts/qa/smoke_e2e.py`: 29/29 lokal (7 role, Mudir simpan+hapus satu capaian), 29/29 di react-router 7, 28/28 produksi.
+- **react-router 7.18.6 di-merge** ke `main` setelah smoke lulus (izin Mudir); `npm audit` react-router bersih.
+- **Data Awal tahun kedua**: tanpa bulan 0, Syawwal 1448 membandingkan Ramadhan 1447; ditulis di `docs/SPEC.md` 4a-1; uji `test_data_awal_tahun_kedua.py` 5/5.
+- `docs/DATA-NOTES.md`: rentang Excel dikoreksi `BZ5:B113` → `BZ5:BZ113`. Favicon ditambahkan (menghapus 404 konsol).
+
 ### Langkah [1] - Audit dan hardening fungsi
 - Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
 - Uji DB pra-T6 (`scripts/qa/run_pre_t6_db_tests.py`).
