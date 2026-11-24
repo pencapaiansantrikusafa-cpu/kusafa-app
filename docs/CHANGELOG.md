@@ -26,6 +26,13 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - `AGENTS.md`: ditambahkan aturan "nilai Hari Efektif kecil bisa sah (libur); jangan diubah tanpa konfirmasi Mudir".
 - Dokumen diselaraskan: DATA-NOTES 3a, SPEC 4a-2, STATUS, HANDOVER 3b, FILE-MAP.
 
+### T5c - Percepat halaman Input Al Qur'an (pencarian item di server)
+- Migrasi `20261124000011_curriculum_search.sql`: RPC `curriculum_items_search(subject, q, limit 60)` & `curriculum_items_by_ids(ids)`; indeks GIN trigram pada label; `pg_trgm` di skema `extensions`.
+- `DropdownCari` mendapat mode `diServer` (tunda 200 ms, urutan skor sama dengan versi klien); `InputPage` tidak lagi mengunduh 9.177 item; `KotakBelumLengkap` memakai data halaqah & pengampu dari halaman induk.
+- Hasil: halaman siap **3,0-4,0 s -> 1,44-1,95 s**; permintaan item **128 -> 2**; payload ~1,4 MB -> ~0,55 MB. **Target <1 detik belum** (penundaan jaringan). Perhitungan identik (114 baris dibandingkan).
+- Uji regresi menangkap 31 fungsi ekstensi terbuka ke anon -> dipindah ke skema `extensions`; kini 0.
+- QA: `npm test` 14/14, tsc/build lulus, DB 16/16, regresi 7/7, smoke E2E 29/29.
+
 ### Langkah [1] - Audit dan hardening fungsi
 - Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
 - Uji DB pra-T6 (`scripts/qa/run_pre_t6_db_tests.py`).

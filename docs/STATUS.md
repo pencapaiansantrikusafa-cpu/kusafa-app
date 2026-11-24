@@ -30,8 +30,9 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
 | **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs` | Hasil di bagian 2a/2b/2c |
+| **T5c** | Percepat halaman Input (pencarian item di server) | **SELESAI** (target <1 detik belum; lihat 2e) | `src/pages/InputPage.tsx`, `DropdownCari.tsx`, migrasi `000011`, bagian 2e |
 | **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
-| **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (belum boleh dimulai) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Menunggu T5c selesai |
+| **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (berikutnya; belum boleh dimulai tanpa aba-aba Mudir) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Prasyarat T5c **sudah selesai** |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
@@ -93,12 +94,19 @@ Catatan: prompt menulis "Migrasi 000008", tetapi nomor itu sudah dipakai langkah
 ### Uji otomatis frontend (item 2) — `tests/audit-rules.test.mjs`
 `npm test` kini **14/14** (6 lama + 8 baru). Yang ditambahkan (cermin rumus `docs/SPEC.md` §5, dijalankan tanpa DB): selisih lintas buku memakai `item_position`, target bulanan = target harian × Hadir (boleh pecahan), capaian mundur/pengulangan tetap selisih negatif, khatam = putaran + 1, bulan terkunci (bulan 0 tutup, bulan efektif ikut `is_locked`, hanya Admin/Mudir yang lolos).
 
-### Kinerja muat item (item 3) — **dianalisis, TIDAK diubah**
-Penyebab: halaman Input Al Qur'an (`InputPage.tsx`) memuat **semua** `curriculum_items` aktif buku-buku domain itu secara eager (per buku via `ambilSemua`). Ukuran nyata di DB: domain Al Qur'an = **128 buku, 9.177 item aktif** (total 10.954 item, 0 non-aktif). Dropdown hanya menampilkan 60 per buka, tapi 9.177 baris tetap diunduh lebih dulu → lambat (~detik).
-- **Opsi A — pencarian di server (RPC)**: tambah fungsi `curriculum_items_search(q)` yang mengembalikan hanya item yang cocok teks/nomor (dibatasi, mis. 100). Dampak: hilang unduh 9 ribu baris; butuh fungsi + RLS + perubahan `DropdownCari` agar memanggil RPC saat mengetik; paling besar dampaknya (disarankan).
-- **Opsi B — muat lazy per buku kapital**: muat item buku hanya saat pengguna membuka/berganti buku itu. Dampak: mengurangi transfer awal, tetapi dropdown lintas buku jadi tidak langsung; perlu state buku aktif.
-- **Opsi C — cache klien lintas halaman**: simpan daftar item di memori sesi agar hanya halaman pertama lambat; ditambah indeks teks (`pg_trgm`/`tsvector`). Dampak: navigasi berikutnya cepat, tapi muat awal tetap berat; paling kecil usaha.
-Rekomendasi: **Opsi A** (paling besar dampak, sesuai kebijakan "ambilSemua untuk daftar 1.000+" dan dropdown 60).
+### Kinerja muat item (item 3) — **SELESAI di T5c (Opsi A)**
+
+**Masalah awal:** halaman Input Al Qur'an (`InputPage.tsx`) memuat **semua** `curriculum_items` aktif
+domain itu (128 buku, **9.177 item**). Dropdown hanya menampilkan 60, tetapi 9.177 baris diunduh dulu
+lewat **129 permintaan** (+783,9 KB) → halaman input butuh beberapa detik.
+
+**Perbaikan (Opsi A — pencarian di server):** migrasi `20261124000011_curriculum_search.sql` menambah
+RPC `curriculum_items_search(subject, q, limit 60)` dan `curriculum_items_by_ids(ids)`. Halaman hanya
+meminta 60 hasil yang cocok saat kotak dibuka/diketik; item yang sudah tersimpan diambil by-id.
+`DropdownCari` mendapat mode `diServer` (bertunda 200 ms, urutan skor sama dengan versi klien).
+Notifikasi "data belum lengkap" kini memakai data halaqah & pengampu dari halaman induk (tidak unduh ulang).
+
+Rincian hasil dan angka: bagian **2e**. Opsi B/C (lazy per buku, cache klien) tidak diperlukan lagi.
 
 ### react-router (item 4) — **SUDAH DI-MERGE ke `main` (24 Nov 2026)**
 - Dulu terpasang 6.30.6; kini **`react-router`/`react-router-dom` 7.18.6**.
@@ -134,6 +142,36 @@ Semua butir dikerjakan; T6 **belum** dimulai (urutan: [6] → merge react-router
 
 Temuan data: **Hari Efektif Syawwal 1447 = 4 hari dan Rabiul Awwal = 3 hari adalah SAH** (bulan pembuka & libur ~2 pekan lebih), bukan kesalahan — lihat `docs/SPEC.md` 4a-2. Tidak ada lagi butir "janggal" untuk Hari Efektif.
 
+## 2e. Hasil T5c — percepat halaman Input Al Qur'an (24 November 2026)
+
+**Cara ukur:** `scripts/qa/measure_input_perf.py` (Playwright + Chrome). Halaman Input dibuka dari
+jendela bersih, waktu dihitung dari navigasi sampai tombol **Simpan** muncul (form siap dipakai).
+Baseline memakai build dari commit `6a97eed` di worktree terpisah (port berbeda), sesudah memakai build
+commit ini. Semua di komputer & jaringan yang sama.
+
+| Ukuran | Baseline (sebelum) | Sesudah (T5c) |
+|---|---|---|
+| Halaman siap (desktop) | **3,0–4,0 s** (3 putaran) | **1,44–1,95 s** (3 putaran) |
+| Halaman siap (HP 360 px) | tidak diukur sebelum | **1,44 s** (3 putaran) |
+| Permintaan `curriculum_items` | **128** permintaan | **2** (kosong, `by_ids` tanpa item) |
+| Byte data item | **783,9 KB** | **≈0 KB** |
+| Payload REST halaman ini | ~1,34–1,50 MB | **≈0,55 MB** (atau ~1,0 MB bila cache kosong) |
+| Geser horizontal HP 360 px | - | **tidak ada** (`scrollWidth` 360 = lebar layar) |
+
+- **Target "di bawah 1 detik" BELUM tercapai.** Sisa waktu ±1,4 s berasal dari penundaan jaringan ke
+  database (`ap-southeast-1`): round-trip REST dari mesin ini **0,24–1,3 s** (median ≈0,4 s), dan halaman
+  masih menjalankan **±20 permintaan berurutan** ke database. Query sendiri cepat (0,1–0,2 s). Hal ini
+  dicatat sebagai keterbatasan jaringan, bukan rumus/daftar item.
+- **Perhitungan tidak berubah:** dibandingkan 114 baris `v_monthly_report` (3 halaqah × 2 bulan) —
+  identik sebelum/sesudah untuk label item, putaran, posisi, selisih, Hadir, Hari Efektif, target bulanan,
+  `below_target`, dan `attendance_short`.
+- **Uji:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; banding Excel 7/7; data awal 5/5;
+  no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP wali); matriks RLS 38/46 OK, 8 SKIP, 0 GAGAL;
+  smoke E2E **29/29** (termasuk Mudir menyimpan satu capaian lewat UI lalu dikembalikan bersih).
+- **Keamanan:** fungsi baru `SECURITY INVOKER` + cek `is_staff()`; EXECUTE hanya untuk authenticated &
+  service_role; anon ditolak 42501. `pg_trgm` dipasang di skema **`extensions`** — saat sempat di `public`,
+  uji regresi menangkap **31 fungsi ekstensi terbuka ke anon**; kini **0** fungsi public terbuka ke anon.
+
 ---
 
 ## 3. Status Supabase
@@ -141,7 +179,7 @@ Temuan data: **Hari Efektif Syawwal 1447 = 4 hari dan Rabiul Awwal = 3 hari adal
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-10 berkas migrasi, **kesepuluhnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+11 berkas migrasi, **kesebelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -155,8 +193,9 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261121000008 | month_zero_not_open |
 | 20261121000009 | students_without_halaqah |
 | 20261124000010 | attendance_guard_revoke |
+| 20261124000011 | curriculum_search (T5c) |
 
-Migrasi berikutnya wajib memakai nomor `20261124000011_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261124000012_...` dan **tidak boleh** mengubah berkas lama.
 (Perhatikan: nomor `000010` di tanggal 24 sudah terpakai, jadi lanjut dari `000011`.)
 
 ### RLS (Row Level Security)

@@ -101,11 +101,12 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261121000008_month_zero_not_open.sql` | Bulan 0 (Data Awal) bukan bulan input staf: `month_is_open(bulan 0, domain)` = false; bulan 1-12 tetap ikut `is_locked`. |
 | `migrations/20261121000009_students_without_halaqah.sql` | Notifikasi "santri belum punya halaqah": fungsi `students_without_halaqah`(_count) security definer, periksa `can_manage` di dalam fungsi, `revoke` anon. |
 | `migrations/20261124000010_attendance_guard_revoke.sql` | Cabut `EXECUTE` `attendance_guard_override()` dari authenticated/PUBLIC/anon (fungsi trigger; trigger tetap jalan karena SECURITY DEFINER). |
+| `migrations/20261124000011_curriculum_search.sql` | T5c: RPC `curriculum_items_search` (cari item per bidang, maks 60, skor = versi klien) & `curriculum_items_by_ids`; indeks GIN trigram label; `pg_trgm` di skema `extensions`; EXECUTE hanya authenticated/service_role. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000011_...`
-(nomor `000010` bertanggal 24 sudah terpakai).
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000012_...`
+(nomor `000010` dan `000011` bertanggal 24 sudah terpakai).
 
 ---
 
@@ -128,6 +129,8 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_students_without_halaqah_p6.py` | Jalur "tampil semua" fungsi: authenticated tanpa profil/musyrif/mudarris 0 baris, koneksi admin melihat semua, anon ditolak. |
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
+| `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
+| `scripts/qa/serve_dist.py` | Server statis `dist/` (SPA) untuk mengukur hasil build tanpa `serve`. |
 | `scripts/qa/compare_rabiul_awwal_excel.py` | Bandingkan HE/Hadir/izin-sakit-alpha/label+posisi capaian Rabiul Awwal DB vs Excel (109 santri, sampel 15); hanya baca. |
 | `scripts/qa/test_data_awal_tahun_kedua.py` | Tahun kedua tanpa bulan 0; Syawwal 1448 membandingkan Ramadhan 1447 (transaksi + ROLLBACK). |
 | `scripts/qa/smoke_e2e.py` | Smoke browser Playwright 7 role; Mudir menulis lalu menghapus satu capaian (`entered_at` baru saja). |

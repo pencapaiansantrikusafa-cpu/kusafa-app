@@ -20,7 +20,8 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T5 | Input capaian Al Qur'an (+ T5b) | **SELESAI** | `InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`/`posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` |
 | Pra-T6 | Audit & perbaikan data (langkah [1]-[5]) | **SELESAI** | migrasi `000007`–`000009`, `scripts/qa/*`, `scripts/db/fixes/*`, `tests/audit-rules.test.mjs`, `docs/qa/*` |
 | Pra-T6 [6] | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | migrasi `000010`, `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_students_without_halaqah_p6.py`, `test_data_awal_tahun_kedua.py`, `docs/SPEC.md` 4a-1 |
-| T6 | Tabel & input Wasilah & Ghayah | **BELUM (belum boleh dimulai)** | - |
+| T5c | Percepat halaman Input (pencarian item di server) | **SELESAI** (lihat STATUS 2e) | migrasi `000011`, `InputPage.tsx`, `DropdownCari.tsx` (`diServer`), `KotakBelumLengkap.tsx` |
+| T6 | Tabel & input Wasilah & Ghayah | **BELUM (next, menunggu aba-aba Mudir)** | - |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | `scripts/qa/rls_matrix.py`, `test_no_halaqah.py`, `test_students_without_halaqah.py`, `run_pre_t6_db_tests.py` (sudah ada, belum lengkap) |
@@ -37,7 +38,7 @@ Pra-T6 rinci:
 
 ## 2. Tahap yang sedang dikerjakan
 
-**Pra-T6 [6] SELESAI** (commit `1752176`, `38b71dc`, `0378f87`) — rincian hasil di `docs/STATUS.md` bagian 2d. Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push.
+**T5c SELESAI** (24 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e. Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
 
 **Yang sudah jalan** — lihat `docs/STATUS.md`: login/menu per role, tabel & input Al Qur'an, halaman santri,
 notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel tersambung Supabase.
@@ -46,12 +47,12 @@ notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel 
 
 **Bug/error yang diketahui:**
 - Tidak ada galat build / `tsc` / uji. Yang tertulis di `docs/STATUS.md` bagian 6 semuanya keterbatasan, bukan galat menggantung.
-- Kinerja muat item Al Qur'an lambat (~9.177 item dimuat eager); 3 opsi perbaikan di `STATUS.md` 2c — **ini menjadi tugas T5c** (lihat langkah berikutnya).
+- ~~Kinerja muat item Al Qur'an lambat~~ — **SELESAI di T5c**: item tidak lagi diunduh penuh; pencarian di server. Sisa ±1,4 s karena penundaan jaringan (`STATUS.md` 2e).
 - `npm audit` sisa 2: `vite`/`esbuild` (hanya dev server, tidak ikut bundel produksi).
 
 **Langkah berikutnya (berurutan) — keputusan Mudir 24 November 2026:**
 1. ~~Merge react-router 7~~ — **SELESAI** (smoke 29/29 lulus di branch, lalu merge & push).
-2. **T5c — percepat input** (Opsi A di `STATUS.md` 2c: pencarian item di server lewat RPC). Kerjakan sebelum T6.
+2. ~~T5c — percepat input~~ **SELESAI 24 Nov 2026**: RPC `curriculum_items_search`/`_by_ids`, halaman siap 3,0–4,0 s → **1,4–2,0 s**, permintaan item 128 → 2. **Target <1 detik belum tercapai** karena penundaan jaringan ke database (±20 permintaan berurutan); lihat `STATUS.md` 2e.
 3. **T6** — tabel & input Wasilah & Ghayah (ganti tulisan "dikerjakan pada T6" di `TabelCapaian.tsx`; input sekali per halaqah × mata pelajaran disalin ke anggota; `hanyaHalaqahDiampu()`).
 4. **T7** — target dinamis (ajukan/setujui); target bulanan = target harian × Hadir, dihitung database.
 5. **T8** — Hari Efektif & kunci bulan, penugasan halaqah, kelola kurikulum, tambah tahun (ingat: tahun kedua tanpa Data Awal, SPEC 4a-1).
@@ -75,7 +76,7 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 
 ### 3a. Keputusan Mudir 24 November 2026 (pra-T6 [6]) — sudah final
 
-- **Urutan kerja:** pra-T6 [6] → **merge react-router** (bila smoke lulus) → **T5c percepat input** → **T6**. T6 **belum** boleh dimulai sebelum T5c selesai.
+- **Urutan kerja:** pra-T6 [6] → **merge react-router** (bila smoke lulus) → **T5c percepat input** → **T6**. T5c sudah selesai; **T6 menunggu aba-aba Mudir**.
 - **react-router 7:** boleh di-merge ke `main` **hanya bila smoke E2E semua role lulus** di branch itu. **Sudah dipenuhi** → di-merge (7.18.6).
 - **ESLint:** ditunda, dipasang di **T9**.
 - **Excel Rabiul Awwal:** **tidak perlu diubah.** `BZ5:BZ113` = 3 adalah nilai benar (libur ~2 pekan lebih).
@@ -101,18 +102,19 @@ Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_yea
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`.
 Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adalah koneksi Postgres Supabase yang dipakai skrip lokal (`scripts/db/run_sql.py`, seed, uji QA); tipe spesifik (pooler langsung vs transaction-pooler) periksa di Dashboard supaya tidak keliru dipakai dari luar.
 
-- **Migrasi dijalankan (10)**: `000001`–`000009` + `20261124000010_attendance_guard_revoke`.
+- **Migrasi dijalankan (11)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search` (T5c).
 - **Auth**: `disable_signup = true`, provider email **aktif** (`external.email=true`), `mailer_autoconfirm=false`. Signup ditolak `422 signup_disabled`; login 7 role lulus (24 Nov 2026). Diubah lewat Management API (`PATCH /v1/projects/<ref>/config/auth`).
 - **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **38 OK / 8 SKIP / 0 GAGAL**.
 - **Fungsi trigger**: `attendance_guard_override()` kini **tanpa** EXECUTE untuk authenticated/anon/PUBLIC; trigger tetap berjalan (SECURITY DEFINER).
 - **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=3 karena libur, Syawwal=4); `is_locked` semua `false`.
-- **Fungsi/view**: 20 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
+- **Ekstensi**: `pg_trgm` dipasang di skema **`extensions`** (bukan `public`) untuk indeks pencarian label.
+- **Fungsi/view**: 22 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
 
 ---
 
 ## 5. Pertanyaan terbuka (menunggu jawaban / data Mudir)
 
-- ~~Boleh mulai T6?~~ — **TERJAWAB:** belum; urutan [6] → merge react-router (selesai) → T5c → T6.
+- ~~Boleh mulai T6?~~ — **URUTAN SUDAH TERPENUHI:** [6] ✓, merge react-router ✓, T5c ✓. T6 boleh dimulai setelah Mudir memberi aba-aba.
 - ~~Signup publik aktif?~~ — **TERJAWAB & DITUTUP:** `disable_signup=true`, provider email tetap aktif, login jalan.
 - ~~Naik react-router ke 7.x?~~ — **TERJAWAB & SELESAI:** di-merge setelah smoke 29/29 lulus.
 - ~~Pasang ESLint?~~ — **TERJAWAB:** ditunda ke T9.
