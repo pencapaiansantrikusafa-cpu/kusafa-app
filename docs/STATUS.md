@@ -533,6 +533,90 @@ data asli). **Usulan:** buat **satu proyek Supabase kedua** (`kusafa-qa`) khusus
   penyiapan ±1 jam.
 - **Belum dibuat** — perintah kerja T6d3 melarang membuatnya sekarang.
 
+## 2m. T6e - Hapus capaian + log perubahan (25 November 2026)
+
+**Perintah Mudir:** Admin/Mudir dapat menghapus capaian yang salah input (Al Qur'an, Wasilah, Ghayah);
+Masul & pengampu tetap hanya input/menimpa. Satu mekanisme log perubahan untuk UPDATE+DELETE pada tiga
+tabel. Bulan terkunci boleh dengan konfirmasi eksplisit. Cakupan satu capaian + massal. Lewat RPC.
+
+### Langkah 0 - E2E pengampu yang belum pernah diuji lewat UI
+`scripts/qa/test_t6e_langkah0_pengampu.py` **12/12 LULUS**, sidik jari **SAMA**:
+- **Mudarris/ah** (Ilmu Wasilah): hanya halaqah yang diampu, Simpan menulis ke semua anggota,
+  label tampil lagi setelah muat ulang.
+- **Musyrif/ah** (Al Qur'an): hanya halaqah yang diampu, Simpan menulis capaian, konsol bersih.
+- **Halaqah Level 6 (Ilmu Wasilah):** 4 anggota, 0 mata pelajaran, 0 pengampu → halaman terbuka tanpa
+  galat, **tidak menawarkan mata pelajaran**, dan **tidak menulis apa pun** (capaian Level 6 = 0).
+
+### Migrasi (2 berkas)
+- **`20261125000019_hapus_capaian_log.sql`**: tabel `change_log` + trigger `catat_perubahan` (UPDATE/DELETE
+  pada `progress_entries`, `attendance`, `monthly_notes`) + 4 RPC: `hapus_capaian_info`,
+  `hapus_capaian`, `hapus_capaian_massal_info`, `hapus_capaian_massal`. Cek `is_full_access()` di dalam
+  fungsi; `EXECUTE` hanya authenticated (anon dicabut). Log: RLS SELECT hanya `is_full_access()`,
+  INSERT/UPDATE/DELETE/TRUNCATE dicabut dari authenticated, anon tanpa akses.
+- **`20261125000020_log_abaikan_update_kosong.sql`**: UPDATE dengan `to_jsonb(new) = to_jsonb(old)`
+  **tidak** dicatat. Tanpa ini, `pulihkan_data` menghasilkan 2.111 baris log palsu dalam satu uji.
+
+### Aturan hapus (yang dipilih dan dijelaskan)
+- **Bulan terkunci:** boleh untuk Mudir/Admin, **wajib** `p_setuju_terkunci = true`; tanpa itu ditolak.
+- **Bulan sesudahnya terisi:** pembanding bulan sesudahnya akan berubah → **ditolak** dengan pesan
+  "hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit"; dengan `p_setuju_lanjutan = true`
+  diizinkan. Bila capaian itu **khatam/putaran baru** (`putaran > putaran bulan lalu`), pratinjau
+  melaporkan `mulai_putaran_baru` dan dialog memperingatkan.
+- **Bulan 0 (Data Awal):** ditolak (bukan bulan input staf).
+- **Massal** (halaqah × mapel × bulan): pratinjau mengembalikan **jumlah santri + daftar nilai**;
+  hapus massal juga menghormati konfirmasi terkunci/lanjutan.
+
+### UI
+- `src/components/DialogHapusCapaian.tsx` (baru): dialog menyebut **santri/nama (atau jumlah santri),
+  bidang, bulan, nilai + posisi**, peringatan putaran, dan pilihan konfirmasi (terkunci / bulan
+  sesudahnya). Tombol Hapus **nonaktif** sampai konfirmasi dicentang.
+- `TabelCapaian.tsx`: tombol **"Hapus capaian <bidang>"** per santri (tabel Al Qur'an desktop + dialog
+  detail HP + tabel Wasilah/Ghayah) dan baris tombol **"Hapus semua <mapel>"** (massal). Hanya tampil
+  untuk Mudir/Admin (`profile.role`), dan RPC tetap penjaga akhir.
+- Setelah hapus, tabel dimuat ulang → sel kembali **“belum diisi”** (bukan 0), dan pesan hasil tampil.
+
+### DATA UJI MUDIR (jawaban T6d3) - dijalankan sebagai uji penerimaan
+- **(a) 3 baris capaian Jumadal Ula** dihapus **lewat fitur baru** (UI, bukan SQL):
+  `scripts/qa/test_t6e_uji_penerimaan.py` **15/15 LULUS**. Isi log (tabel `change_log`):
+  tiga baris `progress_entries`/`delete`/`aktor_role = mudir`/`sumber = aplikasi`, dengan `nilai_lama`
+  memuat `item_id` dan `putaran` (Kitabah `IBQ PAUD - 1` putaran 1, Tahfidz `Al Fatihah - 1` putaran 1,
+  Tilawah `Karima - 1` putaran 2). Sidik jari berubah **tepat −3 capaian** dan **+3 baris log**;
+  tidak ada tabel lain yang berubah. Capaian sekarang **2.036** (kembali ke jumlah seed).
+- **(b) 7 baris kehadiran Jumadal Ula** isinya: `izin/sakit/alpha = 0/0/0`, override NULL,
+  `entered_by = Admin`, `25 Nov 2026 02:14` (detik yang sama dengan capaian percobaan), halaqah
+  HLQ-PA-1. Bulan 8 belum punya Hari Efektif. **Jelas percobaan** → dihapus lewat
+  `scripts/db/fixes/2026-11-25_hapus_kehadiran_jumadal_ula.sql` (7 baris, tercatat di log sebagai
+  `skrip:postgres`). Kehadiran Al Qur'an **606 → 599** (sama dengan jumlah baris seed). Total
+  kehadiran 2.104.
+
+### Uji
+- `test_t6e_hapus_capaian.py` **35/35** (DB, transaksi + ROLLBACK): role (3 Masul + pengampu + anon
+  ditolak; Mudir/Admin diterima), pratinjau, hapus satu, massal, bulan terkunci (tolak/terima),
+  bulan sesudahnya terisi (tolak/terima), bulan 0, putaran, log DELETE & UPDATE di tiga tabel,
+  UPDATE tanpa perubahan tidak dicatat, log tanpa JWT `skrip:postgres`, log tidak bisa
+  diubah/dihapus/ditulis dari aplikasi, Masul tidak bisa membacanya, anon ditolak.
+- `test_t6e_e2e_hapus.py` **16/16** (UI): Masul tidak melihat tombol; dialog menyebut
+  santri/bulan/nilai; hapus satu & massal; bulan terkunci minta centang (tombol nonaktif sebelum
+  dicentang); data dipulihkan persis; log bertambah.
+- `test_t6e_uji_penerimaan.py` **15/15** (permanen, tidak dipulihkan — perintah Mudir).
+- `test_t6e_langkah0_pengampu.py` **12/12**.
+- Uji lama hijau: `npm test` 14/14; `tsc` & `build`; DB 16/16; regresi 7/7; Excel penuh 7/7; Excel
+  Rabiul Awwal 7/7; data awal 5/5; no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP); signup 9/9;
+  T6a 14/14; T6b 29/29 & E2E 14/14; T6d2 68/68 & E2E 14/14; dropdown 10/10; matriks RLS 67/75;
+  seed bersih **6/6**.
+- **Sidik jari:** SAMA (16.468 baris, 19 tabel) untuk semua rangkaian uji T6e, kecuali uji penerimaan
+  yang memang menghapus 3 capaian + 7 kehadiran (perubahan dilaporkan tepat).
+
+### Catatan penting
+- **Log bersifat append-only.** Uji yang menulis MEMANG menambah baris log; `db_fingerprint.py` kini
+  memeriksa log **terpisah** (boleh tumbuh, baris lama wajib utuh — dibuktikan dengan checksum
+  potongan lama, dan alat ini terbukti menangkap baris log lama yang diubah). `pulihkan_data.py`
+  sengaja tidak menyentuh log.
+- **Seed ulang (TRUNCATE)** tidak memicu trigger baris → tidak tercatat di log; penjaga tetap
+  `test_seed_bersih.py` + sidik jari.
+- Semua penulisan uji T6e memakai `pulihkan_data.py` yang kini **memasukkan kembali baris yang dihapus**
+  (bukan hanya memperbaiki baris yang masih ada).
+
 ### Catatan data yang perlu keputusan Mudir (bukan bagian T6d2)
 
 1. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian** masih ada di database, padahal
@@ -552,7 +636,7 @@ data asli). **Usulan:** buat **satu proyek Supabase kedua** (`kusafa-qa`) khusus
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-18 berkas migrasi, **kedelapan belasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+20 berkas migrasi, **keduapuluhnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -574,17 +658,19 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261125000016 | masul_domain_scope_fix (T6b) |
 | 20261125000017 | masul_input_domain (T6d2 - seragamkan hak Masul + kolom jejak) |
 | 20261125000018 | catat_jejak_tanpa_jwt (T6d2 - koreksi trigger tanpa JWT) |
+| 20261125000019 | hapus_capaian_log (T6e - RPC hapus capaian + tabel change_log) |
+| 20261125000020 | log_abaikan_update_kosong (T6e - jangan catat UPDATE tanpa perubahan) |
 
-Migrasi berikutnya wajib memakai nomor `20261125000019_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261125000021_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
-- **18 dari 18 tabel** memiliki `relrowsecurity = true`.
+- **19 dari 19 tabel** memiliki `relrowsecurity = true` (termasuk `change_log` baru, hanya SELECT).
 - **44 kebijakan** tersebar di 18 tabel (`attendance`, `monthly_notes`, `progress_entries`, `targets` masing-masing 4; sisanya 2).
 - Sejak T6d2 `progress_entries`, `attendance`, dan `monthly_notes` masing-masing **4 kebijakan**
   (insert/update seragam untuk ketiga domain, read, delete khusus Mudir/Admin). Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **29 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
+- **33 fungsi** di skema `public` (`+ hapus_capaian(_info)`, `hapus_capaian_massal(_info)`, `catat_perubahan`) - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)

@@ -77,7 +77,8 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 |---|---|
 | `LoginPage.tsx` | Formulir login (email + kata sandi) lewat Supabase Auth. |
 | `CapaianPage.tsx` | Halaman Capaian per domain; memilih halaqah, tahun, bulan. |
-| `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; untuk Wasilah/Ghayah masih menulis "dikerjakan pada T6". |
+| `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; **T6e**: tombol "Hapus capaian" per santri & "Hapus semua <mapel>" (massal) hanya untuk Mudir/Admin, memanggil RPC hapus. |
+| `DialogHapusCapaian.tsx` | **T6e**: dialog konfirmasi hapus (menyebut santri/jumlah, bidang, bulan, nilai), peringatan putaran, centang konfirmasi bulan terkunci/bulan sesudahnya. |
 | `TabDomain.tsx` | Komponen **bersama** tab domain (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) untuk halaman Capaian dan Input. Memakai `<Link>` ke `${dasar}/${domain}` sehingga tab aktif tercermin di URL; HP 360 tiga tab dibagi rata, tinggi sentuh 44 px. |
 | `InputPage.tsx` | Pemilih domain halaman Input; rute `/input`, `/input/alquran`, `/input/wasilah`, `/input/ghayah`. Domain mengikuti role (`domainInputUntuk`). |
 | `InputAlQuranPage.tsx` | Halaman Input Al Qur'an (T5/T5c-2); isi tidak berubah, hanya berkas dipisah dari pemilih domain. |
@@ -110,6 +111,8 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261124000012_input_alquran_data.sql` | T5c-2: RPC `input_alquran_boot()` (halaqah+bulan+pengampu) & `input_alquran_data()` (seluruh isi form dalam satu JSON; angka dari view, tidak dihitung ulang). |
 | `migrations/20261124000011_curriculum_search.sql` | T5c: RPC `curriculum_items_search` (cari item per bidang, maks 60, skor = versi klien) & `curriculum_items_by_ids`; indeks GIN trigram label; `pg_trgm` di skema `extensions`; EXECUTE hanya authenticated/service_role. |
 | `migrations/20261125000017_masul_input_domain.sql` | T6d2: satu aturan tulis untuk **ketiga domain** (`is_full_access` ATAU Masul domainnya ATAU pengampu halaqah, dengan `month_is_open`); hapus tetap hanya Mudir/Admin. Menambah `updated_by`/`updated_at` di `progress_entries`, `attendance`, `monthly_notes` + trigger `catat_jejak`. |
+| `migrations/20261125000019_hapus_capaian_log.sql` | T6e: RPC `hapus_capaian_info`/`hapus_capaian`/`hapus_capaian_massal_info`/`hapus_capaian_massal` (cek `is_full_access()` di dalam fungsi) + tabel `change_log` + trigger `catat_perubahan` (UPDATE/DELETE tiga tabel). |
+| `migrations/20261125000020_log_abaikan_update_kosong.sql` | T6e: `catat_perubahan` mengabaikan UPDATE yang tidak mengubah nilai (cegah log palsu dari pemulihan data). |
 | `migrations/20261125000018_catat_jejak_tanpa_jwt.sql` | T6d2: trigger `catat_jejak` tidak menyentuh baris lama bila `auth.uid()` NULL (seed/skrip), supaya jejak seed tidak tertimpa. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
@@ -124,6 +127,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | Berkas | Fungsi |
 |---|---|
 | `scripts/check_repo_safety.py` | Memeriksa repo sebelum commit: menolak `.env`, `.xlsx`, `.zip`, seed SQL, `users.csv`, token, kunci rahasia. |
+| `scripts/db/fixes/2026-11-25_hapus_kehadiran_jumadal_ula.sql` | T6e: hapus 7 baris kehadiran Jumadal Ula percobaan Admin (0/0/0, tanpa capaian). Aman dijalankan ulang. |
 | `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` | **T6d3** (keputusan Mudir): hapus baris kehadiran Ramadhan tanpa capaian. Aman dijalankan ulang; jalankan sesudah seed. |
 | `scripts/db/fixes/2026-11-25_pulihkan_shafar.sql` | **T6d3**: pulihkan izin/sakit/alpha Shafar (37 baris berbeda) sesuai seed/Excel. |
 | `scripts/db/fixes/2026-11-25_pulihkan_capaian_024.sql` | **T6d3**: masukkan kembali 1 baris seed yang hilang (024 Kitabah Dzul Qa'dah "Menyalin - 25"). |
@@ -138,6 +142,10 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
 | `scripts/qa/db_fingerprint.py` | **T6d3**: sidik jari database (18 tabel, jumlah baris + checksum md5). `--simpan` sebelum uji, `--banding` sesudah; hasil wajib SAMA. Hanya membaca. |
 | `scripts/qa/pulihkan_data.py` | **T6d3**: simpan salinan penuh `progress_entries`/`attendance`/`monthly_notes` lalu pulihkan persis (nilai + jejak). Dipakai semua uji yang menulis. |
+| `scripts/qa/test_t6e_hapus_capaian.py` | T6e (35 uji, transaksi + ROLLBACK): role, pratinjau, hapus satu/massal, bulan terkunci, bulan sesudahnya, bulan 0, log DELETE/UPDATE tiga tabel, log tanpa JWT, log tidak bisa diubah/dihapus/ditulis. |
+| `scripts/qa/test_t6e_e2e_hapus.py` | T6e E2E (16 uji): Masul tanpa tombol hapus, dialog (santri/bulan/nilai), hapus satu & massal, bulan terkunci minta centang, data dipulihkan persis. |
+| `scripts/qa/test_t6e_uji_penerimaan.py` | T6e **uji penerimaan** (15 uji): 3 baris capaian percobaan Mudir dihapus lewat UI; log 3 DELETE; sidik jari tepat -3/+3. Tidak dipulihkan. |
+| `scripts/qa/test_t6e_langkah0_pengampu.py` | T6e langkah 0 (12 uji): E2E Simpan Mudarris/ah, Musyrif/ah, halaqah Level 6; data dipulihkan persis. |
 | `scripts/qa/test_seed_bersih.py` | **T6d3**: uji penjaga sesudah seed (capaian 2.039, Ramadhan tanpa capaian 0, kehadiran 606/756/749, Wasilah/Ghayah 0, catatan 0). Hanya membaca. |
 | `scripts/qa/compare_alquran_full_excel.py` | **T6d3**: banding Excel **PENUH** (109 santri, semua bulan 1-7, kehadiran + capaian). Hanya membaca. |
 | `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi (67 OK / 8 SKIP); tiap probe transaksi sendiri + ROLLBACK — termasuk baris sasaran uji hapus yang dibuat **di dalam** transaksi agar tidak tertinggal. |

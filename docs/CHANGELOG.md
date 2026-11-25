@@ -5,6 +5,18 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 25 November 2026 - T6e (hapus capaian + log perubahan)
+
+- **Langkah 0:** E2E Simpan lewat UI untuk Mudarris/ah, Musyrif/ah, dan halaqah Level 6 (`test_t6e_langkah0_pengampu.py` 12/12); data dipulihkan persis, sidik jari sama.
+- **Migrasi `20261125000019_hapus_capaian_log.sql`:** 4 RPC hapus capaian (satu & massal, pratinjau + eksekusi) dengan cek role di dalam fungsi; tabel `change_log` + trigger `catat_perubahan` (UPDATE/DELETE pada `progress_entries`, `attendance`, `monthly_notes`).
+- **Migrasi `20261125000020_log_abaikan_update_kosong.sql`:** UPDATE tanpa perubahan nilai tidak dicatat (mencegah ribuan baris log palsu saat pemulihan data).
+- **UI:** `DialogHapusCapaian.tsx` + tombol "Hapus capaian"/"Hapus semua" hanya untuk Mudir/Admin; dialog menyebut santri, bidang, bulan, nilai, peringatan putaran, konfirmasi bulan terkunci & bulan sesudahnya; setelah hapus sel kembali "belum diisi".
+- **Uji:** DB 35/35, E2E 16/16, uji penerimaan 15/15. Semua uji lama hijau; sidik jari identik.
+- **Data:** 3 baris capaian Jumadal Ula (percobaan Mudir) dihapus lewat fitur (log +3 DELETE), 7 baris kehadiran Jumadal Ula dihapus lewat SQL (`2026-11-25_hapus_kehadiran_jumadal_ula.sql`). Capaian 2.036, kehadiran Al Qur'an 599.
+- **Disiplin:** `db_fingerprint.py` memeriksa `change_log` terpisah (append-only); `pulihkan_data.py` memasukkan kembali baris yang dihapus uji.
+
+---
+
 ## 25 November 2026 - T6d3 (pembersihan data + disiplin uji)
 
 - **7 baris kehadiran Ramadhan** (Al Qur'an, tanpa capaian) dihapus lagi. Penyebab munculnya: seed dijalankan ulang 24 Nov; penghapusan 23 Nov tidak pernah dibuat skrip. Skrip baru `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` + uji penjaga `scripts/qa/test_seed_bersih.py`. Kehadiran Al Qur'an 613 → 606.
