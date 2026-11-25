@@ -118,11 +118,13 @@ def simpan_capaian(page, conn):
     page.get_by_role("option", name=BULAN_UJI, exact=True).first.click()
     page.wait_for_timeout(2500)
 
-    # catat komposisi progress_entries halaqah/bulan ini SEBELUM (id + entered_at)
+    # catat komposisi progress_entries halaqah/bulan ini SEBELUM
+    # (id + entered_at + jejak pengisi). Sejak T6d2 menyimpan juga menimpa
+    # entered_by/entered_at pada baris lama, jadi jejak itu harus dipulihkan.
     def snapshot():
         return {
-            r[0]: r[1] for r in conn.execute(
-                "select pe.id, pe.entered_at from public.progress_entries pe "
+            r[0]: (r[1], r[2], r[3]) for r in conn.execute(
+                "select pe.id, pe.entered_at, pe.entered_by, pe.updated_by from public.progress_entries pe "
                 "join public.halaqahs h on h.id=pe.halaqah_id "
                 "join public.hijri_months m on m.id=pe.month_id "
                 "where h.code=%s and m.name=%s", (HALAQAH_UJI, BULAN_UJI)).fetchall()
@@ -177,10 +179,21 @@ def simpan_capaian(page, conn):
     finally:
         # Selalu bersihkan: hapus HANYA baris yang entered_at-nya >= waktu mulai (dibuat uji ini),
         # baris lama tidak pernah disentuh.
-        baru = [(k, t) for k, t in snapshot().items() if k not in sebelum and t >= waktu_mulai]
+        baru = [(k, v) for k, v in snapshot().items()
+                if k not in sebelum and v[0] >= waktu_mulai]
         for k, _ in baru:
             conn.execute("delete from public.progress_entries where id=%s", (k,))
-        bersih = set(snapshot()) == set(sebelum)
+        # Baris lama yang tersentuh simpan: kembalikan jejak pengisi aslinya.
+        # (Koneksi ini tanpa JWT, jadi trigger catat_jejak tidak ikut mengubah apa pun.)
+        jejak_dipulihkan = 0
+        sekarang = snapshot()
+        for k, v in sebelum.items():
+            if k in sekarang and sekarang[k] != v:
+                conn.execute(
+                    "update public.progress_entries set entered_at=%s, entered_by=%s, updated_by=%s "
+                    "where id=%s", (v[0], v[1], v[2], k))
+                jejak_dipulihkan += 1
+        bersih = snapshot() == sebelum
         if "baru" not in dir():
             baru = []
 
@@ -188,7 +201,8 @@ def simpan_capaian(page, conn):
     # langsung hilang saat form dimuat ulang). Data yang dikembalikan bersih juga wajib.
     sukses = bool(baru) and bersih
     return ("berhasil" if sukses else "gagal",
-            f"baris database baru={len(baru)} (bukti tersimpan); dikembalikan bersih={bersih}"
+            f"baris database baru={len(baru)} (bukti tersimpan); jejak dipulihkan={jejak_dipulihkan}; "
+            f"dikembalikan bersih={bersih}"
             + (f"; pesan_ui={pesan_galat}" if pesan_galat else ""))
 
 

@@ -1,6 +1,6 @@
 {
   "base": "http://localhost:4173",
-  "ran_at": "2026-11-25T11:07:34.454676",
+  "ran_at": "2026-11-25T12:22:24.139502",
   "hasil": [
     {
       "role": "mudir",
@@ -18,7 +18,7 @@
       "role": "mudir",
       "langkah": "simpan_dan_kembalikan",
       "ok": true,
-      "pesan": "[berhasil] baris database baru=1 (bukti tersimpan); dikembalikan bersih=True"
+      "pesan": "[berhasil] baris database baru=1 (bukti tersimpan); jejak dipulihkan=18; dikembalikan bersih=True"
     },
     {
       "role": "mudir",

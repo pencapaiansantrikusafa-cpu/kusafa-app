@@ -438,6 +438,13 @@ Rumus Hadir dan view **tidak berubah**. Jejak siapa mengisi/mengubah wajib terca
   bulan Jumadal Ula), Wasilah 756, Ghayah 749; `monthly_notes` 0.
 - **Uji lain tetap hijau:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; Excel 7/7;
   data awal 5/5; no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP); signup 9/9; T6a 14/14; T6b DB 29/29.
+- **Produksi (25 November 2026)**: bundel `index-1de03EWI.js` **sama persis** dengan build lokal dari
+  commit `fb95727`; smoke produksi **43/43 PASS**; pemeriksaan baca-saja sebagai ketiga Masul **7/7**
+  (semua halaqah domainnya ditawarkan, domain lain dialihkan, Musyrif tetap satu halaqah).
+- **Jejak uji smoke dipulihkan**: langkah "Mudir simpan" pada smoke kini ikut mengembalikan
+  `entered_by`/`entered_at` baris lama (sebelumnya jejak 18 baris Rabiul Akhir berubah menjadi
+  `entered_by = Mudir` tanpa perubahan nilai). Jejak produksi sudah dipulihkan: hanya 3 baris
+  `entered_by = Admin` (uji Mudir) yang tersisa.
 - Tangkapan layar: `docs/qa/t6d2/` (`masul_alquran_simpan.png`, `masul_wasilah_simpan.png`,
   `masul_ghayah_simpan.png`).
 
