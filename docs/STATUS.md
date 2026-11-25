@@ -1,15 +1,34 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **24 November 2026** (pra-T6 langkah [3/5], [4/5], audit [5/5], dan **[6]** jawaban Mudir + penutupan celah).
+**Sumber kebenaran status.** Diperbarui: **25 November 2026** (T6e selesai — hapus capaian + log perubahan).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `30ceb8c` - T6d tab domain Capaian & Input |
+| Commit terakhir | `c34118a` - T6e hasil smoke produksi 42/42 |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
+| Migrasi terakhir | `20261125000020_log_abaikan_update_kosong.sql` (berikutnya `20261125000021_...`) |
+
+### Hasil uji terakhir (T6e, 25 November 2026)
+
+| Rangkaian | Hasil |
+|---|---|
+| `test_t6e_hapus_capaian.py` (DB) | **35/35** |
+| `test_t6e_e2e_hapus.py` (UI) | **16/16** |
+| `test_t6e_uji_penerimaan.py` (permanen, perintah Mudir) | **15/15** |
+| `test_t6e_langkah0_pengampu.py` (Langkah 0 UI) | **12/12** |
+| `npm test` / `tsc` / `build` | 14/14 · hijau · berhasil |
+| DB lama, regresi, Excel penuh, Rabiul Awwal, data awal, no-halaqah, signup | 16/16, 7/7, 7/7, 7/7, 5/5, 9/9, 13/13 (+6/7 1 SKIP), 9/9 |
+| T6a / T6b (+E2E) / T6d2 (+E2E) / dropdown | 14/14 / 29/29 + 14/14 / 68/68 + 14/14 / 10/10 |
+| Matriks RLS / seed bersih | 67/75 (8 SKIP) / **6/6** |
+| Sidik jari database | **SAMA** (16.468 baris, 19 tabel), kecuali perubahan yang diperintahkan |
+| Smoke produksi (baca saja) | **42/42**, sidik jari SAMA |
+
+**Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
+`change_log` **96** baris (append-only).
 
 Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
 Sesuatu yang belum dijalankan atau belum diuji ditulis **BELUM DIVERIFIKASI**, bukan SELESAI.
@@ -26,7 +45,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T0** | Orientasi dan sambungan | **SELESAI** | `data/source/` (5 file Excel, tidak di-commit), `docs/DATA-NOTES.md` | Excel sudah dipetakan; temuan terbuka di DATA-NOTES |
 | **T1** | Database dan seed | **SELESAI** | 6 migrasi diterapkan (bagian 3), `scripts/seed/build_seed.py`, `scripts/db/run_sql.py` | Seed dummy sudah dimuat; destruktif, jangan diulang tanpa izin |
 | **T2** | Login, kerangka, menu per role | **SELESAI** | `src/pages/LoginPage.tsx`, `src/components/AuthProvider.tsx`, `AppLayout.tsx`, `NavLinks.tsx`, `src/lib/roles.ts` | Login diuji ulang 23 Nov 2026 sebagai Mudir dan Musyrif/ah (lokal dan produksi) |
-| **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah masih pesan "dikerjakan pada T6" |
+| **T3** | Tabel capaian halaqah Al Qur'an | **SELESAI** | `src/pages/CapaianPage.tsx`, `TabelCapaian.tsx`, `TabelAlQuran.tsx`, `src/lib/laporan.ts` | Wasilah/Ghayah dilengkapi di T6a |
 | **T4** | Halaman satu santri | **SELESAI** | `src/pages/SantriPage.tsx`, `src/components/GrafikGaris.tsx`, `GrafikGabungan.tsx` | Tilawah/Tahfidz/Kitabah satu kotak; kehadiran kotak terpisah |
 | **T5** | Input capaian Al Qur'an | **SELESAI** | `src/pages/InputPage.tsx`, `FormInputAlQuran.tsx`, `src/lib/putaran.ts`, `posisi.ts`, `KonfirmasiPutaran.tsx`, `KotakBelumLengkap.tsx`, `tests/putaran.test.mjs` | Termasuk T5b dan perbaikan 23 Nov. **Kekurangan yang disengaja:** layar Hari Efektif belum ada (T8). Lihat bagian 6 |
 | **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs` | Hasil di bagian 2a/2b/2c |
@@ -37,15 +56,18 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6a** | Tabel capaian Wasilah & Ghayah | **SELESAI** (lihat 2h) | `src/pages/TabelWasilah.tsx`, `TabelCapaian.tsx`; uji `scripts/qa/test_t6a_tabel.py` 14/14 | — |
 | **T6b** | Input Wasilah & Ghayah | **SELESAI** (lihat 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `FormInputWasilah.tsx`; uji DB 29/29, E2E 14/14 | — |
 | **T6c** | "Bulan lalu" tampil sejak awal (laporan Mudir) | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 | — |
-| **T6d** | Tab domain di halaman Capaian (seperti halaman Input) | **SELESAI** (lihat 2j) | `TabDomain.tsx`, `CapaianPage.tsx`, `InputPage.tsx`; E2E 28/28 lokal & produksi | — |
-| **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
+| **T6d** | Tab domain di halaman Capaian (seperti halaman Input) | **SELESAI** (lihat 2j) | `TabDomain.tsx`, `CapaianPage.tsx`, `InputPage.tsx`; E2E 28/28 lokal & produksi | Menu Capaian lama dihapus |
+| **T6d2** | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** (lihat 2k) | migrasi `000017`-`000018`; uji DB 68/68, E2E 14/14, RLS 67/75 | Menggantikan keputusan T6b soal cakupan Masul |
+| **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
+| **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
+| **T7** | Target dinamis (ajukan/setujui) | **BELUM** — langkah berikutnya, wajib LANGKAH 0 | Rute `/target` memakai `PlaceholderPage` | Tidak ada kode sebelum Mudir menjawab |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
-| **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
+| **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
 
 Catatan kejujuran status:
 - T5 ditutup atas permintaan Mudir pada 22-23 November 2026. Yang **belum** di T5 bukan cacat tersembunyi, melainkan bagian yang memang milik T8 (layar Hari Efektif).
-- T9 **belum** dikerjakan walaupun beberapa pengujian sudah dilakukan; pengujian yang ada bersifat manual dan tidak otomatis.
+- T9 baru **SEBAGIAN**: uji otomatis sudah banyak dan hijau (termasuk sidik jari database dan banding Excel penuh), tetapi belum ada proyek Supabase QA terpisah dan 8 sel matriks RLS masih SKIP (menunggu profil wali + target `diajukan`).
 
 ---
 
@@ -665,12 +687,13 @@ Migrasi berikutnya wajib memakai nomor `20261125000021_...` dan **tidak boleh** 
 
 ### RLS (Row Level Security)
 - **19 dari 19 tabel** memiliki `relrowsecurity = true` (termasuk `change_log` baru, hanya SELECT).
-- **44 kebijakan** tersebar di 18 tabel (`attendance`, `monthly_notes`, `progress_entries`, `targets` masing-masing 4; sisanya 2).
+- **45 kebijakan** tersebar di **19 tabel** (diperiksa langsung 25 Nov 2026): `attendance`, `monthly_notes`,
+  `progress_entries`, `targets` masing-masing 4; `change_log` 1 (hanya SELECT); sisanya 2.
 - Sejak T6d2 `progress_entries`, `attendance`, dan `monthly_notes` masing-masing **4 kebijakan**
   (insert/update seragam untuk ketiga domain, read, delete khusus Mudir/Admin). Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **33 fungsi** di skema `public` (`+ hapus_capaian(_info)`, `hapus_capaian_massal(_info)`, `catat_perubahan`) - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
+- **34 fungsi** di skema `public` (`+ hapus_capaian(_info)`, `hapus_capaian_massal(_info)`, `catat_perubahan`) - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)
@@ -725,9 +748,9 @@ Dari `src/App.tsx`:
 |---|---|---|
 | `/` | `Beranda` | Mengalihkan ke menu pertama sesuai role |
 | `/capaian` | pengalihan | ke `/capaian/alquran` |
-| `/capaian/:domain` | `CapaianPage` | Al Qur'an berfungsi; Wasilah/Ghayah menampilkan pesan "dikerjakan pada T6" |
+| `/capaian/:domain` | `CapaianPage` | Berfungsi untuk ketiga domain (tab Al Qur'an / Ilmu Wasilah / Ilmu Ghayah); tombol hapus capaian untuk Mudir/Admin (T6e) |
 | `/santri/:id` | `SantriPage` | Berfungsi |
-| `/input` | `InputPage` | Berfungsi (Al Qur'an saja) |
+| `/input` | `InputPage` | Berfungsi (tab Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) |
 | `/target` | `PlaceholderPage` | Belum diisi (T7) |
 | `/kurikulum` | `PlaceholderPage` | Belum diisi (T8) |
 | `/halaqah` | `PlaceholderPage` | Belum diisi (T8) |
@@ -745,7 +768,9 @@ Dari `src/App.tsx`:
 3. **69 capaian pada data dummy lebih kecil dari bulan sebelumnya** (Tahfidz 27, Kitabah 26, Tilawah 16; menyentuh 49 santri). Keputusan Mudir: dibiarkan karena dummy dan akan dihapus di T10. Di aplikasi, bidang seperti ini tampil dengan penanda ⚠ dan tidak ditanyakan bila tidak diubah.
 4. **Hari Efektif belum bisa diisi dari aplikasi** (T8). Akibatnya bulan 8-12 tidak diperiksa oleh notifikasi "data belum lengkap" selama `month_domain_settings` belum punya barisnya. Ini disengaja dan sudah disepakati (opsi B, 23 Nov 2026).
 5. **Kinerja memuat daftar item**: catatan sesi sebelumnya menyebut sekitar 4,7 detik untuk ±1.000 baris karena diambil per buku. **BELUM DIVERIFIKASI ulang** pada sesi ini.
-6. **2 kerentanan npm sedang** (`react-router`/`react-router-dom`; GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). Keduanya tertambal **hanya** di `7.18.0` (mayor 7); tidak ada versi 6.x tertambal. GHSA-337j tidak memengaruhi SPA ini (tanpa SSR); GHSA-wrjc tidak saat ini dieksploitasi (navigasi memakai rute internal tetap). Naik 6→7 dicoba di branch `chore/react-router-fix` (belum di-merge).
+6. ~~Kerentanan `react-router` 6.x~~ **SELESAI**: naik ke react-router 7.18.6 (branch `chore/react-router-fix` sudah di-merge 24 Nov 2026). Bila `npm audit` masih menyebut 2 kerentanan, periksa ulang dengan `npm audit --omit=dev` sebelum menyimpulkan.
 7. **Level 6 belum punya pengampu dan jadwal** (4 santri). Ini data, bukan kode; menunggu keputusan Mudir.
 8. ~~**Hari Efektif Rabiul Awwal hanya 3 hari** sedangkan bulan lain 15-21.~~ **BUKAN MASALAH (koreksi Mudir 24 Nov 2026):** 3 hari **BENAR** karena libur ~2 pekan lebih. Nilai 19 dibatalkan dan dipulihkan ke 3. Excel sumber tidak perlu diubah.
-9. **Pendaftaran (signup) publik di Supabase Auth masih aktif** (`disable_signup = false`). Belum bisa dimatikan dari lingkungan ini karena butuh Dashboard Supabase atau Management API PAT. **Menunggu tindakan Mudir:** Authentication → Providers → Email → matikan "Allow new users to sign up". Setelah nonaktif, akun hanya dibuat Admin.
+9. ~~Pendaftaran (signup) publik masih aktif~~ **SELESAI (24 Nov 2026)**: `disable_signup = true` lewat Management API; signup ditolak `422 signup_disabled` (diuji `test_auth_signup_closed.py` 9/9). Akun baru hanya dibuat Admin.
+10. **Log `change_log` tumbuh terus (append-only)**: 96 baris saat penutupan sesi T6e. Belum ada pemangkasan/retensi; bila perlu, keputusan Mudir (T9/T10).
+11. **8 sel matriks RLS masih SKIP**: menunggu profil `wali` dan contoh target berstatus `diajukan` (T9).
