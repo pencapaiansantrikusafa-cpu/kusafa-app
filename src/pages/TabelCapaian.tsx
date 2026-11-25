@@ -4,6 +4,7 @@ import PemilihTahunBulan from "../components/PemilihTahunBulan";
 import PemilihHalaqah, { ambilPengampu } from "../components/PemilihHalaqah";
 import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
+import { ambilSemua } from "../lib/ambil-semua";
 import { angka, type BarisLaporan } from "../lib/laporan";
 import TabelAlQuran from "./TabelAlQuran";
 import TabelWasilah, { type BarisHadir } from "./TabelWasilah";
@@ -88,12 +89,19 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       const halaqahAwal = h.data?.[0]?.id || "";
       setHalaqahId((prev) => prev || halaqahAwal);
 
-      // Bulan default: bulan terakhir yang punya capaian.
-      const { data: adaData } = await supabase
-        .from("progress_entries")
-        .select("month_id")
-        .in("month_id", semua.map((x) => x.id))
-        .limit(2000);
+      // Bulan default: bulan terakhir yang punya capaian pada domain ini.
+      // Supabase mengembalikan maksimal 1.000 baris per permintaan, jadi `.limit(2000)`
+      // dulu terpotong diam-diam begitu data bertambah. Sekarang memakai `ambilSemua`
+      // dan disaring ke domain ini supaya angkanya tidak tercampur domain lain.
+      const { data: adaData } = await ambilSemua<{ month_id: string }>((awal, jumlah) =>
+        supabase
+          .from("progress_entries")
+          .select("month_id, subjects!inner(domain)")
+          .eq("subjects.domain", domain)
+          .in("month_id", semua.map((x) => x.id))
+          .order("id", { ascending: true })
+          .range(awal, awal + jumlah - 1),
+      );
       if (!aktif) return;
       const punyaData = new Set((adaData ?? []).map((x) => x.month_id));
       const terakhir = [...semua].reverse().find((x) => punyaData.has(x.id));

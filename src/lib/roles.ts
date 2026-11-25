@@ -60,20 +60,28 @@ export interface NavItem {
 
 /**
  * Apakah role ini hanya boleh MENULIS capaian/kehadiran/catatan pada halaqah
- * yang diampu (docs/SPEC.md bagian 3)? Berlaku untuk Masul, Musyrif/ah, dan
- * Mudarris/ah. Hanya Mudir/Admin yang boleh menulis semua halaqah.
+ * yang diampu (docs/SPEC.md bagian 3)? Berdasarkan keputusan Mudir 25 Nov 2026
+ * (T6d2) hanya **Musyrif/ah dan Mudarris/ah**; ketiga **Masul** boleh menulis di
+ * SEMUA halaqah domainnya (lihat `bolehInputDomain`). Mudir/Admin semua halaqah.
  *
  * Database tetap penjaga terakhir (RLS `student_in_taught_halaqah`); ini hanya
  * agar tampilan tidak menawarkan halaqah di luar amanah.
  */
 export function hanyaHalaqahDiampu(role: AppRole): boolean {
-  return (
-    role === "masul_alquran" ||
-    role === "masul_wasilah" ||
-    role === "masul_ghayah" ||
-    role === "musyrif" ||
-    role === "mudarris"
-  );
+  return role === "musyrif" || role === "mudarris";
+}
+
+/**
+ * Apakah role ini boleh INPUT di SEMUA halaqah domain tertentu (bukan hanya yang diampu).
+ * Mudir/Admin: semua domain. Masul: hanya domainnya sendiri (keputusan Mudir 25 Nov 2026).
+ * Database tetap penjaga terakhir (policy `progress_*`, `attendance_*`, `notes_*`).
+ */
+export function bolehInputDomain(role: AppRole, domain: Domain): boolean {
+  if (role === "mudir" || role === "admin") return true;
+  if (role === "masul_alquran") return domain === "alquran";
+  if (role === "masul_wasilah") return domain === "wasilah";
+  if (role === "masul_ghayah") return domain === "ghayah";
+  return false;
 }
 
 /**

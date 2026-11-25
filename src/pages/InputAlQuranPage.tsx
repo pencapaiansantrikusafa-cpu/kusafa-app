@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../lib/auth-context";
-import { hanyaHalaqahDiampu, navItemsFor } from "../lib/roles";
+import { bolehInputDomain, hanyaHalaqahDiampu, navItemsFor } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import FormInputAlQuran, { type BarisInput, type BidangInput, type InfoLalu } from "./FormInputAlQuran";
 import KotakBelumLengkap from "../components/KotakBelumLengkap";
@@ -146,7 +146,9 @@ export default function InputAlQuranPage() {
       // Nama halaqah tidak dikirim server (T5c-2); dropdown memakai kode + pengampu.
       const semuaHalaqahData: Halaqah[] = (paket.halaqah ?? []).map((h) => ({ ...h, name: "" }));
       let daftarHalaqah = semuaHalaqahData;
-      if (profile && hanyaHalaqahDiampu(profile.role)) {
+      // Musyrif/ah hanya halaqah yang diampu; Masul Al Quran semua halaqah Al Qur'an
+      // (keputusan Mudir 25 Nov 2026). Database tetap penjaga terakhir.
+      if (profile && hanyaHalaqahDiampu(profile.role) && !bolehInputDomain(profile.role, DOMAIN)) {
         const diampu = halaqahDiampu(guru, profile.id);
         daftarHalaqah = daftarHalaqah.filter((x) => diampu.has(x.id));
       }

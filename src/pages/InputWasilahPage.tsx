@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../lib/auth-context";
-import { DOMAIN_LABEL, hanyaHalaqahDiampu, type Domain } from "../lib/roles";
+import { DOMAIN_LABEL, bolehInputDomain, hanyaHalaqahDiampu, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import KotakBelumLengkap from "../components/KotakBelumLengkap";
 import PemilihTahunBulan from "../components/PemilihTahunBulan";
@@ -105,7 +105,8 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
       // Masul/pengampu hanya ditawari halaqah yang diampu (aturan sama dengan Al Qur'an).
       const semuaHal: Halaqah[] = (paket.halaqah ?? []).map((h) => ({ ...h, name: "" }));
       let daftar = semuaHal;
-      if (profile && hanyaHalaqahDiampu(profile.role)) {
+      // Masul domain ini melihat semua halaqah domainnya; pengampu hanya yang diampu.
+      if (profile && hanyaHalaqahDiampu(profile.role) && !bolehInputDomain(profile.role, domain)) {
         const diampu = halaqahDiampu(
           g.map((x) => ({ halaqah_id: x.halaqah_id, profile_id: x.profile_id, full_name: x.full_name })),
           profile.id,
