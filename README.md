@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 24 November 2026, commit `35361ab` (T5c-2). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 25 November 2026, commit `fb3a708` (perbaikan bug label dropdown Input). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|
