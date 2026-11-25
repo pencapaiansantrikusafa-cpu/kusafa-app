@@ -67,6 +67,24 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
   Ingatkan Mudir bahwa repo harus dijadikan privat sebelum data asli dimuat.
 - Jangan mengubah logika aplikasi saat hanya diminta memperbarui dokumentasi.
 
+## Disiplin data dan uji (T6d3, perintah Mudir 25 November 2026)
+
+- **Database lokal dan produksi adalah SATU Supabase.** Tidak ada salinan terpisah. Setiap uji yang MENULIS
+  harus memulihkan barisnya **PERSIS** dan **lolos pemeriksaan sidik jari**.
+- **Sidik jari database wajib:** `python scripts/qa/db_fingerprint.py --simpan <berkas.json>` sebelum dan
+  sesudah setiap rangkaian uji, lalu `--banding <berkas.json>`. Jika hasilnya bukan "SAMA", rangkaian uji
+  **GAGAL** dan penyebabnya harus dicari dan dilaporkan. Rujukan sidik jari resmi: `docs/qa/db_fingerprint_*.json`.
+- **Uji yang menulis** (E2E, smoke, uji DB) hanya boleh menyentuh baris yang **dibuatnya sendiri**, menyimpannya
+  lebih dulu, memulihkannya di blok `finally`, dan tidak menghapus/mengubah baris lama. Ingat: sejak T6d2
+  menyimpan juga menimpa `entered_by`/`entered_at`, jadi jejak harus ikut dipulihkan.
+- **Smoke produksi sebaiknya HANYA MEMBACA.** Menulis di produksi hanya bila dipaksa oleh keputusan, dan
+  harus dengan pemulihan + sidik jari.
+- **Seed ulang menghidupkan kembali data yang sudah dihapus Mudir.** Berkas seed membuka dengan `truncate`
+  lalu mengisi semua yang ada di Excel. Setiap penghapusan data yang disetujui Mudir **wajib** punya skrip
+  di `scripts/db/fixes/` (aman dijalankan ulang) dan uji penjaga yang gagal bila data itu muncul lagi.
+- Uji banding Excel **penuh**: `python scripts/qa/compare_alquran_full_excel.py` (semua bulan, semua santri,
+  kehadiran + capaian). Sampel tidak cukup.
+
 ## Perintah
 ```
 npm install
@@ -75,6 +93,8 @@ npm run typecheck    # wajib hijau sebelum selesai
 npm run test         # uji aturan putaran (khatam/pengulangan)
 npm run build        # wajib berhasil sebelum selesai
 python scripts/check_repo_safety.py   # wajib lolos sebelum push
+python scripts/qa/db_fingerprint.py --simpan X.json   # sebelum/sesudah uji yang menulis
+python scripts/qa/db_fingerprint.py --banding X.json  # harus "SAMA"
 npm run seed:build   # membangun supabase/seed/*.sql dari data/source/*.xlsx
 npm run seed:users   # membuat akun dummy di Supabase Auth
 npm run db:sql -- <file.sql>   # menjalankan SQL ke database (atau: -- --query "select ...")

@@ -33,6 +33,12 @@ import time
 import psycopg
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import pulihkan_data  # noqa: E402
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import pulihkan_data  # noqa: E402
+
 BASE = os.environ.get("BASE_URL", "http://localhost:4173")
 HASIL = pathlib.Path(os.environ.get("HASIL", "docs/qa/t6b_e2e.json"))
 FOTO = pathlib.Path(os.environ.get("FOTO", "docs/qa/t6b_e2e"))
@@ -108,6 +114,7 @@ def main() -> int:  # noqa: C901
     FOTO.mkdir(parents=True, exist_ok=True)
     db = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
     mulai = dt.datetime.now(dt.timezone.utc)
+    asli = pulihkan_data.rekam(db)
 
     sebelum = db.execute(
         """select count(*) from public.progress_entries pe join public.subjects s on s.id = pe.subject_id
@@ -202,20 +209,15 @@ def main() -> int:  # noqa: C901
             catat("konsol bersih", not galat, galat=galat[:5])
             browser.close()
     finally:
-        # Pulihkan: hapus HANYA baris domain wasilah/ghayah yang dibuat uji ini.
-        db.execute(
-            """delete from public.progress_entries pe
-               using public.subjects s
-               where s.id = pe.subject_id and s.domain in ('wasilah','ghayah')
-                 and pe.entered_at >= %s""",
-            (mulai,),
-        )
+        # T6d3: pulihkan PERSIS (bukan hanya menghapus baris baru).
+        pulihkan_data.pulihkan(db, asli)
+        sama, beda = pulihkan_data.sama_dengan(db, asli)
         sesudah = db.execute(
             """select count(*) from public.progress_entries pe join public.subjects s on s.id = pe.subject_id
                where s.domain in ('wasilah','ghayah')"""
         ).fetchone()[0]
-        catat("data uji dipulihkan (jumlah baris sama seperti semula)", sesudah == sebelum,
-              sebelum=sebelum, sesudah=sesudah)
+        catat("data uji dipulihkan persis (sidik jari sama)", sama and sesudah == sebelum,
+              sebelum=sebelum, sesudah=sesudah, beda=beda)
 
     hasil = {
         "base": BASE,

@@ -1,6 +1,6 @@
 {
   "base": "https://kusafa-app.vercel.app",
-  "ran_at": "2026-11-25T12:16:23.526633",
+  "ran_at": "2026-11-25T15:26:16.357001",
   "hasil": [
     {
       "role": "mudir",
@@ -13,12 +13,6 @@
       "langkah": "notifikasi",
       "ok": true,
       "pesan": "kotak 'santri belum punya halaqah' tampil"
-    },
-    {
-      "role": "mudir",
-      "langkah": "simpan_dan_kembalikan",
-      "ok": true,
-      "pesan": "[berhasil] baris database baru=1 (bukti tersimpan); dikembalikan bersih=True"
     },
     {
       "role": "mudir",

@@ -163,14 +163,6 @@ def main() -> int:
             join public.hijri_months m on m.id = v.month_id
             where sj.domain = 'alquran'""").fetchall():
         capai_d[(str(nis), mno, sj)] = {"label": label, "pos": pos, "putaran": putaran}
-    # Santri resmi yang memang TIDAK ikut halaqah Al Qur'an (kasus uji 023/024, keputusan T6a).
-    ikut_alquran = {str(r[0]) for r in conn.execute("""
-            select distinct s.nis from public.students s
-            join public.halaqah_members hm on hm.student_id = s.id and hm.left_on is null
-            join public.halaqahs h on h.id = hm.halaqah_id and h.domain = 'alquran'""").fetchall()}
-    semua_santri = {str(r[0]) for r in conn.execute("select nis from public.students").fetchall()}
-    tanpa_alquran = semua_santri - ikut_alquran
-    print(f"# santri: {len(semua_santri)}, ikut Al Qur'an: {len(ikut_alquran)}, tanpa Al Qur'an: {sorted(tanpa_alquran)}")
     conn.close()
     bulan_pakai = [a.bulan] if a.bulan is not None else list(range(len(MONTHS)))
 
@@ -222,7 +214,7 @@ def main() -> int:
         + (f": {beda_abs[:6]}" if beda_abs else ""))
 
     # ---------- 5. capaian ----------
-    beda_c, tanpa_db, suai_manual, suai_nilai_buku, sel_resmi = [], [], [], [], []
+    beda_c, tanpa_db, suai_manual, suai_nilai_buku = [], [], [], []
     # Santri resmi yang memang TIDAK ikut halaqah Al Qur'an (keputusan T6a) wajar tidak punya
     # capaian Al Qur'an. Selain itu, capaian yang ada di Excel WAJIB ada di DB.
     for (n, b, sj), e in capai_e.items():
@@ -230,11 +222,8 @@ def main() -> int:
             continue
         d = capai_d.get((n, b, sj))
         if d is None:
-            # Satu-satunya sel yang wajar tidak ada di DB: capaian Kitabah Shafar santri
-            # 1443.dummy-nis.024 di Excel. Santri itu hanya ikut Al Qur'an (keputusan T6a:
-            # kasus uji resmi), padahal baris capaian Kitabah-nya ada di sheet Al Qur'an.
-            # Seed tidak menyimpannya karena capaian disimpan per halaqah. JANGAN dikarang.
-            sel_resmi.append({"nis": n, "bulan": MONTHS[b], "mapel": sj, "excel": e["teks"]})
+            # Capaian yang ada di Excel WAJIB ada di DB. Tidak ada pengecualian.
+            tanpa_db.append((n, b, sj, e["teks"]))
             continue
         urai = uraikan_label(e["teks"])
         if urai is None:
@@ -273,12 +262,10 @@ def main() -> int:
         + (f"; angka manual Excel berbeda dari posisi kumulatif pada {len(suai_manual)} sel (dicatat, bukan galat)"
            if suai_manual else "")
         + (f"; buku dengan nilai file dropdown != posisi DB (sah, memakai value_offset): {len(suai_nilai_buku)}"
-           if suai_nilai_buku else "")
-        + (f"; sel untuk santri yang tidak ikut halaqah Al Qur'an (kasus uji resmi): "
-           f"{[x['nis'] + ' ' + x['bulan'] + ' ' + x['mapel'] for x in sel_resmi]}" if sel_resmi else ""),
+           if suai_nilai_buku else ""),
         {"beda": beda_c[:20], "tanpa_db": tanpa_db,
          "angka_manual_berbeda": len(suai_manual), "santri_excel": len(nis_dikenal),
-         "buku_beda_nilai": suai_nilai_buku, "sel_santri_tanpa_halaqah": sel_resmi})
+         "buku_beda_nilai": suai_nilai_buku})
 
     # ---------- 6. per bulan: ringkasan supaya jelas semua bulan tercakup ----------
     ringkas = []

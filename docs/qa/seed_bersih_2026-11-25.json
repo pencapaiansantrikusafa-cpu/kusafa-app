@@ -1,6 +1,11 @@
 {
   "tests": [
     {
+      "uji": "1a_jumlah_capaian_2039",
+      "ok": true,
+      "detail": "progress_entries: 2039 (harus 2.039 = 2.036 seed + 3 baris uji Mudir)"
+    },
+    {
       "uji": "1_ramadhan_tanpa_capaian_0",
       "ok": true,
       "detail": "baris kehadiran Ramadhan tanpa capaian: 0 (harus 0). Bila > 0, seed dijalankan ulang: jalankan scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql"

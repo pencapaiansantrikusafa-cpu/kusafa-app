@@ -124,6 +124,10 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | Berkas | Fungsi |
 |---|---|
 | `scripts/check_repo_safety.py` | Memeriksa repo sebelum commit: menolak `.env`, `.xlsx`, `.zip`, seed SQL, `users.csv`, token, kunci rahasia. |
+| `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` | **T6d3** (keputusan Mudir): hapus baris kehadiran Ramadhan tanpa capaian. Aman dijalankan ulang; jalankan sesudah seed. |
+| `scripts/db/fixes/2026-11-25_pulihkan_shafar.sql` | **T6d3**: pulihkan izin/sakit/alpha Shafar (37 baris berbeda) sesuai seed/Excel. |
+| `scripts/db/fixes/2026-11-25_pulihkan_capaian_024.sql` | **T6d3**: masukkan kembali 1 baris seed yang hilang (024 Kitabah Dzul Qa'dah "Menyalin - 25"). |
+| `scripts/db/fixes/2026-11-25_pulihkan_data_seed.py` | **T6d3**: pemulihan umum baris seed yang hilang/berbeda + jejak. `--jalankan` untuk menulis. |
 | `scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql` | **DUMMY**: Hari Efektif Wasilah & Ghayah = Al Qur'an bulan 1-7 + baris kehadiran 0/0/0. Idempoten, tidak menimpa nilai yang ada. Wajib diganti data asli. |
 | `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql` | Pemulihan Hari Efektif Rabiul Awwal 19 → 3 (koreksi Mudir). |
 | `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | **DIBATALKAN** — skrip 3→19 keliru; hanya jejak riwayat, diberi penghenti keras. |
@@ -132,6 +136,10 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/create_auth_users.py` | Membuat akun dummy di Supabase Auth (memakai kunci service role di `.env.local`, hanya lokal). |
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
+| `scripts/qa/db_fingerprint.py` | **T6d3**: sidik jari database (18 tabel, jumlah baris + checksum md5). `--simpan` sebelum uji, `--banding` sesudah; hasil wajib SAMA. Hanya membaca. |
+| `scripts/qa/pulihkan_data.py` | **T6d3**: simpan salinan penuh `progress_entries`/`attendance`/`monthly_notes` lalu pulihkan persis (nilai + jejak). Dipakai semua uji yang menulis. |
+| `scripts/qa/test_seed_bersih.py` | **T6d3**: uji penjaga sesudah seed (capaian 2.039, Ramadhan tanpa capaian 0, kehadiran 606/756/749, Wasilah/Ghayah 0, catatan 0). Hanya membaca. |
+| `scripts/qa/compare_alquran_full_excel.py` | **T6d3**: banding Excel **PENUH** (109 santri, semua bulan 1-7, kehadiran + capaian). Hanya membaca. |
 | `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi (67 OK / 8 SKIP); tiap probe transaksi sendiri + ROLLBACK — termasuk baris sasaran uji hapus yang dibuat **di dalam** transaksi agar tidak tertinggal. |
 | `scripts/qa/test_t6d2_masul_input.py` | T6d2 (68 uji, transaksi + ROLLBACK): ketiga Masul boleh insert/update capaian+kehadiran+catatan di semua halaqah domainnya, ditolak di domain lain/bulan terkunci/bulan 0, tidak boleh hapus; jejak `entered_by`/`updated_by`; hitungan baris per domain tidak berubah. |
 | `scripts/qa/test_t6d2_e2e_masul.py` | T6d2 E2E (14 uji): ketiga Masul melihat semua halaqah domainnya, domain lain dialihkan, Simpan menulis capaian dengan `entered_by`, Musyrif tetap satu halaqah, data & jejak dipulihkan. |

@@ -89,21 +89,50 @@ def main() -> int:  # noqa: C901
     db = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
     mulai = dt.datetime.now(dt.timezone.utc)
 
-    jml_sebelum = {
-        t: db.execute(f"select count(*) from public.{t}").fetchone()[0]
-        for t in ("progress_entries", "attendance", "monthly_notes")
+    # Sidik jari LENGKAP tiga tabel yang mungkin disentuh: salinan semua kolom,
+    # supaya pemulihan persis (nilai, entered_by/entered_at, updated_by/updated_at).
+    # Sejak T6d3: uji yang menulis wajib memulihkan baris PERSIS dan lolos sidik jari.
+    TABEL_UJI = ("progress_entries", "attendance", "monthly_notes")
+    KUNCI = {
+        "progress_entries": ("id",),
+        "attendance": ("student_id", "month_id", "domain"),
+        "monthly_notes": ("student_id", "month_id", "domain"),
     }
-    # Jejak kehadiran/catatan yang mungkin disentuh (upsert memperbarui baris yang ada).
-    jejak_sebelum = {
-        "attendance": {
-            (r[0], str(r[1]), r[2]): r[3]
-            for r in db.execute("select student_id, month_id, domain, entered_by from public.attendance").fetchall()
-        },
-        "monthly_notes": {
-            (r[0], str(r[1]), r[2]): r[3]
-            for r in db.execute("select student_id, month_id, domain, entered_by from public.monthly_notes").fetchall()
-        },
-    }
+
+    def rekam(tabel: str) -> dict:
+        kol = [r[0] for r in db.execute(
+            "select column_name from information_schema.columns where table_schema='public' "
+            "and table_name=%s order by ordinal_position", (tabel,)).fetchall()]
+        rows = db.execute(f'select {", ".join(kol)} from public.{tabel}').fetchall()
+        hasil = {}
+        for r in rows:
+            k = tuple(str(r[kol.index(x)]) for x in KUNCI[tabel])
+            hasil[k] = dict(zip(kol, r))
+        return hasil
+
+    asli = {t: rekam(t) for t in TABEL_UJI}
+    jml_sebelum = {t: len(asli[t]) for t in TABEL_UJI}
+
+    def pulihkan(tabel: str) -> None:
+        kunci = KUNCI[tabel]
+        asli_t = asli[tabel]
+        kol = list(next(iter(asli_t.values())).keys()) if asli_t else []
+        sekarang = rekam(tabel)
+        # 1. Hapus baris yang TIDAK ada sebelumnya (dibuat uji ini).
+        for k in sekarang:
+            if k not in asli_t:
+                kondisi = " and ".join(f"{x}=%s" for x in kunci)
+                db.execute(f"delete from public.{tabel} where {kondisi}", tuple(k))
+        # 2. Kembalikan nilai baris lama yang berubah (termasuk jejak).
+        for k, v in asli_t.items():
+            if sekarang.get(k) == v:
+                continue
+            kondisi = " and ".join(f"{x}=%s" for x in kunci)
+            db.execute(
+                f"update public.{tabel} set {', '.join(f'{c}=%s' for c in kol)} where {kondisi}",
+                tuple(v[c] for c in kol) + tuple(k),
+            )
+
 
     try:
         with sync_playwright() as p:
@@ -254,38 +283,16 @@ def main() -> int:  # noqa: C901
             catat("konsol bersih", not galat, galat=galat[:5])
             browser.close()
     finally:
-        # Pulihkan: hapus AKHIR baris yang dibuat uji ini pada tabel yang disentuhnya.
-        db.execute("delete from public.progress_entries where entered_at >= %s", (mulai,))
-        db.execute("delete from public.monthly_notes where entered_at >= %s", (mulai,))
-        # Kembalikan jejak baris yang sudah ada sebelumnya (jangan sentuh yang bukan buatan uji).
-        for (st, bulan_s, d), eb in jejak_sebelum["attendance"].items():
-            db.execute(
-                "update public.attendance set entered_by=%s where student_id=%s and month_id=%s and domain=%s",
-                (eb, st, bulan_s, d),
-            )
-        for (st, bulan_s, d), eb in jejak_sebelum["monthly_notes"].items():
-            db.execute(
-                "update public.monthly_notes set entered_by=%s where student_id=%s and month_id=%s and domain=%s",
-                (eb, st, bulan_s, d),
-            )
-        jml_sesudah = {
-            t: db.execute(f"select count(*) from public.{t}").fetchone()[0]
-            for t in ("progress_entries", "attendance", "monthly_notes")
-        }
-        jejak_sesudah = {
-            "attendance": {
-                (r[0], str(r[1]), r[2]): r[3]
-                for r in db.execute("select student_id, month_id, domain, entered_by from public.attendance").fetchall()
-            },
-            "monthly_notes": {
-                (r[0], str(r[1]), r[2]): r[3]
-                for r in db.execute("select student_id, month_id, domain, entered_by from public.monthly_notes").fetchall()
-            },
-        }
-        catat("data uji dipulihkan (jumlah & jejak sama)", jml_sebelum == jml_sesudah and jejak_sebelum == jejak_sesudah,
+        # Pulihkan PERSIS: hapus baris baru, kembalikan nilai + jejak baris lama.
+        for t in TABEL_UJI:
+            pulihkan(t)
+        sesudah = {t: rekam(t) for t in TABEL_UJI}
+        jml_sesudah = {t: len(sesudah[t]) for t in TABEL_UJI}
+        catat("data uji dipulihkan (seluruh nilai & jejak sama)",
+              asli == sesudah,
               sebelum=jml_sebelum, sesudah=jml_sesudah,
-              jejak_beda={k: sum(1 for x in jejak_sebelum[k] if jejak_sebelum[k].get(x) != jejak_sesudah[k].get(x))
-                          for k in jejak_sebelum})
+              baris_beda={t: sum(1 for k in set(asli[t]) | set(sesudah[t]) if asli[t].get(k) != sesudah[t].get(k))
+                          for t in TABEL_UJI})
 
     hasil = {
         "base": BASE,

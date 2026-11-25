@@ -84,19 +84,20 @@
       "galat": []
     },
     {
-      "uji": "data uji dipulihkan (jumlah & jejak sama)",
+      "uji": "data uji dipulihkan (seluruh nilai & jejak sama)",
       "ok": true,
       "sebelum": {
-        "progress_entries": 2038,
-        "attendance": 2117,
+        "progress_entries": 2039,
+        "attendance": 2111,
         "monthly_notes": 0
       },
       "sesudah": {
-        "progress_entries": 2038,
-        "attendance": 2117,
+        "progress_entries": 2039,
+        "attendance": 2111,
         "monthly_notes": 0
       },
-      "jejak_beda": {
+      "baris_beda": {
+        "progress_entries": 0,
         "attendance": 0,
         "monthly_notes": 0
       }

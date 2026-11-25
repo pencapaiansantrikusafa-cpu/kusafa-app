@@ -38,7 +38,7 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 | Kolom H (hadir) di Excel | Diabaikan; dihitung aplikasi | 21 Nov 2026 |
 | Sisa penulisan "Hitung" | Dikembalikan menjadi "Hisab" | 21 Nov 2026 |
 | Urutan buku Wasilah dan Ghayah | Mengikuti urutan baris sheet (dikonfirmasi) | 21 Nov 2026 |
-| 7 baris `attendance` Ramadhan tanpa capaian (izin/sakit/alpha semuanya 0) | **Dihapus** 23 Nov 2026 atas persetujuan Mudir. Presensi 606 → 599 | 23 Nov 2026 |
+| 7 baris `attendance` Ramadhan tanpa capaian (izin/sakit/alpha semuanya 0) | **Dihapus** 23 Nov 2026 atas persetujuan Mudir. Presensi 606 → 599. **Muncul lagi** karena seed dijalankan ulang 24 Nov (penghapusan lama tidak pernah jadi skrip); **dihapus lagi 25 Nov** lewat `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` + uji penjaga `test_seed_bersih.py` | 25 Nov 2026 |
 | Ringkasan kehadiran menampilkan "0" untuk bulan yang belum diisi | Diperbaiki: kini tampil "—" (kosong bukan 0) | 23 Nov 2026 |
 | Item dropdown terduplikasi (kunci ganda React) | Diperbaiki: memo tidak lagi mengubah state | 23 Nov 2026 |
 | Hari Efektif Rabiul Awwal (domain Al Qur'an) | **3 hari adalah BENAR** (ada libur ~2 pekan lebih). Nilai 19 sempat diterapkan keliru lalu **dikembalikan ke 3** 24 Nov 2026 (lihat 3a) | 24 Nov 2026 |
@@ -85,8 +85,8 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 6. **`is_locked` belum pernah `true`.** Fitur kunci bulan belum dipakai pada data uji.
 7. **Riwayat capaian berhenti di Rabiul Akhir**, dan Hari Efektif juga berhenti di bulan itu. Bulan Jumadal Ula dan sesudahnya kosong (bukan 0).
 8. **Hari Efektif Syawwal 1447 = 4 hari dan Rabiul Awwal = 3 hari** adalah **data SAH** (bulan pembuka tahun ajaran & bulan dengan libur ~2 pekan lebih). **Bukan kesalahan**, jangan diubah tanpa konfirmasi Mudir (lihat `AGENTS.md`). Hanya 7 baris `month_domain_settings` (bulan 1–7); bulan 8–12 dan Wasilah/Ghayah belum ada (layar T8).
-9. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian masih ada di DB** (laporan T6d2, 25 Nov 2026), padahal bagian 3 mencatat penghapusannya sudah disetujui 23 Nov 2026 (606 → 599). Tidak ada uji yang bergantung padanya. **Menunggu keputusan: hapus lagi atau biarkan.**
-10. **Nilai izin/sakit/alpha Shafar (bulan 5) Al Qur'an berbeda dari berkas seed** (36 baris > 0 di seed, 0 di DB). Tidak ada uji untuk bulan itu dan tidak ada jejak perubahan (kolom jejak baru ada sejak T6d2). **Menunggu keputusan: ikuti seed atau pertahankan DB.**
+9. ~~**7 baris `attendance` Ramadhan tanpa capaian** dan **nilai Shafar berbeda dari seed**~~ **SELESAI 25 Nov 2026 (keputusan Mudir, T6d3):** keduanya dipulihkan/dihapus lewat skrip terdokumentasi di `scripts/db/fixes/`; lihat `docs/STATUS.md` 2l. Penyebab Ramadhan: seed dijalankan ulang. Penyebab Shafar: perubahan manual di luar repo sebelum T6d2 (tidak ada jejak, tidak dapat dibuktikan lebih jauh).
+10. **Kolom H (Hadir) di Excel tidak selalu = HE - (S+I+A).** 10 sel berbeda, semuanya bulan Muharram (mis. HE 19, H 7, S+I+A 1). Aplikasi memang **mengabaikan kolom H** dan menghitung Hadir sendiri (keputusan yang sudah ada), jadi bukan galat aplikasi; dicatat oleh uji penuh `compare_alquran_full_excel.py`.
 11. **`students_without_halaqah` mengembalikan semua domain** hanya untuk koneksi admin tanpa JWT (skrip lokal `postgres`, PostgREST `service_role`). Pengguna aplikasi ber-JWT selalu lewat `can_manage(domain)`. Diuji `scripts/qa/test_students_without_halaqah_p6.py`.
 
 ## 6. Bulan 0 (Data Awal) - aturan final dan bukti verifikasi 24 November 2026

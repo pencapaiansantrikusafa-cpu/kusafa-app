@@ -26,6 +26,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T6a | Tabel capaian Wasilah & Ghayah | **SELESAI** (STATUS 2h) | `TabelWasilah.tsx`, `TabelCapaian.tsx`, `test_t6a_tabel.py` 14/14 |
 | T6b | Input Wasilah & Ghayah | **SELESAI** (STATUS 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `test_t6b_*` 29/29 & 14/14 |
 | T6d2 | Seragamkan hak input Masul + jejak pengisi | **SELESAI** (STATUS 2k) | migrasi `000017`-`000018`, `roles.ts` (`bolehInputDomain`), `test_t6d2_*` 68/68 & 14/14, matriks RLS 67/75 |
+| T6d3 | Pembersihan data + disiplin uji | **SELESAI** (STATUS 2l) | 3 skrip fix (`hapus_kehadiran_ramadhan`, `pulihkan_shafar`, `pulihkan_capaian_024`, `pulihkan_data_seed.py`), `db_fingerprint.py`, `pulihkan_data.py`, `compare_alquran_full_excel.py`, `test_seed_bersih.py` |
 | T6c | "Bulan lalu" tampil sejak awal | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 |
 | T6d | Tab domain di halaman Capaian (seperti Input) | **SELESAI** (STATUS 2j) | `TabDomain.tsx`, `CapaianPage.tsx`; E2E 28/28 lokal & produksi |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
@@ -162,17 +163,23 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - **Uji:** `test_t6d2_masul_input.py` 68/68, `test_t6d2_e2e_masul.py` 14/14, matriks RLS 67 OK / 8 SKIP
   / 0 GAGAL, seluruh uji lama hijau (rincian di STATUS 2k).
 
-### 3g. Catatan data terbuka (perlu keputusan Mudir, bukan keputusan final)
+### 3g. Keputusan Mudir 25 November 2026 (T6d3) - sudah final
 
-1. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian** masih ada di database, padahal
-   `docs/DATA-NOTES.md` butir 3 mencatat penghapusannya (606 → 599) sudah disetujui 23 Nov 2026.
-   Tidak tersentuh T6d2. Pilihan: hapus lagi atau pertahankan.
-2. **Nilai izin/sakit/alpha Shafar (bulan 5)** di database (0) berbeda dari berkas seed (36 baris > 0).
-   Tidak ada uji yang memeriksa bulan itu; tidak ada jejak perubahan (kolom jejak baru ada sejak T6d2).
-   Pilihan: ikuti seed atau pertahankan database.
-3. **3 baris `progress_entries` + 7 baris `attendance` bulan Jumadal Ula** bertanda `entered_by = Admin`
-   (25 Nov 2026, 02:14-02:16 UTC) adalah percobaan Mudir sendiri, **tidak disentuh**. Perlu konfirmasi
-   apakah boleh dihapus sebelum data asli masuk (T8/T10).
+- **7 baris kehadiran Ramadhan tanpa capaian: HAPUS lagi** (sesuai persetujuan 23 Nov). Penyebab
+  kebangkitan: seed dijalankan ulang 24 Nov; penghapusan lama tidak pernah jadi skrip. Sekarang ada
+  `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` + uji penjaga `test_seed_bersih.py`.
+- **Nilai izin/sakit/alpha Shafar: IKUTI seed/Excel.** Dipulihkan lewat 37 baris yang berbeda
+  (`scripts/db/fixes/2026-11-25_pulihkan_shafar.sql`), bukan seed penuh. Penyebab perbedaan tidak
+  dapat dibuktikan (perubahan manual di luar repo sebelum T6d2; tidak ada jejak); dilaporkan.
+- **Rekonsiliasi 2.039 vs 2.038:** selisih = 1 baris `1443.dummy-nis.024` Kitabah Dzul Qa'dah
+  "Menyalin - 25", hilang dalam sesi T6d2. Dipulihkan dengan nilai seed asli
+  (`scripts/db/fixes/2026-11-25_pulihkan_capaian_024.sql`). Total capaian kembali **2.039**.
+- **Uji banding Excel penuh** (`compare_alquran_full_excel.py`, 7/7) menggantikan sampel.
+- **Disiplin sidik jari** wajib: `scripts/qa/db_fingerprint.py` sebelum/sesudah setiap uji yang
+  menulis; hasil wajib SAMA. **Smoke produksi hanya membaca** (sejak T6d3).
+- **Catatan terbuka:** 3 baris `progress_entries` + 7 baris `attendance` bulan Jumadal Ula
+  (`entered_by = Admin`, 25 Nov 02:14-02:16 UTC) adalah percobaan Mudir, **tidak disentuh**.
+  Konfirmasi apakah boleh dihapus sebelum data asli (T8/T10).
 
 Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_years`; semua dropdown `DropdownCari` (panel layang `z-60`); tahun & bulan dua dropdown terpisah; label item ber-awalan nama bidang; daftar panjang wajib `ambilSemua`; frontend hanya `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`; migrasi lama **tidak diubah** (berikutnya `20261121000010_...`).
 

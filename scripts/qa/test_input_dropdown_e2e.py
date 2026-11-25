@@ -29,6 +29,12 @@ import time
 import psycopg
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import pulihkan_data  # noqa: E402
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import pulihkan_data  # noqa: E402
+
 BASE = os.environ.get("BASE_URL", "http://localhost:4173")
 HASIL = pathlib.Path(os.environ.get("HASIL", "docs/qa/e2e_input_dropdown.json"))
 FOTO = pathlib.Path(os.environ.get("FOTO", "docs/qa/bug_dropdown"))
@@ -95,6 +101,7 @@ def main() -> int:
     db = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
     hasil: dict = {"base": BASE, "langkah": [], "lulus": 0, "gagal": []}
     mulai = dt.datetime.now(dt.timezone.utc)
+    asli_semua = pulihkan_data.rekam(db)
 
     # Baris acuan: santri pertama (urut nama) di HLQ-PA-1, bulan 6, bidang Tilawah.
     kode_hal, bulan_no = "HLQ-PA-1", 6
@@ -264,18 +271,14 @@ def main() -> int:
             catat("konsol bersih", not galat_konsol, galat=galat_konsol[:5])
             browser.close()
     finally:
-        # Pulihkan baris yang diubah uji ini (jangan menyentuh baris lain).
-        db.execute(
-            "update public.progress_entries set item_id=%s, putaran=%s, entered_by=%s, entered_at=%s where id=%s",
-            (asal[2], asal[3], asal[4], asal[5], asal[0]),
-        )
-        # Buang baris baru bila ada (dibuat setelah uji mulai dan bukan bagian data awal).
-        db.execute("delete from public.progress_entries where entered_at >= %s and id <> %s", (mulai, asal[0]))
+        # T6d3: pulihkan PERSIS seluruh tiga tabel uji (bukan hanya satu baris).
+        # Sebelumnya baris `delete ... where entered_at >= mulai` menghapus 20 baris seed
+        # yang disentuh app saat uji (jejaknya ikut bergeser) - lihat STATUS T6d3.
+        pulihkan_data.pulihkan(db, asli_semua)
+        sama, beda = pulihkan_data.sama_dengan(db, asli_semua)
         jml_akhir = db.execute("select count(*) from public.progress_entries").fetchone()[0]
-        hasil["pemulihan"] = {"jumlah_awal": jml_awal, "jumlah_akhir": jml_akhir, "baris_dipulihkan": str(asal[0])}
-        # Verifikasi pemulihan.
-        cek = db.execute("select item_id, putaran, entered_by, entered_at from public.progress_entries where id=%s", (asal[0],)).fetchone()
-        hasil["pemulihan"]["cocok"] = cek == (asal[2], asal[3], asal[4], asal[5]) and jml_akhir == jml_awal
+        hasil["pemulihan"] = {"jumlah_awal": jml_awal, "jumlah_akhir": jml_akhir,
+                              "cocok": sama and jml_akhir == jml_awal, "beda": beda}
 
     hasil["ringkasan"] = f"{hasil['lulus']} LULUS, {hasil['gagal']}"
     HASIL.parent.mkdir(parents=True, exist_ok=True)

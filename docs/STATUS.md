@@ -448,6 +448,91 @@ Rumus Hadir dan view **tidak berubah**. Jejak siapa mengisi/mengubah wajib terca
 - Tangkapan layar: `docs/qa/t6d2/` (`masul_alquran_simpan.png`, `masul_wasilah_simpan.png`,
   `masul_ghayah_simpan.png`).
 
+## 2l. T6d3 - Pembersihan data dan disiplin uji (25 November 2026)
+
+**Perintah kerja Mudir:** hapus lagi 7 baris kehadiran Ramadhan + cari penyebabnya; pulihkan
+nilai Shafar sesuai seed/Excel + laporkan penyebab perbedaannya; rekonsiliasi 2.039 vs 2.038;
+ubah uji banding Excel menjadi penuh; tegakkan disiplin sidik jari database.
+
+### 1. 7 baris kehadiran Ramadhan - DIHAPUS lagi, penyebab ditemukan
+- **Penyebab:** penghapusan 23 Nov 2026 **tidak pernah dibuat sebagai skrip** (hanya dicatat di
+  DATA-NOTES/CHANGELOG). Saat penyiapan sesi 24 Nov (sebelum commit pertama pukul 10:04), seed
+  dijalankan ulang: `02_school_data.sql` membuka dengan `truncate public.attendance ...` lalu mengisi
+  semua baris yang ada di Excel, termasuk 7 baris Ramadhan. Tidak ada uji yang menulis ke tabel
+  `attendance` (diperiksa satu per satu di `scripts/qa`), jadi bukan uji.
+- **Perbaikan permanen:** `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` (aman dijalankan
+  ulang; hanya menghapus baris Ramadhan Al Qur'an **tanpa capaian**) + uji penjaga
+  `scripts/qa/test_seed_bersih.py` (gagal bila baris itu muncul lagi). Dijalankan: 7 baris terhapus,
+  kehadiran Al Qur'an **613 → 606**.
+
+### 2. Nilai Shafar (izin/sakit/alpha) - DIPULIHKAN sesuai seed/Excel
+- **Yang terbukti:** Excel dan seed sama (36 baris > 0; total S 24, I 43, A 6). Di database ke-36
+  baris itu 0/0/0. **Tidak ada skrip/uji di repo yang menulis ke `attendance`** (semua hanya membaca).
+  Tidak ada jejak perubahan: `updated_by`/`updated_at` baru ada sejak migrasi T6d2, dan koneksi tanpa
+  JWT tidak mengisi `entered_by`. Semua baris Shafar bertanggal seed (22 Nov 04:10, `entered_by` NULL):
+  baris tidak dibuat ulang, **nilainya** yang diubah. **Kesimpulan: perubahan manual di luar repo
+  sebelum T6d2; sebab pastinya tidak dapat dibuktikan dari data yang tersedia.**
+- **Tindakan:** `scripts/db/fixes/2026-11-25_pulihkan_shafar.sql` mengubah **hanya 37 baris** yang
+  berbeda (36 bernilai > 0 + 1 bernilai 0); seed penuh tidak dijalankan. Diverifikasi oleh uji banding
+  Excel penuh (semua 599 pasangan santri-bulan lolos) dan uji `--bulan 5` (93 santri, 0 berbeda).
+
+### 3. Rekonsiliasi 2.039 vs 2.038 - SELISIH 1 BARIS DITEMUKAN
+- Selisihnya **tepat satu baris**: `1443.dummy-nis.024`, **Kitabah Dzul Qa'dah (bulan 2)**, item
+  **"Menyalin - 25"** (id seed `6352df74-...`). Baris itu ada di seed **dan** di Excel, tetapi tidak ada
+  di DB. Seluruh baris seed lain (termasuk tetangga 024 di bulan 0/3/4/5/6/7) utuh.
+- **Bukti waktu:** laporan `docs/qa/e2e_input_dropdown.json` (25 Nov 11:08) mencatat 2.039 baris;
+  pada akhir T6d2 menjadi 2.038. Kolom jejak belum ada saat itu, jadi tidak ada catatan siapa/kapan.
+  Kemungkinan paling masuk akal: SQL ad-hoc saat penyelidikan T6d2 menghapus baris berdasarkan kunci
+  alami di luar transaksi. **Tidak dikarang:** baris dipulihkan dengan nilai seed asli
+  (`scripts/db/fixes/2026-11-25_pulihkan_capaian_024.sql`), bukan dibuat baru.
+- **Tambahan temuan T6d3:** versi lama `test_input_dropdown_e2e.py` menghapus semua baris dengan
+  `entered_at >= mulai`; saat dijalankan hari ini ia menghapus **20 baris** seed (19 baris Rabiul Awwal
+  + 1 baru) → 2.019. Skrip diuji ulang setelah diperbaiki, dan 20 baris dipulihkan dengan
+  `scripts/db/fixes/2026-11-25_pulihkan_data_seed.py`. Capaian kembali **2.039**.
+- **Rekap:** 2.036 seed + 3 baris Jumadal Ula (percobaan Mudir, tidak disentuh) = **2.039**.
+
+### 4. Uji banding Excel menjadi PENUH
+`scripts/qa/compare_alquran_full_excel.py` **7/7 PASS** — 109 santri, **599 pasangan santri-bulan**
+(Data Awal + Syawwal..Rabiul Akhir), **1.673 sel capaian**:
+1. kelengkapan (tidak ada santri-bulan Excel yang terlewat);
+2. Hari Efektif sama;
+3. Hadir DB = HE - (izin+sakit+alpha);
+4. izin/sakit/alpha sama dengan Excel (semua bulan);
+5. label capaian sama + posisi DB = `item_position` (+ putaran; `value_offset` buku dihormati);
+6. ringkasan per bulan (jumlah santri/sel capaian).
+Dua hal DICATAT, bukan galat (di luar T6d3): kolom H Excel tidak selalu = HE-(S+I+A) (aplikasi memang
+mengabaikan kolom H, 10 sel berbeda); angka manual Excel sering beda dari posisi kumulatif (1.482 sel).
+
+### 5. Disiplin uji & sidik jari database
+- **`scripts/qa/db_fingerprint.py`** (baru): jumlah baris + checksum md5 seluruh isi **18 tabel**.
+  Dipakai `--simpan` sebelum dan `--banding` sesudah setiap rangkaian uji; hasil wajib **SAMA**.
+- **`scripts/qa/pulihkan_data.py`** (baru): menyimpan salinan penuh tiga tabel uji lalu memulihkan
+  **persis** (hapus baris baru, kembalikan nilai + `entered_by`/`entered_at`/`updated_by`/`updated_at`).
+- Uji yang menulis sudah memakainya: `test_t6d2_e2e_masul.py`, `test_t6b_e2e.py`,
+  `test_input_dropdown_e2e.py`, `smoke_e2e.py`. **Smoke produksi kini HANYA MEMBACA**
+  (`DATA_UJI` default 0 bila BASE_URL Vercel).
+- Bukti: sidik jari identik (16.478 baris, 18 tabel) sebelum/sesudah E2E T6d2, T6b, dropdown,
+  smoke lokal, dan smoke produksi.
+- `AGENTS.md` bagian "Disiplin data dan uji" ditambahkan.
+
+### 6. Hasil uji T6d3
+`npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; Excel penuh **7/7**; Excel Rabiul
+Awwal 7/7; data awal 5/5; no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP); signup 9/9; T6a 14/14;
+T6b DB 29/29; T6b E2E 14/14; T6d2 DB 68/68; T6d2 E2E 14/14; dropdown E2E 10/10; matriks RLS 67/75
+(8 SKIP); seed bersih 5/5; smoke lokal 43/43; smoke produksi 42/42 (baca saja).
+
+### 7. Usulan (BELUM dibuat, menunggu persetujuan Mudir): Supabase khusus QA sebelum T9/T10
+**Masalah:** database lokal = produksi, jadi satu uji yang salah bisa merusak data dummy (atau nanti
+data asli). **Usulan:** buat **satu proyek Supabase kedua** (`kusafa-qa`) khusus uji.
+- Langkah: (1) buat proyek baru region Singapore; (2) terapkan semua migrasi + seed dummy; (3) buat
+  akun dummy (`npm run seed:users`) di proyek itu; (4) `.env.qa` berisi URL/anon key QA — **jangan
+  pernah** di-commit; (5) skrip uji menerima `QA_DATABASE_URL`; (6) Vercel preview (opsional) memakai
+  QA env; (7) jalankan seluruh rangkaian uji di QA + sidik jari di sana; produksi hanya smoke baca.
+- Dampak: biaya satu proyek Supabase (free tier cukup untuk 109 santri dummy); data produksi tidak
+  pernah ditulis uji; perlu disiplin `.env.qa` (rahasia tidak boleh masuk repo); perlu satu kali
+  penyiapan ±1 jam.
+- **Belum dibuat** — perintah kerja T6d3 melarang membuatnya sekarang.
+
 ### Catatan data yang perlu keputusan Mudir (bukan bagian T6d2)
 
 1. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian** masih ada di database, padahal

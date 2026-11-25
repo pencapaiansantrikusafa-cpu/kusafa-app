@@ -40,7 +40,14 @@ def rec(nama: str, ok: bool, detail: str, **ev) -> None:
 def main() -> int:
     c = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
 
-    # 1. Ramadhan tanpa capaian (keputusan Mudir 23 Nov 2026 + T6d3)
+    # 1. Capaian harus sama dengan seed + baris uji Mudir (2.036 + 3 = 2.039).
+    #    2.036 = jumlah baris `progress_entries` di berkas seed (diverifikasi terpisah
+    #    oleh uji banding Excel penuh). 3 baris bulan Jumadal Ula adalah percobaan Mudir.
+    n_prog = c.execute("select count(*) from public.progress_entries").fetchone()[0]
+    rec("1a_jumlah_capaian_2039", n_prog == 2039,
+        f"progress_entries: {n_prog} (harus 2.039 = 2.036 seed + 3 baris uji Mudir)")
+
+    # 2. Ramadhan tanpa capaian (keputusan Mudir 23 Nov 2026 + T6d3)
     n = c.execute("""
         select count(*) from public.attendance a
         join public.hijri_months m on m.id = a.month_id
@@ -52,14 +59,14 @@ def main() -> int:
         f"baris kehadiran Ramadhan tanpa capaian: {n} (harus 0). "
         "Bila > 0, seed dijalankan ulang: jalankan scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql")
 
-    # 2. Kehadiran harus sama dengan jumlah yang disetujui
+    # 3. Kehadiran harus sama dengan jumlah yang disetujui
     per = dict(c.execute("select domain, count(*) from public.attendance group by 1").fetchall())
     rec("2_jumlah_kehadiran", per.get("alquran", 0) == 606 and per.get("wasilah", 0) == 756
         and per.get("ghayah", 0) == 749,
         f"kehadiran Al Qur'an {per.get('alquran')} (606), Wasilah {per.get('wasilah')} (756), "
         f"Ghayah {per.get('ghayah')} (749)", jumlah=per)
 
-    # 3. Capaian Wasilah/Ghayah belum dikarang (harus 0)
+    # 4. Capaian Wasilah/Ghayah belum dikarang (harus 0)
     bocor = dict(c.execute("""
         select s.domain, count(*) from public.progress_entries pe
         join public.subjects s on s.id = pe.subject_id
@@ -67,7 +74,7 @@ def main() -> int:
     rec("3_capaian_wasilah_ghayah_0", not bocor,
         "tidak ada capaian Wasilah/Ghayah" if not bocor else f"ADA capaian karangan: {bocor}", jumlah=bocor)
 
-    # 4. Catatan bulanan belum ada (data uji)
+    # 5. Catatan bulanan belum ada (data uji)
     n_note = c.execute("select count(*) from public.monthly_notes").fetchone()[0]
     rec("4_catatan_bulanan_0", n_note == 0, f"monthly_notes: {n_note} (harus 0)")
 

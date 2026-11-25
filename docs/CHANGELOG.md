@@ -5,6 +5,18 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 25 November 2026 - T6d3 (pembersihan data + disiplin uji)
+
+- **7 baris kehadiran Ramadhan** (Al Qur'an, tanpa capaian) dihapus lagi. Penyebab munculnya: seed dijalankan ulang 24 Nov; penghapusan 23 Nov tidak pernah dibuat skrip. Skrip baru `scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql` + uji penjaga `scripts/qa/test_seed_bersih.py`. Kehadiran Al Qur'an 613 → 606.
+- **Nilai izin/sakit/alpha Shafar** dipulihkan sesuai seed/Excel (37 baris yang berbeda) lewat `scripts/db/fixes/2026-11-25_pulihkan_shafar.sql`; penyebab perbedaan dilaporkan (perubahan manual di luar repo sebelum T6d2, tidak ada jejak).
+- **Rekonsiliasi 2.039 vs 2.038:** 1 baris seed hilang — `1443.dummy-nis.024` Kitabah Dzul Qa'dah "Menyalin - 25" — dipulihkan (`2026-11-25_pulihkan_capaian_024.sql`). Total capaian kembali 2.039.
+- **Uji banding Excel penuh** `scripts/qa/compare_alquran_full_excel.py` (7/7): 109 santri, 599 pasangan santri-bulan, 1.673 sel capaian.
+- **Sidik jari database** `scripts/qa/db_fingerprint.py` (18 tabel, jumlah + checksum) dan `scripts/qa/pulihkan_data.py` (pemulihan persis). Semua uji yang menulis memakainya; **smoke produksi hanya membaca**.
+- Uji lama `test_input_dropdown_e2e.py` ternyata menghapus 20 baris seed saat dijalankan (dalam sesi ini); sudah diperbaiki dan barisnya dipulihkan dengan `scripts/db/fixes/2026-11-25_pulihkan_data_seed.py`.
+- `AGENTS.md`: bagian "Disiplin data dan uji" ditambahkan.
+
+---
+
 ## 25 November 2026 - T6d2 (seragamkan hak input Masul + jejak pengisi)
 
 - **Keputusan Mudir:** Masul Al Quran, Masul Wasilah, dan Masul Ghayah boleh **input capaian, catatan, dan kehadiran di SEMUA halaqah domainnya**. Tetap ditolak: domain lain, bulan terkunci, bulan 0, menghapus. Pengampu tetap hanya halaqahnya. Menggantikan keputusan 3d.
