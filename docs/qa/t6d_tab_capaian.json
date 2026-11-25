@@ -1,0 +1,278 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 28,
+  "gagal": [],
+  "ringkasan": "28 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "1. desktop: 3 tab Capaian terlihat",
+      "ok": true,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "2. tab aktif awal = Al Qur'an",
+      "ok": true,
+      "aktif": "Al Qur'an"
+    },
+    {
+      "uji": "3. klik tab mengganti URL",
+      "ok": true,
+      "url": "http://localhost:4173/capaian/wasilah"
+    },
+    {
+      "uji": "4. klik tab mengganti isi tabel",
+      "ok": true,
+      "judul_terlihat": true
+    },
+    {
+      "uji": "5. tab aktif ikut berpindah",
+      "ok": true,
+      "aktif": "Ilmu Wasilah"
+    },
+    {
+      "uji": "6. muat ulang tetap di tab Wasilah",
+      "ok": true,
+      "aktif": "Ilmu Wasilah",
+      "url": "http://localhost:4173/capaian/wasilah"
+    },
+    {
+      "uji": "7. tombol kembali mengembalikan tab Al Qur'an",
+      "ok": true,
+      "aktif": "Al Qur'an",
+      "url": "http://localhost:4173/capaian/alquran"
+    },
+    {
+      "uji": "8. tab Ilmu Ghayah bekerja",
+      "ok": true,
+      "url": "http://localhost:4173/capaian/ghayah"
+    },
+    {
+      "uji": "9. menu samping Capaian berupa tautan biasa (bukan submenu)",
+      "ok": true
+    },
+    {
+      "uji": "10. halaman Input juga memakai 3 tab yang sama",
+      "ok": true,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "HP 360 | Al Qur'an: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 360,
+      "lebar_layar": 360
+    },
+    {
+      "uji": "HP 360 | Al Qur'an: 3 tab muat di layar",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 16,
+          "kanan": 123
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 127,
+          "kanan": 233
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 237,
+          "kanan": 344
+        }
+      ],
+      "label": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "HP 360 | Al Qur'an: area sentuh >= 44 px",
+      "ok": true,
+      "tinggi": [
+        44,
+        44,
+        44
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Wasilah: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 487,
+      "lebar_layar": 487
+    },
+    {
+      "uji": "HP 360 | Ilmu Wasilah: 3 tab muat di layar",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 16,
+          "kanan": 123
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 127,
+          "kanan": 233
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 237,
+          "kanan": 344
+        }
+      ],
+      "label": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Wasilah: area sentuh >= 44 px",
+      "ok": true,
+      "tinggi": [
+        44,
+        44,
+        44
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Ghayah: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 360,
+      "lebar_layar": 360
+    },
+    {
+      "uji": "HP 360 | Ilmu Ghayah: 3 tab muat di layar",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 16,
+          "kanan": 123
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 127,
+          "kanan": 233
+        },
+        {
+          "w": 107,
+          "h": 44,
+          "kiri": 237,
+          "kanan": 344
+        }
+      ],
+      "label": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Ghayah: area sentuh >= 44 px",
+      "ok": true,
+      "tinggi": [
+        44,
+        44,
+        44
+      ]
+    },
+    {
+      "uji": "HP 360: klik tab mengganti URL & isi",
+      "ok": true
+    },
+    {
+      "uji": "role mudir: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role admin: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role masul_alquran: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role masul_wasilah: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role masul_ghayah: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role musyrif: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "role mudarris: 3 tab Capaian",
+      "ok": true,
+      "jumlah": 3,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    }
+  ]
+}
