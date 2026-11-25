@@ -132,7 +132,8 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`. Kredensia
 1. **Repo masih PUBLIK.** Harus dijadikan **privat** sebelum data asli santri dimuat
    (`gh repo edit --visibility private --accept-visibility-change-consequences`). Pengingat wajib
    disebut lagi di T10.
-2. **Data Awal (252 capaian)**: dipertahankan atau dikosongkan saat data asli masuk? Keputusan T10.3. **69 capaian dummy yang "mundur"** (lebih kecil dari bulan lalu): disepakati dibiarkan; konfirmasi
+2. **Data Awal (252 capaian)**: dipertahankan atau dikosongkan saat data asli masuk? Keputusan T10.
+3. **69 capaian dummy yang "mundur"** (lebih kecil dari bulan lalu): disepakati dibiarkan; konfirmasi
    ulang sebelum T9.
 4. **Halaqah Level 6 (4 santri Wasilah)** belum punya mata pelajaran/pengampu. Apa yang harus
    ditampilkan/diisi? (T8).
