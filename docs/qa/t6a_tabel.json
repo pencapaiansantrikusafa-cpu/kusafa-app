@@ -1,0 +1,133 @@
+{
+  "lulus": 14,
+  "gagal": [],
+  "ringkasan": "14 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "1. baris view Wasilah/Ghayah selalu punya entri asli",
+      "ok": true,
+      "yatim": 0
+    },
+    {
+      "uji": "2. posisi tabel = item_position (dihitung database)",
+      "ok": true,
+      "beda": 0
+    },
+    {
+      "uji": "3. Hadir = HE - (izin+sakit+alpha)",
+      "ok": true,
+      "beda": 0
+    },
+    {
+      "uji": "4. santri tanpa halaqah tidak mungkin tampil di domain itu",
+      "ok": true,
+      "keanggotaan_ghayah": {
+        "1447.dummy-nis.023": false,
+        "1447.dummy-nis.024": false
+      }
+    },
+    {
+      "uji": "5. anggota nonaktif (left_on) tidak ikut dihitung",
+      "ok": true,
+      "anggota_nonaktif": 0
+    },
+    {
+      "uji": "6. tidak ada posisi 0 palsu (bulan kosong = tidak ada baris)",
+      "ok": true,
+      "pos_nol": 0
+    },
+    {
+      "uji": "7. capaian Wasilah/Ghayah belum dikarang (0 baris sebelum input)",
+      "ok": true,
+      "baris": 0
+    },
+    {
+      "uji": "8. halaqah tanpa mata pelajaran dikenali (tampil pesan, bukan tabel kosong)",
+      "ok": true,
+      "jumlah": 1,
+      "halaqah": [
+        "Level 6"
+      ]
+    },
+    {
+      "uji": "9. Hari Efektif DUMMY Wasilah & Ghayah = Al Qur'an (bulan 1-7)",
+      "ok": true,
+      "data": [
+        {
+          "bulan_id": "d27a9288-05c8-54b8-9e43-476be8ae7dec",
+          "alquran": 4,
+          "wasilah": 4,
+          "ghayah": 4
+        },
+        {
+          "bulan_id": "42fe3804-492d-5da2-ab50-7385ce68e38e",
+          "alquran": 21,
+          "wasilah": 21,
+          "ghayah": 21
+        },
+        {
+          "bulan_id": "57a00969-45d6-5893-ab52-9db2f4b6bd3a",
+          "alquran": 15,
+          "wasilah": 15,
+          "ghayah": 15
+        },
+        {
+          "bulan_id": "89bc8fea-55e9-51b9-8a24-d2209cc02a25",
+          "alquran": 19,
+          "wasilah": 19,
+          "ghayah": 19
+        },
+        {
+          "bulan_id": "37ac8917-4c2c-568f-855f-19e333301f6f",
+          "alquran": 15,
+          "wasilah": 15,
+          "ghayah": 15
+        },
+        {
+          "bulan_id": "9f8ecb75-7480-51b9-910c-3eab4df70237",
+          "alquran": 3,
+          "wasilah": 3,
+          "ghayah": 3
+        },
+        {
+          "bulan_id": "bd12b879-0f83-5ac5-b050-e42555236e61",
+          "alquran": 19,
+          "wasilah": 19,
+          "ghayah": 19
+        }
+      ]
+    },
+    {
+      "uji": "10. DUMMY hanya bulan 1-7 (tidak melebar ke bulan 8-12)",
+      "ok": true,
+      "baris": []
+    },
+    {
+      "uji": "11. kehadiran DUMMY Wasilah/Ghayah 0/0/0 tanpa override",
+      "ok": true,
+      "menyimpang": 0
+    },
+    {
+      "uji": "12. tiap anggota halaqah punya baris kehadiran di tiap bulan 1-7",
+      "ok": true,
+      "kehadiran": {
+        "wasilah": 756,
+        "ghayah": 749
+      },
+      "anggota": {
+        "wasilah": 108,
+        "ghayah": 107
+      }
+    },
+    {
+      "uji": "13. anon mendapat 0 baris dari view laporan (RLS)",
+      "ok": true,
+      "anon_v_monthly_report": 0,
+      "anon_v_attendance": 0
+    },
+    {
+      "uji": "14. authenticated boleh membaca penetapan mata pelajaran",
+      "ok": true
+    }
+  ]
+}
