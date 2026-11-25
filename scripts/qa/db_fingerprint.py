@@ -68,6 +68,23 @@ def urutan(c, tabel: str, semua: list[str]) -> str:
     return ", ".join(f'"{k}"' for k in pakai)
 
 
+def sidik_log(c) -> dict:
+    """Sidik jari `change_log` DITANGANI TERPISAH.
+
+    Log bersifat append-only: uji yang menulis (lalu memulihkan data) memang MENAMBAH
+    baris log, dan baris lama tidak boleh berubah/hilang. Karena itu yang dibandingkan:
+      - jumlah baris tidak boleh berkurang;
+      - checksum baris yang sudah ada saat perekaman (id <= maks_id) harus tetap sama.
+
+    `TABEL` (data) dibandingkan PERSIS; `change_log` hanya "tumbuh, isi lama utuh".
+    """
+    n, maks = c.execute("select count(*), coalesce(max(id), 0) from public.change_log").fetchone()
+    cek = c.execute(
+        "select coalesce(md5(string_agg(t::text, '' order by id)), '') "
+        "from public.change_log t where t.id <= %s", (maks,)).fetchone()[0]
+    return {"baris": n, "maks_id": maks, "checksum_sampai_maks": cek}
+
+
 def sidik(c, tabel: str) -> dict:
     semua = kolom(c, tabel)
     susunan = urutan(c, tabel, semua)
@@ -83,6 +100,7 @@ def rekam() -> dict:
     conn = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
     c = conn.cursor()
     hasil = {t: sidik(c, t) for t in TABEL}
+    hasil["_log_change_log"] = sidik_log(c)
     conn.close()
     return hasil
 
@@ -91,6 +109,14 @@ def banding(a: dict, b: dict) -> list[dict]:
     beda = []
     for t in sorted(set(a) | set(b)):
         x, y = a.get(t), b.get(t)
+        if t == "_log_change_log":
+            # Log: hanya boleh TUMBUH; baris lama (id <= maks sebelum) tidak boleh berubah.
+            if x is None or y is None:
+                beda.append({"tabel": "change_log", "sebelum": x, "sesudah": y, "selisih_baris": 0})
+            elif y["baris"] < x["baris"] or y["checksum_sampai_maks"] != x["checksum_sampai_maks"]:
+                beda.append({"tabel": "change_log", "sebelum": x, "sesudah": y,
+                             "selisih_baris": y["baris"] - x["baris"]})
+            continue
         if x != y:
             beda.append({
                 "tabel": t,
@@ -109,7 +135,7 @@ def main() -> int:
     a = p.parse_args()
 
     sekarang = rekam()
-    total = sum(v["baris"] for v in sekarang.values())
+    total = sum(v["baris"] for k, v in sekarang.items() if k != "_log_change_log")
 
     if a.simpan:
         pathlib.Path(a.simpan).parent.mkdir(parents=True, exist_ok=True)
@@ -135,8 +161,12 @@ def main() -> int:
         print(json.dumps({t: v["baris"] for t, v in sekarang.items()}, ensure_ascii=False))
         return 0
 
-    print(f"sidik jari {len(sekarang)} tabel, total {total} baris")
+    print(f"sidik jari {len(sekarang) - 1} tabel data, total {total} baris "
+          f"(+ change_log {sekarang['_log_change_log']['baris']} baris, dipantau terpisah)")
     for t, v in sekarang.items():
+        if t == "_log_change_log":
+            print(f"  {'change_log (append-only)':22} {v['baris']:>6}  maks_id={v['maks_id']}")
+            continue
         print(f"  {t:22} {v['baris']:>6}  {v['checksum']}")
     return 0
 

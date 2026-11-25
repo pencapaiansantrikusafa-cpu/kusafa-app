@@ -1,0 +1,334 @@
+{
+  "lulus": 34,
+  "gagal": [],
+  "ringkasan": "34 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "pratinjau hapus: mudir -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": ""
+    },
+    {
+      "uji": "pratinjau hapus: admin -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": ""
+    },
+    {
+      "uji": "pratinjau hapus: masul_alquran -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "pratinjau hapus: masul_wasilah -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "pratinjau hapus: masul_ghayah -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "pratinjau hapus: musyrif -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "pratinjau hapus: mudarris -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "pratinjau hapus: anon -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "permission denied for function hapus_capaian_info"
+    },
+    {
+      "uji": "hapus satu: masul_alquran -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "hapus satu: mudarris -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "Hanya Mudir atau Admin yang dapat menghapus capaian."
+    },
+    {
+      "uji": "hapus satu: admin -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": ""
+    },
+    {
+      "uji": "pratinjau menyebut santri/mapel/bulan/nilai/putaran",
+      "ok": true,
+      "info": {
+        "ada": true,
+        "pos": 460,
+        "bulan": "Rabiul Akhir",
+        "label": "Menyalin - 131",
+        "mapel": "Kitabah",
+        "santri": "Santriwan fulan 7",
+        "putaran": 1,
+        "terkunci": false,
+        "putaran_lalu": 1,
+        "bulan_sesudah": [],
+        "jumlah_sesudah": 0,
+        "mulai_putaran_baru": false,
+        "perlu_setuju_lanjutan": false
+      }
+    },
+    {
+      "uji": "hapus satu: baris terhapus (dalam transaksi)",
+      "ok": true,
+      "hasil": {
+        "baris": 1,
+        "bulan": "Rabiul Akhir",
+        "label": "Menyalin - 131",
+        "mapel": "Kitabah",
+        "santri": "Santriwan fulan 7",
+        "putaran": 1
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "pratinjau massal: jumlah santri + daftar",
+      "ok": true,
+      "info": {
+        "ada": true,
+        "baris": 6,
+        "bulan": "Rabiul Akhir",
+        "mapel": "Kitabah",
+        "santri": [
+          {
+            "pos": 416,
+            "label": "Menyalin - 87",
+            "santri": "Santriwan fulan 16"
+          },
+          {
+            "pos": 497,
+            "label": "Menyalin - 168",
+            "santri": "Santriwan fulan 19"
+          },
+          {
+            "pos": 387,
+            "label": "Menyalin - 58",
+            "santri": "Santriwan fulan 26"
+          },
+          {
+            "pos": 385,
+            "label": "Menyalin - 56",
+            "santri": "Santriwan fulan 28"
+          },
+          {
+            "pos": 140,
+            "label": "IBQ Juz 21 - 30 - 435",
+            "santri": "Santriwan fulan 59"
+          },
+          {
+            "pos": 460,
+            "label": "Menyalin - 131",
+            "santri": "Santriwan fulan 7"
+          }
+        ],
+        "halaqah": "HLQ-PA-1",
+        "terkunci": false,
+        "bulan_sesudah": [
+          {
+            "bulan": "Jumadal Ula"
+          }
+        ],
+        "variasi_nilai": 6,
+        "jumlah_sesudah": 1,
+        "perlu_setuju_lanjutan": true
+      }
+    },
+    {
+      "uji": "hapus massal: seluruh baris halaqah x mapel x bulan",
+      "ok": true,
+      "hasil": {
+        "baris": 6,
+        "bulan": "Rabiul Akhir",
+        "mapel": "Kitabah",
+        "halaqah": "HLQ-PA-1"
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "bulan terkunci: ditolak tanpa konfirmasi",
+      "ok": true,
+      "pesan": "Bulan ini sudah dikunci. Hapus hanya boleh setelah dikonfirmasi eksplisit."
+    },
+    {
+      "uji": "bulan terkunci: diterima dengan konfirmasi eksplisit",
+      "ok": true,
+      "pesan": ""
+    },
+    {
+      "uji": "pratinjau memberi tahu bulan sesudahnya terisi",
+      "ok": true,
+      "info": {
+        "ada": true,
+        "pos": 270,
+        "bulan": "Rabiul Akhir",
+        "label": "Al Qur'an - 136",
+        "mapel": "Tilawah",
+        "santri": "Santriwan fulan 16",
+        "putaran": 1,
+        "terkunci": false,
+        "putaran_lalu": 1,
+        "bulan_sesudah": [
+          {
+            "bulan": "Jumadal Ula",
+            "label": "Karima - 1"
+          }
+        ],
+        "jumlah_sesudah": 1,
+        "mulai_putaran_baru": false,
+        "perlu_setuju_lanjutan": true
+      }
+    },
+    {
+      "uji": "bulan sesudahnya terisi: ditolak tanpa konfirmasi",
+      "ok": true,
+      "pesan": "Bulan sesudahnya sudah terisi ([{\"bulan\": \"Jumadal Ula\", \"label\": \"Karima - 1\"}]). Menghapus bulan ini akan membuat selisih bulan sesudahnya tidak konsisten. Hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit."
+    },
+    {
+      "uji": "bulan sesudahnya terisi: diterima dengan konfirmasi",
+      "ok": true,
+      "pesan": ""
+    },
+    {
+      "uji": "bulan 0: ditolak (bukan bulan input staf)",
+      "ok": true,
+      "pesan": "Bulan Data Awal bukan bulan input staf, jadi tidak dapat dihapus lewat fitur ini."
+    },
+    {
+      "uji": "pratinjau melaporkan 'mulai putaran baru' bila putaran > putaran lalu",
+      "ok": true,
+      "info": {
+        "mulai_putaran_baru": true,
+        "putaran": 2,
+        "putaran_lalu": 1
+      }
+    },
+    {
+      "uji": "LOG delete progress_entries (aktor & nilai lama)",
+      "ok": true,
+      "log": [
+        "progress_entries",
+        "delete",
+        "9706094f-61c4-4578-ad63-37565653c0c2",
+        "mudir",
+        "aplikasi"
+      ]
+    },
+    {
+      "uji": "LOG update progress_entries (nilai lama + baru)",
+      "ok": true,
+      "log": [
+        "a8681d83-302a-4e53-96a6-3473d14c9055",
+        "admin",
+        "aplikasi",
+        {
+          "id": "d336514e-5609-5d86-86d8-ff9849c10a05",
+          "item_id": "4a73c05a-0005-51f6-beca-73b7f5acb0e3",
+          "putaran": 1,
+          "month_id": "bd12b879-0f83-5ac5-b050-e42555236e61",
+          "entered_at": "2026-11-22T04:10:41.64485+00:00",
+          "entered_by": null,
+          "halaqah_id": "983730ec-b26e-5f2f-9e0a-d50668616702",
+          "student_id": "5a25ab5f-3fc6-5516-b65c-be5ec0fd10be",
+          "subject_id": "370dc13e-ae93-559b-93c8-844f8e9c5003",
+          "updated_at": "2026-11-22T04:10:41.64485+00:00",
+          "updated_by": null
+        }
+      ]
+    },
+    {
+      "uji": "LOG update attendance (tabel & nilai)",
+      "ok": true,
+      "log": [
+        "attendance",
+        "update",
+        "mudir"
+      ]
+    },
+    {
+      "uji": "LOG update monthly_notes (nilai lama -> baru)",
+      "ok": true,
+      "log": [
+        "monthly_notes",
+        "update",
+        "uji log awal",
+        "uji log baru"
+      ]
+    },
+    {
+      "uji": "LOG koneksi tanpa JWT: aktor NULL, sumber skrip:<user>",
+      "ok": true,
+      "log": [
+        null,
+        "skrip:postgres",
+        null
+      ]
+    },
+    {
+      "uji": "log: Mudir/Admin TIDAK bisa menghapus log",
+      "ok": true,
+      "pesan": "permission denied for table change_log"
+    },
+    {
+      "uji": "log: Mudir/Admin TIDAK bisa mengubah log",
+      "ok": true,
+      "pesan": "permission denied for table change_log"
+    },
+    {
+      "uji": "log: Mudir/Admin TIDAK bisa menulis log sendiri",
+      "ok": true,
+      "pesan": "permission denied for table change_log"
+    },
+    {
+      "uji": "log: Masul TIDAK bisa membaca log",
+      "ok": true,
+      "hasil": [
+        0
+      ],
+      "pesan": ""
+    },
+    {
+      "uji": "log: Mudir/Admin bisa membaca log",
+      "ok": true,
+      "hasil": [
+        0
+      ],
+      "pesan": ""
+    },
+    {
+      "uji": "log: anon ditolak",
+      "ok": true,
+      "pesan": "permission denied for table change_log"
+    },
+    {
+      "uji": "hapus massal: jumlah baris sesuai pratinjau",
+      "ok": true,
+      "hasil": {
+        "baris": 6,
+        "bulan": "Rabiul Akhir",
+        "mapel": "Kitabah",
+        "halaqah": "HLQ-PA-1"
+      },
+      "pesan": ""
+    }
+  ]
+}

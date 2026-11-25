@@ -6,7 +6,8 @@ WAJIB mengembalikan baris persis: nilai, `entered_by`/`entered_at`, dan
 uji, lalu mengembalikannya (menghapus baris baru, memperbaiki nilai baris lama).
 
 Hanya untuk tabel data uji: `progress_entries`, `attendance`, `monthly_notes`.
-Jangan memakai ini untuk "merapikan" data asli.
+Jangan memakai ini untuk "merapikan" data asli. Tabel log `change_log` tidak
+disentuh: uji yang menulis akan MENAMBAH baris log (itu bukti, bukan sampah).
 
 Pakai:
     from pulihkan_data import rekam_semua, pulihkan_semua, sama_dengan
@@ -17,6 +18,9 @@ Pakai:
 """
 from __future__ import annotations
 
+# `change_log` sengaja TIDAK dipulihkan: log bersifat append-only, perubahan yang
+# dilakukan uji memang harus tercatat. db_fingerprint.py menanganinya terpisah
+# ("boleh tumbuh, isi lama utuh").
 TABEL = ("progress_entries", "attendance", "monthly_notes")
 KUNCI = {
     "progress_entries": ("id",),
