@@ -86,6 +86,21 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 6. **Tampilan halaqah Wasilah dan Ghayah**: per mata pelajaran tampil Capaian Bulan Lalu, Capaian Bulan Ini, Selisih; lalu tabel anggota: Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan.
    Dilaksanakan di `src/pages/TabelWasilah.tsx` (T6a). Yang ditampilkan hanya mata pelajaran yang **ditetapkan untuk halaqah itu** (`halaqah_subjects`), bukan seluruh bidang domain; halaqah tanpa penetapan (mis. Level 6 Wasilah) menampilkan pesan, bukan tabel kosong. Anggota hanya dari `halaqah_members` dengan `left_on is null`. Semua angka (posisi, selisih, Hadir, Hari Efektif, target) dibaca dari `v_monthly_report`/`v_attendance`. Bulan yang belum diinput tampil "belum diisi", bukan 0.
 
+## 5b. Tab domain di halaman Capaian dan Input (T6d, 25 November 2026)
+
+- Halaman **Capaian** (`/capaian/alquran`, `/capaian/wasilah`, `/capaian/ghayah`) dan halaman **Input**
+  menampilkan **tab domain** di bagian atas: **Al Qur'an, Ilmu Wasilah, Ilmu Ghayah** (urutan baku
+  `DOMAIN_URUT`). Satu komponen bersama: `src/components/TabDomain.tsx`.
+- **Tab aktif tercermin di URL.** Klik tab menuju rute domain itu; muat ulang dan tombol kembali
+  membuka domain yang sama.
+- **Visibilitas tab mengikuti hak lihat yang sudah ada, bukan aturan baru:** di Capaian ketiga domain
+  dapat dilihat semua staf (`progress_read`/`halaqahs_read`/`students_read` = `is_staff()`); di Input,
+  tab mengikuti hak tulis (`domainInputUntuk`). Bila kelak Capaian dibatasi per domain, ubah
+  `domainCapaianUntuk` dan RLS bersama-sama.
+- **Menu Capaian tidak lagi ber-submenu** di menu samping/bilah bawah; tab menggantikannya.
+- **Responsif:** HP 360 px - tiga tab dibagi rata, tinggi sentuh minimal 44 px, tanpa geseran ke samping;
+  desktop - tombol sebaris.
+
 ## 5c. Input Ilmu Wasilah dan Ilmu Ghayah (T6b)
 
 - **Sekali per halaqah x mata pelajaran**, disalin database ke **semua anggota aktif** (`halaqah_members.left_on is null`) dalam **satu transaksi**: `wasilah_input_save(halaqah, bulan, items)`. Bila satu mata pelajaran ditolak (bukan mapel halaqah, item bukan milik mapel itu, tidak berhak, bulan terkunci), **seluruh** penyimpanan batal - tidak ada penyimpanan sebagian.

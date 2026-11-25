@@ -26,6 +26,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T6a | Tabel capaian Wasilah & Ghayah | **SELESAI** (STATUS 2h) | `TabelWasilah.tsx`, `TabelCapaian.tsx`, `test_t6a_tabel.py` 14/14 |
 | T6b | Input Wasilah & Ghayah | **SELESAI** (STATUS 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `test_t6b_*` 29/29 & 14/14 |
 | T6c | "Bulan lalu" tampil sejak awal | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 |
+| T6d | Tab domain di halaman Capaian (seperti Input) | **SELESAI** (STATUS 2j) | `TabDomain.tsx`, `CapaianPage.tsx`; E2E 28/28 lokal & produksi |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | `scripts/qa/rls_matrix.py`, `test_no_halaqah.py`, `test_students_without_halaqah.py`, `run_pre_t6_db_tests.py` (sudah ada, belum lengkap) |
@@ -42,8 +43,9 @@ Pra-T6 rinci:
 
 ## 2. Tahap yang sedang dikerjakan
 
-**T6a, T6b, T6c SELESAI** (25 Nov 2026) — tabel Wasilah/Ghayah, input Wasilah/Ghayah, dan
-perbaikan "Bulan lalu". Rincian: `docs/STATUS.md` 2h (tabel), 2i (input), 2g (dropdown).
+**T6a, T6b, T6c, T6d SELESAI** (25 Nov 2026) — tabel Wasilah/Ghayah, input Wasilah/Ghayah,
+perbaikan "Bulan lalu", dan tab domain (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) di halaman Capaian
+yang berbagi komponen dengan halaman Input. Rincian: `docs/STATUS.md` 2h (tabel), 2i (input), 2g (dropdown).
 **Tahap berikutnya: T7** (target dinamis) — belum boleh dimulai tanpa aba-aba Mudir.
 
 **Sebelumnya: T5c, T5c-2, dan perbaikan T5c-3 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c), 2f (T5c-2), dan 2g (bug label dropdown). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
@@ -128,6 +130,12 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
   - Izin ini **hanya** untuk Hari Efektif (dan baris kehadiran nol yang mengikutinya). Data lain yang kurang **harus ditanyakan** lebih dulu, tidak boleh dikarang (tidak ada capaian, target, atau catatan karangan).
 - **Data uji E2E boleh menulis**, dengan syarat dipulihkan otomatis dan jumlah baris diverifikasi kembali (pola uji T5c-3).
 - **Keanggotaan 023/024 tetap kasus uji resmi** (023 tidak di Ghayah; 024 hanya Al Qur'an): di domain yang tidak diikuti santri **tidak ditampilkan**.
+
+### 3e. Keputusan Mudir 25 November 2026 (T6d) — sudah final
+
+- **Halaman Capaian memakai TAB domain** (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) di bagian atas, sama seperti halaman Input, di HP maupun desktop. Satu komponen bersama `TabDomain`; tab aktif tercermin di URL sehingga muat ulang dan tombol kembali bekerja.
+- **Submenu Capaian di menu samping/bilah bawah dihapus** — sudah digantikan tab.
+- **Hak akses tidak berubah:** ketiga domain tetap dapat dilihat semua staf; yang tidak berhak (wali, non-staf) tetap tidak membuka halaman Capaian sama sekali. Bila kelak Capaian dibatasi per domain, harus diputuskan Mudir dan diubah bersama RLS.
 
 Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_years`; semua dropdown `DropdownCari` (panel layang `z-60`); tahun & bulan dua dropdown terpisah; label item ber-awalan nama bidang; daftar panjang wajib `ambilSemua`; frontend hanya `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`; migrasi lama **tidak diubah** (berikutnya `20261121000010_...`).
 

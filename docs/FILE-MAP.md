@@ -78,6 +78,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `LoginPage.tsx` | Formulir login (email + kata sandi) lewat Supabase Auth. |
 | `CapaianPage.tsx` | Halaman Capaian per domain; memilih halaqah, tahun, bulan. |
 | `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; untuk Wasilah/Ghayah masih menulis "dikerjakan pada T6". |
+| `TabDomain.tsx` | Komponen **bersama** tab domain (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) untuk halaman Capaian dan Input. Memakai `<Link>` ke `${dasar}/${domain}` sehingga tab aktif tercermin di URL; HP 360 tiga tab dibagi rata, tinggi sentuh 44 px. |
 | `InputPage.tsx` | Pemilih domain halaman Input; rute `/input`, `/input/alquran`, `/input/wasilah`, `/input/ghayah`. Domain mengikuti role (`domainInputUntuk`). |
 | `InputAlQuranPage.tsx` | Halaman Input Al Qur'an (T5/T5c-2); isi tidak berubah, hanya berkas dipisah dari pemilih domain. |
 | `InputWasilahPage.tsx` | Halaman Input Ilmu Wasilah/Ghayah: `wasilah_input_boot` + `wasilah_input_form`, pencarian item server, batas halaqah sesuai amanah. |
@@ -137,6 +138,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
 | `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
+| `scripts/qa/test_t6d_tab_capaian.py` | E2E tab domain: terlihat di 1280 & 360 px, tanpa geseran samping, sentuh >= 44 px, klik mengganti isi & URL, muat ulang & tombol kembali bekerja, tab per role, menu lama tidak ada. |
 | `scripts/qa/test_t6b_input_wasilah.py` | Uji tulis Wasilah/Ghayah (29 uji, transaksi + ROLLBACK): salinan ke anggota, luar halaqah aman, anggota keluar aman, bulan 0/terkunci, item salah, RLS per role, Masul per domain, anon. |
 | `scripts/qa/test_t6b_e2e.py` | E2E tampilan Wasilah/Ghayah: pilih -> label tampil, simpan -> database semua anggota, muat ulang -> label tetap; data uji dipulihkan. |
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |

@@ -7,7 +7,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `028b56d` - T6b input Wasilah & Ghayah (T6c: `94fb899`) |
+| Commit terakhir | `30ceb8c` - T6d tab domain Capaian & Input |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
@@ -37,6 +37,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6a** | Tabel capaian Wasilah & Ghayah | **SELESAI** (lihat 2h) | `src/pages/TabelWasilah.tsx`, `TabelCapaian.tsx`; uji `scripts/qa/test_t6a_tabel.py` 14/14 | — |
 | **T6b** | Input Wasilah & Ghayah | **SELESAI** (lihat 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `FormInputWasilah.tsx`; uji DB 29/29, E2E 14/14 | — |
 | **T6c** | "Bulan lalu" tampil sejak awal (laporan Mudir) | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 | — |
+| **T6d** | Tab domain di halaman Capaian (seperti halaman Input) | **SELESAI** (lihat 2j) | `TabDomain.tsx`, `CapaianPage.tsx`, `InputPage.tsx`; E2E 28/28 lokal & produksi | — |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
@@ -341,6 +342,43 @@ Kini tampil **sejak awal** (termasuk saat dropdown masih "— belum diisi —"),
   `/input/wasilah` dan `/input/ghayah`, termasuk bahwa role yang tidak berhak **dialihkan**).
 - `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, Excel 7/7, data awal 5/5,
   no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9.
+
+---
+
+## 2j. T6d - Tab domain di halaman Capaian (25 November 2026)
+
+**Permintaan Mudir:** sub-menu Capaian dibuat seperti halaman Input — tab Al Qur'an / Ilmu Wasilah /
+Ilmu Ghayah di bagian atas, di HP maupun desktop.
+
+- **Komponen bersama `src/components/TabDomain.tsx`** (baru). Tab lama di `InputPage` (fungsi
+  `PemilihDomain`) **dihapus** dan digantikan komponen ini; kedua halaman kini memakai satu kode.
+- Tab memakai `<Link>` ke `${dasar}/${domain}`, jadi **tab aktif tercermin di URL**:
+  `/capaian/wasilah`, `/input/wasilah`. Muat ulang dan tombol kembali bekerja tanpa keadaan di memori.
+- **Halaman Capaian**: tab di atas judul-bagian, isi di `role="tabpanel"`. Rute tidak dikenal atau
+  tidak boleh dilihat dialihkan ke domain pertama yang boleh (`domainCapaianUntuk`).
+- **Visibilitas:** semua staf (Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyrif/ah,
+  Mudarris/ah) melihat ketiga tab — sama persis dengan hak lihat yang SUDAH ada (`progress_read`,
+  `halaqahs_read`, `students_read` memakai `is_staff()`; menu Capaian sejak awal menampilkan tiga
+  submenu untuk semua role). Fungsi `domainCapaianUntuk` hanya **memusatkan** aturan itu.
+  **RLS, view, dan perhitungan tidak berubah.**
+- **Menu lama dihapus:** entri `children` pada menu Capaian di `roles.ts` dihapus, sehingga menu
+  samping dan bilah bawah tidak lagi membuka submenu Capaian (digantikan tab).
+- **Responsif:** HP 360 px — tiga tab dibagi rata (grid 3 kolom), tinggi sentuh **44 px**, tanpa
+  geseran horizontal; desktop — tombol sebaris dengan lebar sesuai isi.
+
+**Uji `scripts/qa/test_t6d_tab_capaian.py`: 28/28 LULUS lokal dan 28/28 produksi**
+- desktop 1280 px: 3 tab terlihat, tab aktif awal Al Qur'an, klik tab mengganti URL dan isi tabel,
+  muat ulang tetap di tab Wasilah, tombol kembali mengembalikan tab Al Qur'an, tab Ghayah bekerja;
+- HP 360 px: lebar dokumen = lebar layar (tidak bergeser samping) di ketiga domain, 3 tab muat,
+  tinggi tab >= 44 px, klik tab bekerja;
+- 7 role: masing-masing melihat 3 tab (sesuai hak lihat yang ada);
+- menu samping Capaian bukan lagi submenu; halaman Input memakai tab yang sama; konsol bersih.
+
+**Uji lain:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; Excel 7/7; data awal 5/5;
+no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP); signup 9/9; matriks RLS 44 OK/8 SKIP/0 GAGAL;
+T6a 14/14; T6b DB 29/29; E2E T6b 14/14; E2E input 10/10; smoke per role **43/43 lokal & 42/42 produksi**.
+
+Tangkapan layar: `docs/qa/t6d/` (`hp360_capaian_*.png`, `desktop_0*_capaian_*.png`, `desktop_04_input_tab.png`).
 
 ---
 

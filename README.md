@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 25 November 2026, commit `028b56d` (T6a-T6c: tabel & input Ilmu Wasilah dan Ilmu Ghayah). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 25 November 2026, commit `30ceb8c` (T6a-T6d: tabel & input Ilmu Wasilah dan Ilmu Ghayah, tab domain). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|

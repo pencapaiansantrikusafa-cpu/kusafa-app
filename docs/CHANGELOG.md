@@ -41,6 +41,13 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - Hasil: halaman siap **1,44-1,95 s -> 0,97 s median produksi** (0,93-0,99 s lokal); HP 360 ~0,95-1,05 s; permintaan data 3.
 - Perhitungan identik (114 baris; paket RPC vs view: 0 beda). QA: npm test 14/14, DB 16/16, regresi 7/7, smoke 29/29 lokal & 28/28 produksi.
 
+### T6d - Tab domain di halaman Capaian (25 November 2026)
+- `src/components/TabDomain.tsx` (baru, komponen bersama): tab Al Qur'an / Ilmu Wasilah / Ilmu Ghayah memakai `<Link>`, jadi tab aktif tercermin di URL. HP 360: tiga tab dibagi rata, tinggi sentuh 44 px, tanpa geseran samping; desktop: sebaris.
+- `CapaianPage` memakai tab; `InputPage` memakai komponen yang sama (fungsi `PemilihDomain` lama dihapus — tidak ada duplikat).
+- Menu Capaian tidak lagi ber-submenu di menu samping/bilah bawah (digantikan tab). `roles.ts`: `DOMAIN_URUT`, `domainCapaianUntuk`.
+- Hak akses tidak berubah: ketiga domain tetap dapat dilihat semua staf (RLS `is_staff`); RLS/view/perhitungan tidak disentuh.
+- Uji `test_t6d_tab_capaian.py` **28/28** lokal & produksi; smoke 43/43 lokal, 42/42 produksi.
+
 ### T6b - Input Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
 - Migrasi `000013`: `wasilah_input_boot`, `wasilah_input_form`, `wasilah_input_save`, `wasilah_can_write`. Input sekali per halaqah x mapel, disalin ke semua anggota aktif dalam satu transaksi (semua-atau-tidak-sama-sekali). Bulan 0 & bulan terkunci ditolak. SECURITY INVOKER, cek staf di dalam fungsi, anon tanpa EXECUTE.
 - Migrasi `000014`: Hadir & Hari Efektif dari `v_attendance` (sebelumnya form menghitung di React - dilarang).
