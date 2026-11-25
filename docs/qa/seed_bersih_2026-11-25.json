@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "uji": "1_ramadhan_tanpa_capaian_0",
+      "ok": true,
+      "detail": "baris kehadiran Ramadhan tanpa capaian: 0 (harus 0). Bila > 0, seed dijalankan ulang: jalankan scripts/db/fixes/2026-11-25_hapus_kehadiran_ramadhan.sql"
+    },
+    {
+      "uji": "2_jumlah_kehadiran",
+      "ok": true,
+      "detail": "kehadiran Al Qur'an 606 (606), Wasilah 756 (756), Ghayah 749 (749)",
+      "jumlah": {
+        "wasilah": 756,
+        "ghayah": 749,
+        "alquran": 606
+      }
+    },
+    {
+      "uji": "3_capaian_wasilah_ghayah_0",
+      "ok": true,
+      "detail": "tidak ada capaian Wasilah/Ghayah",
+      "jumlah": {}
+    },
+    {
+      "uji": "4_catatan_bulanan_0",
+      "ok": true,
+      "detail": "monthly_notes: 0 (harus 0)"
+    }
+  ]
+}

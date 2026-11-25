@@ -1,0 +1,74 @@
+{
+  "academic_years": {
+    "baris": 1,
+    "checksum": "efc95b02b704d93ce85d81cc0f6f81a8"
+  },
+  "hijri_months": {
+    "baris": 13,
+    "checksum": "658d942a91ec0e3209fa320f3df67c32"
+  },
+  "subjects": {
+    "baris": 9,
+    "checksum": "d3247ab6cb5b0c161bead888ff9ff679"
+  },
+  "books": {
+    "baris": 158,
+    "checksum": "2f44f7f4324b03f80b407bfdd6cf0bb8"
+  },
+  "curriculum_items": {
+    "baris": 10954,
+    "checksum": "4574f20cf728f5a1793894d754b80990"
+  },
+  "students": {
+    "baris": 109,
+    "checksum": "4a62ce83621c682f7865c568f1236872"
+  },
+  "guardians": {
+    "baris": 0,
+    "checksum": ""
+  },
+  "student_levels": {
+    "baris": 217,
+    "checksum": "85d884b511d5a4e03d0887336b53c86f"
+  },
+  "halaqahs": {
+    "baris": 38,
+    "checksum": "e1d3a009ecb2e521eddffc6b6506420c"
+  },
+  "halaqah_members": {
+    "baris": 324,
+    "checksum": "946db917e6f7d4b9c0920bf85c0b2cac"
+  },
+  "halaqah_teachers": {
+    "baris": 55,
+    "checksum": "4406ab13afe44136f30a58a09f218a0a"
+  },
+  "halaqah_subjects": {
+    "baris": 78,
+    "checksum": "6e10599acf53a979c828c8ae7da60a49"
+  },
+  "targets": {
+    "baris": 327,
+    "checksum": "dc01e2627c6a0276e861df13ac18ab4a"
+  },
+  "progress_entries": {
+    "baris": 2038,
+    "checksum": "4585dd482b67b9415f70538b0ac0247c"
+  },
+  "attendance": {
+    "baris": 2118,
+    "checksum": "f8025c3ba6a0feb6aa8e0d64f4f2db2b"
+  },
+  "monthly_notes": {
+    "baris": 0,
+    "checksum": ""
+  },
+  "month_domain_settings": {
+    "baris": 21,
+    "checksum": "0594ede6e15c76df4e49f3b8b2e448c7"
+  },
+  "profiles": {
+    "baris": 24,
+    "checksum": "d9fba1e7238f97b076ab9371d97d439d"
+  }
+}

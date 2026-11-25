@@ -1,0 +1,72 @@
+{
+  "ran_at": "2026-11-25T14:44:41.786079",
+  "tests": [
+    {
+      "name": "1_kelengkapan_kehadiran",
+      "ok": true,
+      "detail": "93 pasangan santri-bulan di Excel; tidak ada di DB: 0",
+      "evidence": {}
+    },
+    {
+      "name": "2_hari_efektif_semua_bulan",
+      "ok": true,
+      "detail": "santri-bulan: 93; berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "3a_hadir_rumus_db",
+      "ok": true,
+      "detail": "santri-bulan: 93; Hadir DB != HE-(izin+sakit+alpha): 0",
+      "evidence": {}
+    },
+    {
+      "name": "3b_hadir_kolom_excel_dicatat",
+      "ok": true,
+      "detail": "sel Hadir terisi di Excel: 86; berbeda dari Hadir aplikasi: 0 (kolom H Excel diabaikan sesuai keputusan; dicatat saja)",
+      "evidence": {
+        "berbeda": 0
+      }
+    },
+    {
+      "name": "4_izin_sakit_alpha_semua_bulan",
+      "ok": true,
+      "detail": "santri-bulan: 93; berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "5_capaian_semua_bulan",
+      "ok": true,
+      "detail": "sel capaian Excel: 271; label/posisi berbeda 0, tidak ada di DB 0; angka manual Excel berbeda dari posisi kumulatif pada 241 sel (dicatat, bukan galat); buku dengan nilai file dropdown != posisi DB (sah, memakai value_offset): 1",
+      "evidence": {
+        "beda": [],
+        "tanpa_db": [],
+        "angka_manual_berbeda": 241,
+        "santri_excel": 109,
+        "buku_beda_nilai": [
+          [
+            "Iqro' 6",
+            182.0,
+            114.0
+          ]
+        ],
+        "sel_santri_tanpa_halaqah": []
+      }
+    },
+    {
+      "name": "6_ringkasan_per_bulan",
+      "ok": true,
+      "detail": "Shafar: 93 santri, 271 capaian, 37 dengan absen",
+      "evidence": {
+        "bulan": [
+          {
+            "bulan": "Shafar",
+            "month_no": 5,
+            "santri_he": 93,
+            "sel_capaian": 271,
+            "santri_absen": 37
+          }
+        ]
+      }
+    }
+  ]
+}
