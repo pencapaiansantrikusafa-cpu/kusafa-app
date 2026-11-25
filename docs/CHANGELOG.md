@@ -41,6 +41,14 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - Hasil: halaman siap **1,44-1,95 s -> 0,97 s median produksi** (0,93-0,99 s lokal); HP 360 ~0,95-1,05 s; permintaan data 3.
 - Perhitungan identik (114 baris; paket RPC vs view: 0 beda). QA: npm test 14/14, DB 16/16, regresi 7/7, smoke 29/29 lokal & 28/28 produksi.
 
+### T5c-3 - Perbaikan bug label dropdown Input (25 November 2026)
+- **Laporan Mudir (produksi):** setelah memilih item, dropdown tetap menulis "— belum diisi —".
+- **Akar masalah:** pada mode pencarian server (T5c), `opsi` dropdown hanya berisi item yang sudah tersimpan; item yang baru dipilih tidak masuk daftar sehingga `DropdownCari` tidak menemukan labelnya. Akibat turunan: keterangan "Bulan lalu" dan centang "khatam" juga tidak muncul karena item baru tidak dikenali.
+- **Perbaikan:** `DropdownCari` menyimpan objek pilihan (nilai+label+siklik) dan meneruskannya lewat `onChange`; `FormInputAlQuran` menyimpan item baru beserta label & siklik; `InputPage` menyertakan `siklik` pada hasil cari dan membuang `itemTambahan` yang menduplikasi `items`.
+- **Data:** 2.036 baris tetap utuh; 0 baris baru hari ini. Uji E2E menyimpan satu capaian dummy lalu mengembalikan baris itu persis (diverifikasi).
+- **Celah uji lama:** smoke hanya memeriksa halaman termuat & simpan, tidak teks tombol dropdown. Uji baru `scripts/qa/test_input_dropdown_e2e.py` **9/9 LULUS**: label tampil setelah pilih dari daftar/pencarian, khatam muncul, simpan -> database cocok -> muat ulang label tetap tampil. Reproduksi: `scripts/qa/repro_input_dropdown.py`.
+- QA lain hijau: npm test 14/14, DB 16/16, regresi 7/7, Excel 7/7, RLS 38 OK/8 SKIP/0 GAGAL, smoke 29/29 lokal.
+
 ### Langkah [1] - Audit dan hardening fungsi
 - Daftar 18 fungsi public; migrasi `20261121000007_harden_function_grants.sql`: cabut `EXECUTE` anon/PUBLIC, grant hanya authenticated+service_role, `SET search_path` fungsi INVOKER.
 - Uji DB pra-T6 (`scripts/qa/run_pre_t6_db_tests.py`).

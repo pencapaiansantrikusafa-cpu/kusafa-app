@@ -1,6 +1,6 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-**Terakhir diperbarui**: 24 November 2026, commit `35361ab` (T5c-2).
+**Terakhir diperbarui**: 25 November 2026, commit `5c198a4` (perbaikan bug label dropdown Input).
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service role) atau data santri asli di berkas ini.
@@ -22,6 +22,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | Pra-T6 [6] | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | migrasi `000010`, `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_students_without_halaqah_p6.py`, `test_data_awal_tahun_kedua.py`, `docs/SPEC.md` 4a-1 |
 | T5c | Percepat halaman Input (pencarian item di server) | **SELESAI** (STATUS 2e) | migrasi `000011`, `InputPage.tsx`, `DropdownCari.tsx` (`diServer`), `KotakBelumLengkap.tsx` |
 | T5c-2 | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (STATUS 2f) | migrasi `000012`, `InputPage.tsx` |
+| T5c-3 | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — E2E 9/9, data utuh (STATUS 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx` |
 | T6 | Tabel & input Wasilah & Ghayah | **BELUM (next, menunggu aba-aba Mudir)** | - |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
@@ -39,7 +40,7 @@ Pra-T6 rinci:
 
 ## 2. Tahap yang sedang dikerjakan
 
-**T5c & T5c-2 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c) dan 2f (T5c-2). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
+**T5c, T5c-2, dan perbaikan T5c-3 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c), 2f (T5c-2), dan 2g (bug label dropdown). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
 
 **Yang sudah jalan** — lihat `docs/STATUS.md`: login/menu per role, tabel & input Al Qur'an, halaman santri,
 notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel tersambung Supabase.
@@ -48,11 +49,13 @@ notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel 
 
 **Bug/error yang diketahui:**
 - Tidak ada galat build / `tsc` / uji. Yang tertulis di `docs/STATUS.md` bagian 6 semuanya keterbatasan, bukan galat menggantung.
-- ~~Kinerja muat item Al Qur'an lambat~~ — **SELESAI di T5c**: item tidak lagi diunduh penuh; pencarian di server. Sisa ±1,4 s karena penundaan jaringan (`STATUS.md` 2e).
+- ~~Kinerja muat item Al Qur'an lambat~~ — **SELESAI di T5c**: item tidak lagi diunduh penuh; pencarian di server. Sisa ±1,4 s karena penundaan jaringan (`STATUS.md` 2e), lalu dipercepat lagi di T5c-2.
+- ~~Dropdown Input menulis "— belum diisi —" setelah memilih item~~ — **SELESAI T5c-3 (25 Nov 2026)**: label pilihan disimpan beserta objeknya; uji E2E `scripts/qa/test_input_dropdown_e2e.py` memeriksa tampilan, simpan, dan muat ulang (`STATUS.md` 2g).
 - `npm audit` sisa 2: `vite`/`esbuild` (hanya dev server, tidak ikut bundel produksi).
 
 **Langkah berikutnya (berurutan) — keputusan Mudir 24 November 2026:**
 1. ~~Merge react-router 7~~ — **SELESAI** (smoke 29/29 lulus di branch, lalu merge & push).
+1a. ~~T5c-3 — perbaikan bug label dropdown Input~~ **SELESAI 25 Nov 2026**: item terpilih tidak lagi jatuh ke "— belum diisi —"; uji E2E 9/9, data 2.036 baris utuh (`STATUS.md` 2g).
 1b. ~~T5c-2 — satu permintaan per tahap~~ **SELESAI 25 Nov 2026**: RPC `input_alquran_boot` + `input_alquran_data`; halaman siap **1,4–2,0 s → 0,97 s median produksi** (target <1 detik tercapai pada kondisi jaringan normal; lihat STATUS 2f).
 2. ~~T5c — percepat input~~ **SELESAI 24 Nov 2026**: RPC `curriculum_items_search`/`_by_ids`, halaman siap 3,0–4,0 s → **1,4–2,0 s**, permintaan item 128 → 2. **Target <1 detik belum tercapai** karena penundaan jaringan ke database (±20 permintaan berurutan); lihat `STATUS.md` 2e.
 3. **T6** — tabel & input Wasilah & Ghayah (ganti tulisan "dikerjakan pada T6" di `TabelCapaian.tsx`; input sekali per halaqah × mata pelajaran disalin ke anggota; `hanyaHalaqahDiampu()`).

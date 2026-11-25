@@ -32,6 +32,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **Pra-T6 [1-5/5]** | Audit, hardening, perbaikan data, notifikasi, audit & dokumentasi | **SELESAI untuk langkah [1]-[5]** | `docs/qa/rls_matrix_2026-11-24.json`, `scripts/qa/rls_matrix.py`, `tests/audit-rules.test.mjs` | Hasil di bagian 2a/2b/2c |
 | **T5c** | Percepat halaman Input (pencarian item di server) | **SELESAI** (lihat 2e) | `src/pages/InputPage.tsx`, `DropdownCari.tsx`, migrasi `000011`, bagian 2e |
 | **T5c-2** | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (lihat 2f) | migrasi `000012`, `InputPage.tsx`, bagian 2f |
+| **T5c-3** | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — uji E2E 9/9, data utuh (lihat 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx`, bagian 2g |
 | **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
 | **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (berikutnya; belum boleh dimulai tanpa aba-aba Mudir) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Prasyarat T5c **sudah selesai** |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
@@ -204,6 +205,56 @@ Posisi, selisih, putaran, target bulanan, dan Hadir **tetap dibaca dari view**, 
 - **Uji:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; banding Excel 7/7; data awal 5/5;
   no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP wali); matriks RLS 38/46 OK, 8 SKIP, 0 GAGAL;
   smoke E2E **29/29** lokal (Mudir menyimpan satu capaian lewat UI lalu dikembalikan) & **28/28** produksi.
+
+## 2g. Perbaikan bug label dropdown Input (T5c-3, 25 November 2026)
+
+**Laporan Mudir:** di halaman Input (produksi, role Mudir), setelah memilih item, tombol dropdown
+tetap menulis "— belum diisi —".
+
+**Reproduksi** (`scripts/qa/repro_input_dropdown.py`, build lokal 4173, role Mudir, bulan Rabiul Awwal):
+
+| Langkah | Sebelum perbaikan | Setelah perbaikan |
+|---|---|---|
+| a. Buka santri yang sudah punya nilai | label tampil (benar) | label tampil |
+| b. Pilih item dari daftar | **"— belum diisi —"** | label pilihan tampil |
+| c. Pilih lewat pencarian (mis. `quraisy` / `351`) | **"— belum diisi —"** | label pilihan tampil |
+| d. Centang/batalkan "khatam, mulai putaran baru" | **centang tidak muncul** (item baru tak dikenali sebagai buku siklik) | centang muncul, bisa dicentang & dibatalkan |
+| e. Muat ulang halaman | label tersimpan tampil | label tersimpan tampil |
+
+Sapuan dropdown per role: Mudir, Admin, dan Musyrif/ah memiliki form Al Qur'an dan **0 placeholder
+yang salah**. Masul Al Quran, Masul Wasilah, Masul Ghayah, dan Mudarris/ah tidak memiliki halaqah
+Al Qur'an pada data dummy (penugasan mereka di Wasilah/Ghayah), sehingga halaman Input tidak
+menampilkan form item — bukan kegagalan dropdown; form Wasilah/Ghayah memang milik T6.
+
+**Akar masalah:** sejak T5c pencarian item dilakukan di server, daftar `opsi` dropdown hanya memuat
+item yang **sudah tersimpan** (`item_terpilih` dari RPC). `DropdownCari` mencari label terpilih hanya
+di daftar itu; item yang baru dipilih dari hasil pencarian tidak pernah masuk daftar, sehingga
+`terpilih` tidak ditemukan dan tombol memakai teks kosong. Akibat turunan: `petaItem` di
+`FormInputAlQuran` juga tidak mengenal item baru, sehingga keterangan "Bulan lalu" dan centang
+"khatam" (yang membaca `siklik`) tidak tampil.
+
+**Perbaikan (tanpa mengubah rumus):**
+- `DropdownCari`: objek pilihan yang diklik (nilai + label + `siklik`) disimpan di state komponen;
+  `onChange` meneruskan objek itu. Label benar walau item tidak ada di hasil pencarian terakhir.
+- `FormInputAlQuran`: item baru disimpan beserta label & `siklik`, sehingga keterangan bulan lalu,
+  centang khatam, dan nilai yang ditulis ke database memakai data yang benar.
+- `InputPage`: hasil pencarian menyertakan `siklik`; `itemTambahan` (duplikat `items` sejak T5c-2) dibuang.
+- Posisi, selisih, putaran, target, dan Hadir **tetap dibaca dari view database**.
+
+**Dampak data:** sebelum dan sesudah perbaikan, `progress_entries` tetap **2.036 baris** dan
+**0 baris** `entered_at` hari ini (baris seed bertanggal 22 Nov 2026, `entered_by` kosong). Uji E2E
+menyimpan satu capaian dummy untuk membuktikan tulisan database, lalu **mengembalikan baris itu
+persis** (item, putaran, entered_by, entered_at) — sudah diverifikasi; tidak ada baris yang dihapus.
+
+**Celah uji lama:** `smoke_e2e.py` hanya memeriksa halaman termuat, simpan berhasil, dan konsol bersih;
+ia tidak pernah memeriksa **teks tombol dropdown** setelah memilih. Uji baru
+`scripts/qa/test_input_dropdown_e2e.py` menutup celah itu: pilih dari daftar, pilih lewat pencarian,
+centang/batalkan khatam, simpan → periksa isi database → muat ulang → label harus tetap tampil.
+Hasil: **9/9 LULUS** lokal, data uji pulih (2.036 baris).
+
+**Uji lain:** `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, banding Excel 7/7,
+data awal 5/5, no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9,
+matriks RLS 38/46 OK (8 SKIP, 0 GAGAL), smoke E2E **29/29** lokal.
 
 ---
 

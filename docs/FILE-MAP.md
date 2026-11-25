@@ -51,7 +51,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `AppLayout.tsx` | Kerangka setelah login: header, menu samping (bisa dilipat jadi ikon), bilah bawah untuk HP, isi halaman ber-`isolate`. |
 | `AuthProvider.tsx` | Menyediakan profil pengguna yang login (dari tabel `profiles`) ke seluruh aplikasi. |
 | `NavLinks.tsx` | Menu dan ikon SVG-nya; submenu "Capaian" (Al Qur'an, Ilmu Wasilah, Ilmu Ghayah). |
-| `DropdownCari.tsx` | **Satu-satunya dropdown** yang boleh dipakai. Punya kotak cari (cocok teks + nomor), panel dilayangkan ke `<body>` dengan `LAPISAN_DROPDOWN = 60`, dan menulis "Menampilkan 60 dari N". |
+| `DropdownCari.tsx` | **Satu-satunya dropdown** yang boleh dipakai. Punya kotak cari (cocok teks + nomor), panel dilayangkan ke `<body>` dengan `LAPISAN_DROPDOWN = 60`, dan menulis "Menampilkan 60 dari N". Menyimpan objek pilihan (label & `siklik`) di state agar label tetap tampil walau item tidak ada di daftar/hasil pencarian terakhir; `onChange` meneruskan objek pilihan. |
 | `PemilihTahunBulan.tsx` | Dua dropdown terpisah: Tahun Hijriyah dan Bulan. Tidak pernah digabung. |
 | `PemilihHalaqah.tsx` | Dropdown halaqah berlabel "HLQ-PA-1 - Ust. Fulan 1" + fungsi `ambilGuru()`, `ambilPengampu()`, `halaqahDiampu()` untuk menyaring sesuai amanah. |
 | `KotakBelumLengkap.tsx` | Kotak "Data belum lengkap" (awal tahun s.d. bulan berjalan): ringkasan x/y per bulan, tabel santri belum lengkap dengan kepala kolom beku dua arah, saringan halaqah. |
@@ -131,6 +131,8 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
 | `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
+| `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. |
+| `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |
 | `scripts/qa/serve_dist.py` | Server statis `dist/` (SPA) untuk mengukur hasil build tanpa `serve`. |
 | `scripts/qa/compare_rabiul_awwal_excel.py` | Bandingkan HE/Hadir/izin-sakit-alpha/label+posisi capaian Rabiul Awwal DB vs Excel (109 santri, sampel 15); hanya baca. |
 | `scripts/qa/test_data_awal_tahun_kedua.py` | Tahun kedua tanpa bulan 0; Syawwal 1448 membandingkan Ramadhan 1447 (transaksi + ROLLBACK). |
