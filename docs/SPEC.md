@@ -21,12 +21,14 @@ Role: `mudir`, `admin`, `masul_alquran` (Masul Al Quran), `masul_wasilah` (Masul
 | Aksi | Mudir, Admin | Masul Al Quran / Masul Wasilah / Masul Ghayah | Musyrif/ah, Mudarris/ah |
 |---|---|---|---|
 | Melihat semua halaqah dan santri | Ya | Ya | Ya |
-| Input capaian, catatan, kehadiran | Semua halaqah, kapan saja | Halaqah yang diampu | Halaqah yang diampu |
+| Input capaian, catatan, kehadiran | Semua halaqah, kapan saja | **Ilmu Wasilah/Ilmu Ghayah:** semua halaqah di domainnya (penanggung jawab domain). **Al Qur'an:** halaqah yang diampu | Halaqah yang diampu |
 | Mengajukan target | Ya | Ya | Ya, halaqah yang diampu |
 | Menyetujui target | Ya | Hanya domain masing-masing | Tidak |
 | Hari Efektif, kunci bulan, pengguna | Ya | Tidak | Tidak |
 | Kurikulum, halaqah, pengampu | Ya | Hanya domain masing-masing | Tidak |
 Pengampu hanya bisa mengisi bulan yang belum terkunci. Mudir dan Admin bisa mengubah bulan terkunci. Hari Efektif khusus santri hanya Mudir/Admin.
+
+**Catatan (keputusan Mudir 25 November 2026, T6b):** Masul Wasilah dan Masul Ghayah adalah **penanggung jawab domain**, bukan hanya pengampu mata pelajaran. Mereka boleh menulis capaian **semua halaqah di domainnya** walau tidak tercatat di `halaqah_teachers`. Ditegakkan oleh policy `progress_insert_masul_domain` / `progress_update_masul_domain` (khusus `wasilah` dan `ghayah`) dan oleh `wasilah_can_write`. Yang **tidak** berubah: mereka tetap tidak boleh menyentuh domain lain, tetap tidak boleh menulis pada bulan terkunci, dan **Masul Al Quran tetap "halaqah yang diampu"** (belum ada keputusan untuk menyamakan).
 
 ## 4. Model data
 Skema ada di `supabase/migrations/`. Inti:
@@ -83,6 +85,17 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan. Target individu didahulukan dari target halaqah. Status: diajukan, disetujui, ditolak. Hanya yang disetujui dipakai.
 6. **Tampilan halaqah Wasilah dan Ghayah**: per mata pelajaran tampil Capaian Bulan Lalu, Capaian Bulan Ini, Selisih; lalu tabel anggota: Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan.
    Dilaksanakan di `src/pages/TabelWasilah.tsx` (T6a). Yang ditampilkan hanya mata pelajaran yang **ditetapkan untuk halaqah itu** (`halaqah_subjects`), bukan seluruh bidang domain; halaqah tanpa penetapan (mis. Level 6 Wasilah) menampilkan pesan, bukan tabel kosong. Anggota hanya dari `halaqah_members` dengan `left_on is null`. Semua angka (posisi, selisih, Hadir, Hari Efektif, target) dibaca dari `v_monthly_report`/`v_attendance`. Bulan yang belum diinput tampil "belum diisi", bukan 0.
+
+## 5c. Input Ilmu Wasilah dan Ilmu Ghayah (T6b)
+
+- **Sekali per halaqah x mata pelajaran**, disalin database ke **semua anggota aktif** (`halaqah_members.left_on is null`) dalam **satu transaksi**: `wasilah_input_save(halaqah, bulan, items)`. Bila satu mata pelajaran ditolak (bukan mapel halaqah, item bukan milik mapel itu, tidak berhak, bulan terkunci), **seluruh** penyimpanan batal - tidak ada penyimpanan sebagian.
+- **Anggota yang sudah keluar tidak ikut disalin**, dan baris lamanya tidak diubah. Menyimpan ulang memperbarui baris yang sama (tidak menggandakan) karena kunci unik `(student_id, subject_id, month_id)`.
+- **Bulan 0 (Data Awal) ditolak oleh fungsi**, bukan hanya disembunyikan di tampilan. **Bulan terkunci** ditolak untuk pengampu dan Masul; hanya Mudir/Admin yang boleh.
+- **Halaman**: `/input/wasilah` dan `/input/ghayah` (juga `/input/alquran`); `/input` tetap Al Qur'an. Domain yang ditawarkan mengikuti role (`domainInputUntuk` di `src/lib/roles.ts`); database tetap penjaga terakhir.
+- **Satu permintaan per tahap** (`wasilah_input_boot` untuk pembukaan, `wasilah_input_form` untuk isi) dan **pencarian item di server**. Halaman siap 0,86-0,87 s.
+- **Hadir dan Hari Efektif dibaca dari `v_attendance`**, tidak dihitung di React (migrasi `20261125000014`).
+- **Nilai tersimpan tampil kembali** saat halaman dibuka; label item disimpan beserta objeknya seperti perbaikan T5c-3.
+- **Hanya mata pelajaran yang ditetapkan halaqah** (`halaqah_subjects`) yang tampil. Halaqah tanpa penetapan (mis. Level 6 Wasilah) menampilkan pesan, bukan form kosong.
 
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.

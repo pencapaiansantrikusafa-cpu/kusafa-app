@@ -78,6 +78,10 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `LoginPage.tsx` | Formulir login (email + kata sandi) lewat Supabase Auth. |
 | `CapaianPage.tsx` | Halaman Capaian per domain; memilih halaqah, tahun, bulan. |
 | `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; untuk Wasilah/Ghayah masih menulis "dikerjakan pada T6". |
+| `InputPage.tsx` | Pemilih domain halaman Input; rute `/input`, `/input/alquran`, `/input/wasilah`, `/input/ghayah`. Domain mengikuti role (`domainInputUntuk`). |
+| `InputAlQuranPage.tsx` | Halaman Input Al Qur'an (T5/T5c-2); isi tidak berubah, hanya berkas dipisah dari pemilih domain. |
+| `InputWasilahPage.tsx` | Halaman Input Ilmu Wasilah/Ghayah: `wasilah_input_boot` + `wasilah_input_form`, pencarian item server, batas halaqah sesuai amanah. |
+| `FormInputWasilah.tsx` | Form input Wasilah/Ghayah: satu dropdown per **mata pelajaran** (bukan per santri), label pilihan disimpan beserta objeknya, tabel anggota dengan Hadir/HE dari database. |
 | `TabelWasilah.tsx` | Tabel capaian Ilmu Wasilah & Ilmu Ghayah (T6a): ringkasan Lalu/Kini/Selisih/target per mata pelajaran + tabel anggota (Hadir/HE, Izin, Sakit, Alpha, Catatan). Angka dari view; mata pelajaran dari `halaqah_subjects`. |
 | `TabelAlQuran.tsx` | Tabel Al Qur'an: kolom per bidang berisi Lalu / Kini / Selisih, target, Hadir/HE, sorotan di bawah target. |
 | `SantriPage.tsx` | Halaman satu santri: pilih domain + rentang (Semester 1/2/satu tahun), grafik dan riwayat. |
@@ -107,8 +111,8 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261124000013_...`
-(nomor `000010`-`000012` sudah terpakai).
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261125000017_...`
+(nomor `000010`-`000016` sudah terpakai).
 
 ---
 
@@ -133,6 +137,8 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
 | `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
+| `scripts/qa/test_t6b_input_wasilah.py` | Uji tulis Wasilah/Ghayah (29 uji, transaksi + ROLLBACK): salinan ke anggota, luar halaqah aman, anggota keluar aman, bulan 0/terkunci, item salah, RLS per role, Masul per domain, anon. |
+| `scripts/qa/test_t6b_e2e.py` | E2E tampilan Wasilah/Ghayah: pilih -> label tampil, simpan -> database semua anggota, muat ulang -> label tetap; data uji dipulihkan. |
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
 | `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. |
 | `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |

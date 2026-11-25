@@ -24,7 +24,8 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T5c-2 | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (STATUS 2f) | migrasi `000012`, `InputPage.tsx` |
 | T5c-3 | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — E2E 9/9, data utuh (STATUS 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx` |
 | T6a | Tabel capaian Wasilah & Ghayah | **SELESAI** (STATUS 2h) | `TabelWasilah.tsx`, `TabelCapaian.tsx`, `test_t6a_tabel.py` 14/14 |
-| T6b | Input Wasilah & Ghayah | **BERIKUTNYA** | - |
+| T6b | Input Wasilah & Ghayah | **SELESAI** (STATUS 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `test_t6b_*` 29/29 & 14/14 |
+| T6c | "Bulan lalu" tampil sejak awal | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | `scripts/qa/rls_matrix.py`, `test_no_halaqah.py`, `test_students_without_halaqah.py`, `run_pre_t6_db_tests.py` (sudah ada, belum lengkap) |
@@ -41,7 +42,11 @@ Pra-T6 rinci:
 
 ## 2. Tahap yang sedang dikerjakan
 
-**T5c, T5c-2, dan perbaikan T5c-3 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c), 2f (T5c-2), dan 2g (bug label dropdown). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
+**T6a, T6b, T6c SELESAI** (25 Nov 2026) — tabel Wasilah/Ghayah, input Wasilah/Ghayah, dan
+perbaikan "Bulan lalu". Rincian: `docs/STATUS.md` 2h (tabel), 2i (input), 2g (dropdown).
+**Tahap berikutnya: T7** (target dinamis) — belum boleh dimulai tanpa aba-aba Mudir.
+
+**Sebelumnya: T5c, T5c-2, dan perbaikan T5c-3 SELESAI** (24–25 Nov 2026) — rincian dan angka di `docs/STATUS.md` bagian 2e (T5c), 2f (T5c-2), dan 2g (bug label dropdown). Tidak ada pekerjaan yang berjalan di tengah; semua sudah di-commit dan di-push. Sebelumnya **Pra-T6 [6]** dan **[6a]** selesai (STATUS 2d, DATA-NOTES 3a).
 
 **Yang sudah jalan** — lihat `docs/STATUS.md`: login/menu per role, tabel & input Al Qur'an, halaman santri,
 notifikasi "data belum lengkap" dan "santri belum punya halaqah", deploy Vercel tersambung Supabase.
@@ -99,6 +104,16 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - **Nilai Hari Efektif kecil (mis. Syawwal 4, Rabiul Awwal 3) adalah sah** — jangan ditandai kesalahan dan jangan diubah tanpa konfirmasi Mudir (`AGENTS.md`, `SPEC.md` 4a-2).
 - Excel sumber **tidak perlu diubah**; `BZ5:BZ113` = 3 memang benar.
 
+### 3d. Keputusan Mudir 25 November 2026 (T6b) — sudah final
+
+- **Masul Wasilah dan Masul Ghayah adalah penanggung jawab domain**, bukan hanya pengampu mata pelajaran. Mereka **boleh menulis capaian semua halaqah di domainnya** walau tidak tercatat di `halaqah_teachers`.
+  - Ditegakkan oleh `wasilah_can_write` dan policy `progress_insert_masul_domain` / `progress_update_masul_domain`.
+  - Policy itu **khusus `wasilah` dan `ghayah`**. **Masul Al Quran TIDAK ikut berubah** (tetap "halaqah yang diampu"); menyamakannya harus diputuskan Mudir terpisah.
+  - Masul tetap **tidak boleh** menulis di domain lain dan **tetap ditolak pada bulan terkunci**.
+  - Alasan: pada data dummy, Masul Wasilah dan Masul Ghayah tidak tercatat sebagai pengampu mana pun, sehingga tanpa keputusan ini mereka tidak bisa menginput sama sekali.
+- **Data uji E2E boleh menulis** asalkan dipulihkan otomatis dan jumlah baris diverifikasi (dipakai di `test_t6b_e2e.py`: 2.039 → 2.039).
+- **Catatan:** 3 baris `progress_entries` bulan Jumadal Ula (25 Nov 2026, `entered_by = Admin`) **bukan** dari pekerjaan T6 — sudah ada sebelum T6 dimulai (2.036 → 2.039) dan **tidak disentuh**. Perlu dikonfirmasi Mudir bila itu percobaan.
+
 ### 3c. Keputusan Mudir 25 November 2026 (T6) — sudah final
 
 - **Aba-aba T6:** boleh dimulai, dipecah **T6a (tabel)** lalu **T6b (input)**; satu sub-tugas satu commit.
@@ -123,13 +138,13 @@ Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_yea
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`.
 Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adalah koneksi Postgres Supabase yang dipakai skrip lokal (`scripts/db/run_sql.py`, seed, uji QA); tipe spesifik (pooler langsung vs transaction-pooler) periksa di Dashboard supaya tidak keliru dipakai dari luar.
 
-- **Migrasi dijalankan (12)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search`, `20261124000012_input_alquran_data` (T5c-2).
+- **Migrasi dijalankan (16)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search`, `20261124000012_input_alquran_data` (T5c-2), `20261125000013_wasilah_input`, `20261125000014_wasilah_input_hadir`, `20261125000015_masul_domain_write`, `20261125000016_masul_domain_scope_fix` (T6b).
 - **Auth**: `disable_signup = true`, provider email **aktif** (`external.email=true`), `mailer_autoconfirm=false`. Signup ditolak `422 signup_disabled`; login 7 role lulus (24 Nov 2026). Diubah lewat Management API (`PATCH /v1/projects/<ref>/config/auth`).
 - **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **38 OK / 8 SKIP / 0 GAGAL**.
 - **Fungsi trigger**: `attendance_guard_override()` kini **tanpa** EXECUTE untuk authenticated/anon/PUBLIC; trigger tetap berjalan (SECURITY DEFINER).
 - **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=3 karena libur, Syawwal=4); `is_locked` semua `false`.
 - **Ekstensi**: `pg_trgm` dipasang di skema **`extensions`** (bukan `public`) untuk indeks pencarian label.
-- **Fungsi/view**: 24 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
+- **Fungsi/view**: 28 fungsi public; 4 view (`v_monthly_report`, `_base`, `v_attendance`, `v_months_ordered`).
 
 ---
 

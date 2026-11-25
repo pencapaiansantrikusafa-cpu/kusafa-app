@@ -7,7 +7,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `fb3a708` - perbaikan bug label dropdown Input (T5c-3) |
+| Commit terakhir | `028b56d` - T6b input Wasilah & Ghayah (T6c: `94fb899`) |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 
@@ -35,7 +35,8 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T5c-3** | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — uji E2E 9/9, data utuh (lihat 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx`, bagian 2g |
 | **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
 | **T6a** | Tabel capaian Wasilah & Ghayah | **SELESAI** (lihat 2h) | `src/pages/TabelWasilah.tsx`, `TabelCapaian.tsx`; uji `scripts/qa/test_t6a_tabel.py` 14/14 | — |
-| **T6b** | Input Wasilah & Ghayah | **BELUM** | - | Prasyarat T6a selesai |
+| **T6b** | Input Wasilah & Ghayah | **SELESAI** (lihat 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `FormInputWasilah.tsx`; uji DB 29/29, E2E 14/14 | — |
+| **T6c** | "Bulan lalu" tampil sejak awal (laporan Mudir) | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 | — |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
@@ -294,6 +295,52 @@ notifikasi menulis "capaian Ilmu Wasilah"/"capaian Ilmu Ghayah" (bukan Al Qur'an
 
 ---
 
+## 2i. T6b/T6c - Input Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
+
+**Aturan yang dilaksanakan:** input **sekali per halaqah x mata pelajaran**, disalin database ke
+**semua anggota aktif** dalam **satu transaksi**; bulan 0 dan bulan terkunci ditolak oleh fungsi.
+
+**Migrasi**
+| Nomor | Isi |
+|---|---|
+| `20261125000013_wasilah_input.sql` | `wasilah_input_boot`, `wasilah_input_form`, `wasilah_input_save`, `wasilah_can_write`. SECURITY INVOKER, cek staf di dalam fungsi, anon tanpa EXECUTE. |
+| `20261125000014_wasilah_input_hadir.sql` | Form memuat `hadir` & `effective_days` dari `v_attendance`; sebelumnya form menghitungnya di React (dilarang). |
+| `20261125000015_masul_domain_write.sql` | **Keputusan Mudir:** Masul Wasilah/Masul Ghayah = penanggung jawab domain; policy tulis tambahan. |
+| `20261125000016_masul_domain_scope_fix.sql` | **Koreksi temuan uji:** policy 000015 ikut memberi Masul Al Quran akses semua halaqah Al Qur'an. Dibatasi ke `wasilah`/`ghayah`; Al Qur'an tidak berubah. |
+
+**Halaman**
+- `/input` tetap Al Qur'an; `/input/alquran`, `/input/wasilah`, `/input/ghayah`.
+  Domain yang ditawarkan mengikuti role (`domainInputUntuk`): Mudir/Admin tiga domain, Masul satu
+  domain, Musyrif/ah Al Qur'an, Mudarris/ah Wasilah+Ghayah. Database tetap penjaga terakhir.
+- **Satu permintaan per tahap** + **pencarian item di server**: halaman siap **0,86–0,87 s**
+  (5 putaran; satu putaran 1,36 s karena jaringan). Target <1,5 s tercapai.
+- Satu dropdown item **per mata pelajaran** (bukan per santri), memakai `DropdownCari` yang
+  menyimpan objek pilihan + labelnya — pelajaran bug T5c-3. Nilai tersimpan tampil saat dibuka.
+- Hanya mata pelajaran yang **ditetapkan halaqah** (`halaqah_subjects`) yang tampil. Level 6
+  Wasilah (belum punya mapel) menampilkan pesan, bukan form kosong — penetapannya T8.
+- Anggota yang tidak ikut halaqah domain itu tidak ditampilkan (023/024 tetap kasus uji).
+
+**T6c (laporan Mudir saat T6):** keterangan "Bulan lalu" dulu baru muncul setelah item dipilih.
+Kini tampil **sejak awal** (termasuk saat dropdown masih "— belum diisi —"), datanya dari view
+(teks + putaran), bukan hitungan React. Bukti: bulan Jumadal Akhir — 3 dropdown kosong,
+3 baris "Bulan lalu" berisi ("Karima - 1 (putaran 2)" dan seterusnya).
+
+**Uji**
+- `test_t6b_input_wasilah.py` **29/29**: salinan ke semua anggota; santri luar halaqah tidak
+  tersentuh; anggota keluar tidak diubah; simpan ulang tidak menggandakan; dua mapel sekaligus;
+  bulan 0 ditolak; item/mapel salah ditolak; RLS per role (14-22e); Masul tetap ditolak pada bulan
+  terkunci dan pada Al Qur'an; anon ditolak; rollback bersih.
+- `test_t6b_e2e.py` **14/14** (lokal): pilih → label tampil; simpan → database untuk semua anggota
+  dengan item sama; muat ulang → label tetap tampil; konsol bersih; data uji dipulihkan.
+- `test_t6a_tabel.py` **14/14**; E2E dropdown Al Qur'an **10/10** (termasuk langkah a2 baru).
+- Matriks RLS **44/52 OK, 8 SKIP, 0 GAGAL** (6 sel baru untuk Masul per domain).
+- Smoke per role **43/43** lokal (naik dari 29: tiap role kini juga memeriksa `/input/wasilah`
+  dan `/input/ghayah`, termasuk bahwa role yang tidak berhak **dialihkan**).
+- `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, Excel 7/7, data awal 5/5,
+  no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9.
+
+---
+
 ---
 
 ## 3. Status Supabase
@@ -301,7 +348,7 @@ notifikasi menulis "capaian Ilmu Wasilah"/"capaian Ilmu Ghayah" (bukan Al Qur'an
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-12 berkas migrasi, **keduabelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+16 berkas migrasi, **keenambelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -317,9 +364,12 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261124000010 | attendance_guard_revoke |
 | 20261124000011 | curriculum_search (T5c) |
 | 20261124000012 | input_alquran_data (T5c-2) |
+| 20261125000013 | wasilah_input (T6b) |
+| 20261125000014 | wasilah_input_hadir (T6b) |
+| 20261125000015 | masul_domain_write (T6b) |
+| 20261125000016 | masul_domain_scope_fix (T6b) |
 
-Migrasi berikutnya wajib memakai nomor `20261124000013_...` dan **tidak boleh** mengubah berkas lama.
-(Perhatikan: nomor `000010` di tanggal 24 sudah terpakai, jadi lanjut dari `000011`.)
+Migrasi berikutnya wajib memakai nomor `20261125000017_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
 - **18 dari 18 tabel** memiliki `relrowsecurity = true`.
@@ -327,7 +377,7 @@ Migrasi berikutnya wajib memakai nomor `20261124000013_...` dan **tidak boleh** 
 - Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **24 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot`. Daftar lengkap di `docs/FILE-MAP.md`.
+- **28 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write`. Daftar lengkap di `docs/FILE-MAP.md`.
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)

@@ -41,6 +41,18 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - Hasil: halaman siap **1,44-1,95 s -> 0,97 s median produksi** (0,93-0,99 s lokal); HP 360 ~0,95-1,05 s; permintaan data 3.
 - Perhitungan identik (114 baris; paket RPC vs view: 0 beda). QA: npm test 14/14, DB 16/16, regresi 7/7, smoke 29/29 lokal & 28/28 produksi.
 
+### T6b - Input Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
+- Migrasi `000013`: `wasilah_input_boot`, `wasilah_input_form`, `wasilah_input_save`, `wasilah_can_write`. Input sekali per halaqah x mapel, disalin ke semua anggota aktif dalam satu transaksi (semua-atau-tidak-sama-sekali). Bulan 0 & bulan terkunci ditolak. SECURITY INVOKER, cek staf di dalam fungsi, anon tanpa EXECUTE.
+- Migrasi `000014`: Hadir & Hari Efektif dari `v_attendance` (sebelumnya form menghitung di React - dilarang).
+- Migrasi `000015`: keputusan Mudir - Masul Wasilah/Ghayah = penanggung jawab domain (policy tulis).
+- Migrasi `000016`: koreksi temuan uji - policy 000015 ikut memberi Masul Al Quran akses semua halaqah Al Qur'an; dibatasi ke wasilah/ghayah.
+- Halaman `/input/wasilah` & `/input/ghayah` (plus `/input/alquran`): satu RPC per tahap, pencarian item di server, satu dropdown per mata pelajaran. Halaman siap **0,86-0,87 s**.
+- Uji: DB `test_t6b_input_wasilah.py` **29/29**; E2E `test_t6b_e2e.py` **14/14**; matriks RLS **44 OK/8 SKIP/0 GAGAL**; smoke per role **43/43**.
+
+### T6c - "Bulan lalu" tampil sejak awal (25 November 2026)
+- Laporan Mudir: keterangan "Bulan lalu" baru muncul setelah item dipilih. Kini selalu tampil, termasuk saat dropdown masih kosong; datanya dari view.
+- Uji E2E Al Qur'an bertambah langkah a2 (bulan Jumadal Akhir): 3 dropdown kosong + "Bulan lalu" berisi. **10/10**.
+
 ### T6a - Tabel capaian Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
 - `src/pages/TabelWasilah.tsx` (baru): per mata pelajaran Lalu / Kini / Selisih / target, lalu tabel anggota Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan (SPEC 5.6). Semua angka dari `v_monthly_report`/`v_attendance`.
 - `TabelCapaian.tsx`: tulisan "dikerjakan pada T6" dihapus; anggota hanya `left_on is null`; mata pelajaran dari `halaqah_subjects`.
