@@ -134,6 +134,33 @@ def main() -> int:
             catat("a. nilai tersimpan tampil saat dibuka", all(PLACEHOLDER not in t for t in awal), teks=awal[:3])
             page.screenshot(path=str(FOTO / "e2e_01_terbuka.png"), full_page=True)
 
+            # a2. "Bulan lalu" harus tampil SEJAK AWAL, walau item bulan ini belum dipilih.
+            #     Dipakai bulan Jumadal Akhir: belum ada capaian, bulan sebelumnya terisi.
+            page.click("#input-bulan")
+            page.wait_for_selector('[role="option"]', timeout=20000)
+            page.get_by_role("option", name="Jumadal Akhir", exact=True).first.click()
+            page.wait_for_timeout(3000)
+            isi = page.inner_text("main")
+            kosong = [
+                b for b in page.query_selector_all('button[id^="item-"]')
+                if PLACEHOLDER in b.inner_text()
+            ]
+            baris_lalu = [l for l in isi.split("\n") if "Bulan lalu" in l]
+            catat(
+                "a2. 'Bulan lalu' tampil sejak awal (dropdown belum dipilih)",
+                bool(kosong) and len(baris_lalu) >= len(kosong)
+                and not all("belum diisi" in l for l in baris_lalu),
+                dropdown_kosong=len(kosong),
+                baris_bulan_lalu=[l.strip()[:70] for l in baris_lalu],
+            )
+            page.screenshot(path=str(FOTO / "e2e_00_bulan_lalu_sejak_awal.png"), full_page=True)
+
+            # Kembali ke bulan uji semula untuk langkah berikutnya.
+            page.click("#input-bulan")
+            page.wait_for_selector('[role="option"]', timeout=20000)
+            page.get_by_role("option", name=BULAN, exact=True).first.click()
+            page.wait_for_timeout(2800)
+
             # b. pilih dari daftar
             page.query_selector_all('button[id^="item-"]')[0].click()
             page.wait_for_selector('[role="option"]', timeout=20000)

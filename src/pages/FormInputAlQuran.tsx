@@ -499,25 +499,28 @@ export default function FormInputAlQuran({
                             opsiKosong="— belum diisi —"
                             placeholderCari={`Cari ${bd.name} (mis. "qura")...`}
                           />
-                          {item && (
-                            <p className="mt-1 text-[11px] text-gray-600">
-                              {(() => {
-                                const info = infoLalu[`${b.santri_id}|${bd.id}`];
-                                if (info?.teks) {
-                                  return (
-                                    <>
-                                      Bulan lalu: <span className="text-gray-800">{info.teks}</span>
-                                      {pLalu !== null ? ` (putaran ${pLalu})` : ""}
-                                    </>
-                                  );
-                                }
-                                if (b.putaranLalu[bd.id] !== null || b.posLalu[bd.id] !== null) {
-                                  return "Bulan lalu: teks capaian belum tersedia.";
-                                }
-                                return "Bulan lalu: belum diisi.";
-                              })()}
-                            </p>
-                          )}
+                          {/*
+                            "Bulan lalu" tampil SEJAK AWAL, juga sebelum item bulan ini dipilih:
+                            guru perlu tahu titik terakhir santri untuk menentukan capaian baru.
+                            Datanya dari view (teks dropdown + putaran), bukan hasil hitungan React.
+                          */}
+                          <p className="mt-1 text-[11px] text-gray-600">
+                            {(() => {
+                              const info = infoLalu[`${b.santri_id}|${bd.id}`];
+                              if (info?.teks) {
+                                return (
+                                  <>
+                                    Bulan lalu: <span className="text-gray-800">{info.teks}</span>
+                                    {pLalu !== null ? ` (putaran ${pLalu})` : ""}
+                                  </>
+                                );
+                              }
+                              if (b.putaranLalu[bd.id] !== null || b.posLalu[bd.id] !== null) {
+                                return "Bulan lalu: teks capaian belum tersedia.";
+                              }
+                              return "Bulan lalu: belum diisi.";
+                            })()}
+                          </p>
                           {/* Penanda, bukan pertanyaan: capaian tersimpan sudah lebih kecil dari
                               bulan lalu tetapi bidang ini tidak diubah pada kunjungan ini. */}
                           {(() => {
