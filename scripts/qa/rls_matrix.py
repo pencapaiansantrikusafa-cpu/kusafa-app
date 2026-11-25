@@ -151,10 +151,9 @@ rec("musyrif", "progress_entries", "insert(halaqah lain)", "DITOLAK(RLS)",
 for role, exp in (("mudir", "DITERIMA"), ("admin", "DITERIMA")):
     rec(role, "progress_entries", "insert", exp,
         probe(role, PID[role], INS_PROG, (st_lain, bulan_syawal, sub_alquran, item_alquran)))
-# Masul Al Quran: menulis hanya halaqah yang diampu. Profil masul_alquran ke-1 (yang dipakai
-# uji ini) tidak terdaftar sebagai halaqah_teachers alquran mana pun (taught=0), jadi baris bagi
-# santri mana pun di halaqah lain ditolak — konsisten dengan "hanya halaqah diampu".
-rec("masul_alquran", "progress_entries", "insert(halaqah tak diampu oleh profil uji)", "DITOLAK(RLS)",
+# Masul Al Quran (T6d2, keputusan Mudir 25 Nov 2026): boleh input di SEMUA halaqah Al Qur'an,
+# termasuk halaqah yang tidak dicatat sebagai ampuannya. Domain lain tetap ditolak (diuji di atas).
+rec("masul_alquran", "progress_entries", "insert(halaqah tak diampu oleh profil uji)", "DITERIMA",
     probe("masul_alquran", PID["masul_alquran"], INS_PROG, (st_lain, bulan_syawal, sub_alquran, item_alquran)))
 
 # Masul Wasilah/Masul Ghayah = penanggung jawab domain (keputusan Mudir 25 Nov 2026, T6b).
@@ -167,16 +166,81 @@ sub_gh2 = satu("select id from public.subjects where domain='ghayah' order by so
 item_gh = satu(
     "select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id "
     "where b.subject_id=%s and ci.is_active order by ci.seq limit 1", (sub_gh2,))
+# T6d2 (keputusan Mudir 25 Nov 2026): KETIGA Masul boleh input di SEMUA halaqah domainnya.
 for role, sub, item, exp in (
     ("masul_wasilah", sub_was, item_was, "DITERIMA"),
     ("masul_wasilah", sub_gh2, item_gh, "DITOLAK(RLS)"),
     ("masul_ghayah", sub_gh2, item_gh, "DITERIMA"),
     ("masul_ghayah", sub_was, item_was, "DITOLAK(RLS)"),
+    ("masul_alquran", sub_alquran, item_alquran, "DITERIMA"),
     ("masul_alquran", sub_was, item_was, "DITOLAK(RLS)"),
     ("musyrif", sub_was, item_was, "DITOLAK(RLS)"),
 ):
-    rec(role, "progress_entries", f"insert(domain {'wasilah' if sub == sub_was else 'ghayah'})", exp,
+    nama_domain = ("alquran" if sub == sub_alquran else "wasilah" if sub == sub_was else "ghayah")
+    rec(role, "progress_entries", f"insert(domain {nama_domain})", exp,
         probe(role, PID[role], INS_PROG, (st_lain, bulan_syawal, sub, item)))
+
+# Kehadiran & catatan: Masul domainnya DITERIMA di halaqah yang bukan ampuannya;
+# domain lain DITOLAK; pengampu (musyrif) tetap DITOLAK di halaqah lain.
+INS_ATT_W = ("insert into public.attendance (student_id,month_id,domain,izin,sakit,alpha) "
+             "values (%s,%s,%s,0,0,0) on conflict (student_id,month_id,domain) do update set izin=0")
+INS_NOTE_W = ("insert into public.monthly_notes (student_id,month_id,domain,note) "
+              "values (%s,%s,%s,'uji rls') on conflict (student_id,month_id,domain) do update set note='uji rls'")
+for role, dom, exp in (
+    ("masul_alquran", "alquran", "DITERIMA"),
+    ("masul_alquran", "wasilah", "DITOLAK(RLS)"),
+    ("masul_wasilah", "wasilah", "DITERIMA"),
+    ("masul_wasilah", "ghayah", "DITOLAK(RLS)"),
+    ("masul_ghayah", "ghayah", "DITERIMA"),
+    ("masul_ghayah", "alquran", "DITOLAK(RLS)"),
+    ("musyrif", "wasilah", "DITOLAK(RLS)"),
+):
+    rec(role, "attendance", f"insert(domain {dom})", exp,
+        probe(role, PID[role], INS_ATT_W, (st_lain, bulan_syawal, dom)))
+    rec(role, "monthly_notes", f"insert(domain {dom})", exp,
+        probe(role, PID[role], INS_NOTE_W, (st_lain, bulan_syawal, dom)))
+
+# Hapus: hanya Mudir/Admin. Masul & pengampu ditolak.
+#
+# Baris sasaran dibuat DI DALAM transaksi probe (sebelum SET ROLE) lalu ikut di-ROLLBACK,
+# supaya uji ini tidak meninggalkan baris capaian/kehadiran di database. Sebelumnya baris
+# sasaran di-COMMIT lebih dulu, dan 1 baris capaian Wasilah tertinggal di data produksi.
+INS_PROG_W = ("insert into public.progress_entries (student_id,month_id,subject_id,item_id,putaran) "
+              "values (%s,%s,%s,%s,1) on conflict (student_id,subject_id,month_id) do update set putaran=excluded.putaran")
+
+
+def probe_hapus(role, pid, siapkan_sql, siapkan_params, sql, params):
+    """Siapkan baris sasaran sebagai postgres, lalu coba HAPUS sebagai role. Selalu ROLLBACK."""
+    conn.execute("begin")
+    try:
+        conn.execute(siapkan_sql, siapkan_params)
+        if role == "anon":
+            conn.execute("set local role anon")
+        else:
+            conn.execute("set local role authenticated")
+            conn.execute("select set_config('request.jwt.claim.sub', %s, true)", (pid,))
+            conn.execute("select set_config('request.jwt.claim.role', 'authenticated', true)")
+        cur = conn.execute(sql, params)
+        n = cur.rowcount if cur.rowcount is not None else 0
+        return "DITERIMA" if n > 0 else "DITOLAK(RLS)"
+    except psycopg.errors.InsufficientPrivilege:
+        return "DITOLAK(RLS)"
+    except Exception as e:  # noqa: BLE001
+        return f"DITOLAK({type(e).__name__})"
+    finally:
+        conn.rollback()
+
+
+for role, exp in (("masul_wasilah", "DITOLAK(RLS)"), ("masul_alquran", "DITOLAK(RLS)"),
+                  ("musyrif", "DITOLAK(RLS)"), ("mudir", "DITERIMA")):
+    rec(role, "progress_entries", "delete", exp,
+        probe_hapus(role, PID[role], INS_PROG_W, (st_lain, bulan_syawal, sub_was, item_was),
+                    "delete from public.progress_entries where student_id=%s and month_id=%s "
+                    "and subject_id=%s", (st_lain, bulan_syawal, sub_was)))
+    rec(role, "attendance", "delete", exp,
+        probe_hapus(role, PID[role], INS_ATT_W, (st_lain, bulan_syawal, "wasilah"),
+                    "delete from public.attendance where student_id=%s and month_id=%s and domain='wasilah'",
+                    (st_lain, bulan_syawal)))
 
 # ---------------------------------------------------------------- 3. attendance pada bulan terkunci
 INS_ATT = ("insert into public.attendance (student_id,month_id,domain,izin,sakit,alpha) "
