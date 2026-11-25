@@ -312,8 +312,9 @@ notifikasi menulis "capaian Ilmu Wasilah"/"capaian Ilmu Ghayah" (bukan Al Qur'an
 - `/input` tetap Al Qur'an; `/input/alquran`, `/input/wasilah`, `/input/ghayah`.
   Domain yang ditawarkan mengikuti role (`domainInputUntuk`): Mudir/Admin tiga domain, Masul satu
   domain, Musyrif/ah Al Qur'an, Mudarris/ah Wasilah+Ghayah. Database tetap penjaga terakhir.
-- **Satu permintaan per tahap** + **pencarian item di server**: halaman siap **0,86–0,87 s**
-  (5 putaran; satu putaran 1,36 s karena jaringan). Target <1,5 s tercapai.
+- **Satu permintaan per tahap** + **pencarian item di server**: halaman siap **0,86–0,87 s lokal**
+  dan **median 0,95 s produksi** (5 putaran per domain). Target <1,5 s tercapai. Satu putaran
+  produksi sempat 1,55 s karena jaringan ke database `ap-southeast-1`.
 - Satu dropdown item **per mata pelajaran** (bukan per santri), memakai `DropdownCari` yang
   menyimpan objek pilihan + labelnya — pelajaran bug T5c-3. Nilai tersimpan tampil saat dibuka.
 - Hanya mata pelajaran yang **ditetapkan halaqah** (`halaqah_subjects`) yang tampil. Level 6
@@ -330,12 +331,14 @@ Kini tampil **sejak awal** (termasuk saat dropdown masih "— belum diisi —"),
   tersentuh; anggota keluar tidak diubah; simpan ulang tidak menggandakan; dua mapel sekaligus;
   bulan 0 ditolak; item/mapel salah ditolak; RLS per role (14-22e); Masul tetap ditolak pada bulan
   terkunci dan pada Al Qur'an; anon ditolak; rollback bersih.
-- `test_t6b_e2e.py` **14/14** (lokal): pilih → label tampil; simpan → database untuk semua anggota
-  dengan item sama; muat ulang → label tetap tampil; konsol bersih; data uji dipulihkan.
+- `test_t6b_e2e.py` **14/14 lokal** dan **13/14 produksi** (satu putaran 1,55 s > batas 1,5 s pada
+  pengukuran pertama; pengukuran 5 putaran terpisah memberi median 0,95 s): pilih → label tampil;
+  simpan → database untuk semua anggota dengan item sama; muat ulang → label tetap tampil;
+  konsol bersih; data uji dipulihkan.
 - `test_t6a_tabel.py` **14/14**; E2E dropdown Al Qur'an **10/10** (termasuk langkah a2 baru).
 - Matriks RLS **44/52 OK, 8 SKIP, 0 GAGAL** (6 sel baru untuk Masul per domain).
-- Smoke per role **43/43** lokal (naik dari 29: tiap role kini juga memeriksa `/input/wasilah`
-  dan `/input/ghayah`, termasuk bahwa role yang tidak berhak **dialihkan**).
+- Smoke per role **43/43** lokal dan **42/42** produksi (naik dari 29: tiap role kini juga memeriksa
+  `/input/wasilah` dan `/input/ghayah`, termasuk bahwa role yang tidak berhak **dialihkan**).
 - `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, Excel 7/7, data awal 5/5,
   no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9.
 
