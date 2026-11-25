@@ -40,6 +40,7 @@ export default function App() {
         <Route path="capaian/:domain" element={<CapaianPage />} />
         <Route path="santri/:id" element={<SantriPage />} />
         <Route path="input" element={<InputPage />} />
+        <Route path="input/:domain" element={<InputPage />} />
         {items
           .filter((i) => i.key !== "capaian" && i.key !== "input")
           .map((i) => (

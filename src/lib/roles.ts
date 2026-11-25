@@ -73,6 +73,32 @@ export function hanyaHalaqahDiampu(role: AppRole): boolean {
   );
 }
 
+/**
+ * Domain yang boleh DILIHAT/DIPILIH di halaman Input untuk role ini (docs/SPEC.md bagian 3).
+ * Mudir/Admin: semua. Masul Al Quran hanya Al Qur'an, Masul Wasilah hanya Ilmu Wasilah,
+ * Masul Ghayah hanya Ilmu Ghayah. Musyrif/ah mengampu Al Qur'an; Mudarris/ah mengampu
+ * Wasilah/Ghayah. Database tetap penjaga terakhir (RLS + cek di dalam fungsi).
+ */
+export function domainInputUntuk(role: AppRole): Domain[] {
+  switch (role) {
+    case "mudir":
+    case "admin":
+      return ["alquran", "wasilah", "ghayah"];
+    case "masul_alquran":
+      return ["alquran"];
+    case "masul_wasilah":
+      return ["wasilah"];
+    case "masul_ghayah":
+      return ["ghayah"];
+    case "musyrif":
+      return ["alquran"];
+    case "mudarris":
+      return ["wasilah", "ghayah"];
+    default:
+      return [];
+  }
+}
+
 /** Pemberitahuan "data belum lengkap" dibatasi ke halaqah sendiri untuk guru pengampu. */
 export function batasiPemberitahuan(role: AppRole): boolean {
   return role === "musyrif" || role === "mudarris";

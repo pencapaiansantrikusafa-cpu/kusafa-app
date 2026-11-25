@@ -83,8 +83,8 @@ interface DataInput {
   setelah: Array<{ student_id: string; subject_id: string }>;
 }
 
-/** Halaman Input capaian. T5: hanya Al Qur'an (Wasilah/Ghayah di T6). */
-export default function InputPage() {
+/** Halaman Input capaian Al Qur'an (T5, T5c, T5c-2). */
+export default function InputAlQuranPage() {
   const { profile } = useAuth();
   const [halaqahList, setHalaqahList] = useState<Halaqah[]>([]);
   const [halaqahId, setHalaqahId] = useState("");

@@ -17,6 +17,12 @@ interface Bidang {
   name: string;
 }
 
+/** Baris penetapan mata pelajaran per halaqah. */
+interface Grant {
+  halaqah_id: string;
+  subject_id: string;
+}
+
 /** Ringkasan "x/y terisi" untuk satu bulan, per halaqah. */
 interface RingkasBulan {
   monthId: string;
@@ -55,9 +61,10 @@ function domainNotifikasi(role: string): Domain[] {
   return [];
 }
 
-/** Label baku halaqah: "HLQ-PA-4 - Ust. Fulan 3" (nama musyrif/ah selalu ikut). */
-function labelHalaqahNotif(code: string, musyrif: string): string {
-  return musyrif ? `${code} - ${musyrif}` : `${code} - musyrif/ah belum ditetapkan`;
+/** Label baku halaqah: "HLQ-PA-4 - Ust. Fulan 3" (nama pengampu selalu ikut). */
+function labelHalaqahNotif(code: string, musyrif: string, domain: Domain = "alquran"): string {
+  const sebutan = domain === "alquran" ? "musyrif/ah" : "pengampu";
+  return musyrif ? `${code} - ${musyrif}` : `${code} - ${sebutan} belum ditetapkan`;
 }
 
 /**
@@ -80,8 +87,11 @@ export default function KotakBelumLengkap({
   halaqahAwal,
   guruAwal,
   tunda = false,
+  domain = "alquran",
 }: {
   bulanId: string;
+  /** Domain yang diperiksa (T6b: halaman Input Ilmu Wasilah/Ghayah). */
+  domain?: Domain;
   /** Halaqah yang boleh dilihat (dari halaman induk; tidak diunduh ulang). */
   halaqahAwal?: { id: string; code: string }[];
   /** Pengampu tiap halaqah (dari halaman induk; tidak diunduh ulang). */
@@ -130,7 +140,7 @@ export default function KotakBelumLengkap({
       if (halaqahAwal !== undefined && halaqahAwal.length === 0) return;
       if (guruAwal !== undefined && guruAwal.length === 0) return;
       try {
-        const DOMAIN = "alquran";
+        const DOMAIN = domain;
         // 1. Urutan bulan lintas tahun.
         const { data: urutan, error: e1 } = await supabase
           .from("v_months_ordered")
@@ -194,6 +204,28 @@ export default function KotakBelumLengkap({
           return;
         }
 
+        // 4b. Mata pelajaran yang ditetapkan per halaqah. Untuk Al Qur'an, semua bidang
+        //     domain dipakai (perilaku lama). Untuk Wasilah/Ghayah, hanya mapel halaqah itu:
+        //     halaqah boleh hanya punya satu mata pelajaran (mis. Kelompok 1 = Aqidah dan Fiqih).
+        const { data: penetapan, error: e6 } = await supabase
+          .from("halaqah_subjects")
+          .select("halaqah_id, subject_id")
+          .in("halaqah_id", idHalaqah);
+        if (e6) throw new Error(e6.message);
+        const mapelHalaqah = new Map<string, Set<string>>();
+        for (const r of (penetapan ?? []) as unknown as Grant[]) {
+          const set = mapelHalaqah.get(r.halaqah_id) ?? new Set<string>();
+          set.add(r.subject_id);
+          mapelHalaqah.set(r.halaqah_id, set);
+        }
+        /** Bidang yang wajib terisi untuk satu halaqah. */
+        const bidangHalaqah = (halaqahId: string): Bidang[] => {
+          if (domain === "alquran") return bidang;
+          const ids = mapelHalaqah.get(halaqahId);
+          if (!ids || ids.size === 0) return [];
+          return bidang.filter((bd) => ids.has(bd.id));
+        };
+
         const { data: anggota, error: e3 } = await supabase
           .from("halaqah_members")
           .select("student_id, halaqah_id")
@@ -220,9 +252,15 @@ export default function KotakBelumLengkap({
         const ada = new Set(
           ((capaian ?? []) as Baris[]).map((c) => `${c.student_id}|${c.subject_id}|${c.month_id}`),
         );
-        /** Santri lengkap bila punya capaian di semua bidang aktif bulan itu. */
-        const lengkap = (studentId: string, monthId: string) =>
-          bidang.every((bd) => ada.has(`${studentId}|${bd.id}|${monthId}`));
+        /**
+         * Santri lengkap bila punya capaian di semua bidang yang berlaku untuk halaqahnya
+         * pada bulan itu. Halaqah tanpa penetapan mapel (mis. Level 6) tidak dinilai.
+         */
+        const lengkap = (studentId: string, halaqahId: string, monthId: string) => {
+          const perlu = bidangHalaqah(halaqahId);
+          if (perlu.length === 0) return true;
+          return perlu.every((bd) => ada.has(`${studentId}|${bd.id}|${monthId}`));
+        };
 
         const { data: siswa, error: e5 } = await supabase
           .from("students")
@@ -238,7 +276,7 @@ export default function KotakBelumLengkap({
         // 7. Daftar santri yang belum lengkap.
         const santri: SantriKurang[] = daftarAnggota
           .map((a) => {
-            const kosong = bulanDiperiksa.filter((b) => !lengkap(a.student_id, b.id));
+            const kosong = bulanDiperiksa.filter((b) => !lengkap(a.student_id, a.halaqah_id, b.id));
             return {
               id: a.student_id,
               nama: petaNama.get(a.student_id) ?? a.student_id,
@@ -254,7 +292,7 @@ export default function KotakBelumLengkap({
 
         // 8. Ringkasan "x/y terisi" per bulan.
         const ringkas: RingkasBulan[] = bulanDiperiksa.map((b) => {
-          const terisi = daftarAnggota.filter((a) => lengkap(a.student_id, b.id)).length;
+          const terisi = daftarAnggota.filter((a) => lengkap(a.student_id, a.halaqah_id, b.id)).length;
           return { monthId: b.id, nama: b.name, total: daftarAnggota.length, terisi };
         });
 
@@ -269,7 +307,7 @@ export default function KotakBelumLengkap({
     return () => {
       aktif = false;
     };
-  }, [bulanId, boleh, batasiAmanah, profile, halaqahAwal, guruAwal, tunda]);
+  }, [bulanId, boleh, batasiAmanah, profile, halaqahAwal, guruAwal, tunda, domain]);
 
   // Notifikasi turunan: santri aktif yang belum punya halaqah di domain yang
   // boleh dilihat role ini. Hak lihat ditegakkan database (fungsi security
@@ -451,6 +489,7 @@ export default function KotakBelumLengkap({
                   label: labelHalaqahNotif(
                     h.code,
                     (musyrifMap[h.id] ?? []).join(", "),
+                    domain,
                   ),
                   cariJuga: (musyrifMap[h.id] ?? []).join(", "),
                 }))}
