@@ -24,6 +24,9 @@ export const ROLE_LABEL: Record<AppRole, string> = {
   wali: "Wali Santri",
 };
 
+/** Urutan baku domain di seluruh aplikasi (tab, menu, laporan). */
+export const DOMAIN_URUT: Domain[] = ["alquran", "wasilah", "ghayah"];
+
 export const DOMAIN_LABEL: Record<Domain, string> = {
   alquran: "Al Qur'an",
   wasilah: "Ilmu Wasilah",
@@ -99,6 +102,19 @@ export function domainInputUntuk(role: AppRole): Domain[] {
   }
 }
 
+/**
+ * Domain yang boleh DILIHAT di halaman Capaian untuk role ini.
+ *
+ * Ini **bukan aturan akses baru**: ketiga domain memang sudah dapat dibaca semua staf
+ * (RLS `progress_read`/`halaqahs_read`/`students_read` memakai `is_staff()`, dan menu
+ * Capaian sejak awal menampilkan ketiga submenu untuk semua role). Fungsi ini hanya
+ * memusatkan aturan itu supaya tab tidak pernah menawarkan domain yang tidak boleh.
+ * Bila kelak Capaian dibatasi per domain, cukup ubah fungsi ini dan RLS-nya bersama.
+ */
+export function domainCapaianUntuk(role: AppRole): Domain[] {
+  return navItemsFor(role).some((i) => i.key === "capaian") ? [...DOMAIN_URUT] : [];
+}
+
 /** Pemberitahuan "data belum lengkap" dibatasi ke halaqah sendiri untuk guru pengampu. */
 export function batasiPemberitahuan(role: AppRole): boolean {
   return role === "musyrif" || role === "mudarris";
@@ -114,16 +130,13 @@ export function isPeninjau(role: AppRole): boolean {
  * Ini hanya kenyamanan tampilan: penjagaan sebenarnya ada di RLS database.
  */
 export function navItemsFor(role: AppRole): NavItem[] {
+  // Capaian tidak lagi memakai submenu: ketiga domain dipilih lewat TAB di dalam
+  // halaman (komponen `TabDomain`), sama seperti halaman Input.
   const capaian: NavItem = {
     key: "capaian",
     label: "Capaian",
     path: "/capaian/alquran",
     description: "Melihat capaian santri per halaqah dan bulan.",
-    children: [
-      { label: "Al Qur'an", path: "/capaian/alquran" },
-      { label: "Ilmu Wasilah", path: "/capaian/wasilah" },
-      { label: "Ilmu Ghayah", path: "/capaian/ghayah" },
-    ],
   };
   const input: NavItem = {
     key: "input",
