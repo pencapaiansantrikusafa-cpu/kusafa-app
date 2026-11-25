@@ -1,0 +1,181 @@
+{
+  "base": "http://localhost:4173",
+  "langkah": [
+    {
+      "langkah": "a. buka santri yang sudah punya nilai",
+      "teks": [
+        "Tilawah · Al Qur'an - 125",
+        "Tahfidz · An Nazi'at - 29",
+        "Kitabah · Menyalin - 74"
+      ],
+      "gagal": 0
+    },
+    {
+      "langkah": "b. pilih item dari daftar",
+      "dipilih": "Tilawah · Karima - 1",
+      "tampil": "Tilawah · Karima - 1",
+      "gagal": false
+    },
+    {
+      "langkah": "c. pilih lewat pencarian 'quraisy'",
+      "dipilih": "Tahfidz · Quraisy - 1",
+      "tampil": "Tahfidz · Quraisy - 1",
+      "gagal": false
+    },
+    {
+      "langkah": "d. centang / batalkan 'khatam, mulai putaran baru'",
+      "item_siklik": "Tilawah · Al Qur'an - 351",
+      "tampil": "Tilawah · Al Qur'an - 351",
+      "placeholder": false,
+      "jumlah_checkbox": 1,
+      "bisa_dicentang": true,
+      "dicentang": true,
+      "dibatalkan": true
+    },
+    {
+      "langkah": "e. muat ulang halaman (tanpa simpan)",
+      "teks": [
+        "Tilawah · Al Qur'an - 125",
+        "Tahfidz · An Nazi'at - 29",
+        "Kitabah · Menyalin - 74"
+      ],
+      "gagal": 0
+    }
+  ],
+  "roles": {
+    "mudir": {
+      "jumlah_combobox": 7,
+      "item_dropdown": 3,
+      "placeholder_pada_item": 0,
+      "rincian": [
+        {
+          "id": "input-halaqah",
+          "teks": "HLQ-PA-1 - Ust. Fulan 1 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-tahun",
+          "teks": "1447 H ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-bulan",
+          "teks": "Rabiul Awwal ▾",
+          "placeholder": false
+        },
+        {
+          "id": "belum-lengkap-halaqah",
+          "teks": "Semua halaqah ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-c7982d7b-4aa7-5fdb-9996-842e5fe5cee6",
+          "teks": "Tilawah · Al Qur'an - 125 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-f9612224-c5fe-5283-aed3-592da99c1524",
+          "teks": "Tahfidz · An Nazi'at - 29 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-370dc13e-ae93-559b-93c8-844f8e9c5003",
+          "teks": "Kitabah · Menyalin - 74 ▾",
+          "placeholder": false
+        }
+      ]
+    },
+    "admin": {
+      "jumlah_combobox": 7,
+      "item_dropdown": 3,
+      "placeholder_pada_item": 0,
+      "rincian": [
+        {
+          "id": "input-halaqah",
+          "teks": "HLQ-PA-1 - Ust. Fulan 1 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-tahun",
+          "teks": "1447 H ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-bulan",
+          "teks": "Rabiul Awwal ▾",
+          "placeholder": false
+        },
+        {
+          "id": "belum-lengkap-halaqah",
+          "teks": "Semua halaqah ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-c7982d7b-4aa7-5fdb-9996-842e5fe5cee6",
+          "teks": "Tilawah · Al Qur'an - 125 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-f9612224-c5fe-5283-aed3-592da99c1524",
+          "teks": "Tahfidz · An Nazi'at - 29 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-370dc13e-ae93-559b-93c8-844f8e9c5003",
+          "teks": "Kitabah · Menyalin - 74 ▾",
+          "placeholder": false
+        }
+      ]
+    },
+    "masul_alquran": {
+      "galat": "Locator.wait_for: Timeout 60000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Simpan\", exact=True).first to be visible\n"
+    },
+    "masul_wasilah": {
+      "galat": "Locator.wait_for: Timeout 60000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Simpan\", exact=True).first to be visible\n"
+    },
+    "masul_ghayah": {
+      "galat": "Locator.wait_for: Timeout 60000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Simpan\", exact=True).first to be visible\n"
+    },
+    "musyrif": {
+      "jumlah_combobox": 6,
+      "item_dropdown": 3,
+      "placeholder_pada_item": 0,
+      "rincian": [
+        {
+          "id": "input-halaqah",
+          "teks": "HLQ-PA-1 - Ust. Fulan 1 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-tahun",
+          "teks": "1447 H ▾",
+          "placeholder": false
+        },
+        {
+          "id": "input-bulan",
+          "teks": "Rabiul Awwal ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-c7982d7b-4aa7-5fdb-9996-842e5fe5cee6",
+          "teks": "Tilawah · Al Qur'an - 125 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-f9612224-c5fe-5283-aed3-592da99c1524",
+          "teks": "Tahfidz · An Nazi'at - 29 ▾",
+          "placeholder": false
+        },
+        {
+          "id": "item-f08b69f4-91c7-5782-80c6-2a0f9c57146b-370dc13e-ae93-559b-93c8-844f8e9c5003",
+          "teks": "Kitabah · Menyalin - 74 ▾",
+          "placeholder": false
+        }
+      ]
+    },
+    "mudarris": {
+      "galat": "Locator.wait_for: Timeout 60000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Simpan\", exact=True).first to be visible\n"
+    }
+  },
+  "galat_konsol": []
+}
