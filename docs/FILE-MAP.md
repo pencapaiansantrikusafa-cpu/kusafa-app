@@ -78,6 +78,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `LoginPage.tsx` | Formulir login (email + kata sandi) lewat Supabase Auth. |
 | `CapaianPage.tsx` | Halaman Capaian per domain; memilih halaqah, tahun, bulan. |
 | `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; untuk Wasilah/Ghayah masih menulis "dikerjakan pada T6". |
+| `TabelWasilah.tsx` | Tabel capaian Ilmu Wasilah & Ilmu Ghayah (T6a): ringkasan Lalu/Kini/Selisih/target per mata pelajaran + tabel anggota (Hadir/HE, Izin, Sakit, Alpha, Catatan). Angka dari view; mata pelajaran dari `halaqah_subjects`. |
 | `TabelAlQuran.tsx` | Tabel Al Qur'an: kolom per bidang berisi Lalu / Kini / Selisih, target, Hadir/HE, sorotan di bawah target. |
 | `SantriPage.tsx` | Halaman satu santri: pilih domain + rentang (Semester 1/2/satu tahun), grafik dan riwayat. |
 | `InputPage.tsx` | Halaman Input: pilih halaqah + tahun + bulan, daftar santri, Hari Efektif domain, kotak belum lengkap. Memuat item per buku (label diberi nama mata pelajaran). |
@@ -116,6 +117,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | Berkas | Fungsi |
 |---|---|
 | `scripts/check_repo_safety.py` | Memeriksa repo sebelum commit: menolak `.env`, `.xlsx`, `.zip`, seed SQL, `users.csv`, token, kunci rahasia. |
+| `scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql` | **DUMMY**: Hari Efektif Wasilah & Ghayah = Al Qur'an bulan 1-7 + baris kehadiran 0/0/0. Idempoten, tidak menimpa nilai yang ada. Wajib diganti data asli. |
 | `scripts/db/fixes/2026-11-24_rabiul_awwal_revert_to_3.sql` | Pemulihan Hari Efektif Rabiul Awwal 19 → 3 (koreksi Mudir). |
 | `scripts/db/fixes/2026-11-24_rabiul_awwal_effective_days.sql` | **DIBATALKAN** — skrip 3→19 keliru; hanya jejak riwayat, diberi penghenti keras. |
 | `scripts/db/run_sql.py` | Menjalankan berkas SQL atau satu query ke database tanpa `psql`; membaca `DATABASE_URL` dari `.env.local` dan tidak pernah mencetaknya. |
@@ -131,6 +133,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
 | `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
+| `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
 | `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. |
 | `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |
 | `scripts/qa/serve_dist.py` | Server statis `dist/` (SPA) untuk mengukur hasil build tanpa `serve`. |

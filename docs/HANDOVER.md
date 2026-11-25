@@ -1,6 +1,6 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-**Terakhir diperbarui**: 25 November 2026, commit `fb3a708` (perbaikan bug label dropdown Input).
+**Terakhir diperbarui**: 25 November 2026, tahap T6a selesai (tabel Wasilah & Ghayah).
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` adalah sumber kebenaran kondisi nyata; berkas ini menjelaskan **apa yang harus dikerjakan berikutnya**.
 Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service role) atau data santri asli di berkas ini.
@@ -23,7 +23,8 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T5c | Percepat halaman Input (pencarian item di server) | **SELESAI** (STATUS 2e) | migrasi `000011`, `InputPage.tsx`, `DropdownCari.tsx` (`diServer`), `KotakBelumLengkap.tsx` |
 | T5c-2 | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (STATUS 2f) | migrasi `000012`, `InputPage.tsx` |
 | T5c-3 | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — E2E 9/9, data utuh (STATUS 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx` |
-| T6 | Tabel & input Wasilah & Ghayah | **BELUM (next, menunggu aba-aba Mudir)** | - |
+| T6a | Tabel capaian Wasilah & Ghayah | **SELESAI** (STATUS 2h) | `TabelWasilah.tsx`, `TabelCapaian.tsx`, `test_t6a_tabel.py` 14/14 |
+| T6b | Input Wasilah & Ghayah | **BERIKUTNYA** | - |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
 | T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | - |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | `scripts/qa/rls_matrix.py`, `test_no_halaqah.py`, `test_students_without_halaqah.py`, `run_pre_t6_db_tests.py` (sudah ada, belum lengkap) |
@@ -98,6 +99,21 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - **Nilai Hari Efektif kecil (mis. Syawwal 4, Rabiul Awwal 3) adalah sah** — jangan ditandai kesalahan dan jangan diubah tanpa konfirmasi Mudir (`AGENTS.md`, `SPEC.md` 4a-2).
 - Excel sumber **tidak perlu diubah**; `BZ5:BZ113` = 3 memang benar.
 
+### 3c. Keputusan Mudir 25 November 2026 (T6) — sudah final
+
+- **Aba-aba T6:** boleh dimulai, dipecah **T6a (tabel)** lalu **T6b (input)**; satu sub-tugas satu commit.
+- **Hari Efektif Syawwal 1447 = 4 hari adalah BENAR.** Bulan pembuka tahun ajaran: libur memotong setengah Ramadhan dan setengah Syawwal. Nilai kecil itu **sah**; jangan ditandai janggal, jangan dinaikkan. **Ramadhan kemungkinan juga pendek** — jangan "dilengkapi" tanpa data Mudir.
+- **Hari Efektif Wasilah & Ghayah = DUMMY (izin khusus, hanya untuk Hari Efektif dan kehadiran).**
+  - Urutan yang diperintahkan: (1) turunkan dari Excel Wasilah/Ghayah bila ada kolom HE, atau HE = Hadir + izin + sakit + alpha; (2) jika tidak ada, **samakan dengan nilai Al Qur'an per bulan**.
+  - **Hasil pemeriksaan:** `data/source/4-Ilmu Wasilah.xlsx` dan `5-Ilmu Ghayah.xlsx` **tidak punya** kolom HE/Hadir/izin/sakit/alpha. Maka dipakai aturan (2).
+  - Cakupan: **bulan 1–7 saja** (sama dengan Al Qur'an). Bulan 8–12 tetap kosong untuk semua domain sampai T8.
+  - Skrip: `scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql` (aman dijalankan ulang, **tidak menimpa** nilai yang sudah ada).
+  - **Kehadiran 0/0/0**: Mudir memilih membuat baris `attendance` izin/sakit/alpha = 0 untuk semua anggota × bulan 1–7, karena tanpa baris kehadiran Hadir tetap kosong. Konsekuensi yang dicatat: sementara ini **semua santri tercatat hadir penuh** di Wasilah/Ghayah.
+  - Ditandai **DUMMY** di `docs/DATA-NOTES.md` butir 3 dan `docs/STATUS.md` 2h. **Wajib diganti data asli lewat T8/T10.**
+  - Izin ini **hanya** untuk Hari Efektif (dan baris kehadiran nol yang mengikutinya). Data lain yang kurang **harus ditanyakan** lebih dulu, tidak boleh dikarang (tidak ada capaian, target, atau catatan karangan).
+- **Data uji E2E boleh menulis**, dengan syarat dipulihkan otomatis dan jumlah baris diverifikasi kembali (pola uji T5c-3).
+- **Keanggotaan 023/024 tetap kasus uji resmi** (023 tidak di Ghayah; 024 hanya Al Qur'an): di domain yang tidak diikuti santri **tidak ditampilkan**.
+
 Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_years`; semua dropdown `DropdownCari` (panel layang `z-60`); tahun & bulan dua dropdown terpisah; label item ber-awalan nama bidang; daftar panjang wajib `ambilSemua`; frontend hanya `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`; migrasi lama **tidak diubah** (berikutnya `20261121000010_...`).
 
 ---
@@ -129,11 +145,11 @@ Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adal
 Masih terbuka:
 
 1. **Repo masih PUBLIK** sampai T10. Wajib privat sebelum data asli dimuat (`gh repo edit --visibility private`).
-2. **Hari Efektif Syawwal 1447 = 4 hari** (bulan lain 15–21). Apakah memang bulan pembuka yang tidak penuh, atau angkanya salah? Belum diubah; hanya dicatat (`STATUS.md` 2d).
+2. ~~**Hari Efektif Syawwal 1447 = 4 hari**~~ — **TERJAWAB (Mudir, 25 Nov 2026):** **BENAR**. Bulan pembuka tahun ajaran; libur memotong setengah Ramadhan dan setengah Syawwal. Nilai kecil itu sah dan tidak boleh ditandai janggal. Ramadhan kemungkinan juga pendek (lihat Keputusan final 3b).
 3. **Data Awal (252 capaian)** dipertahankan; dikosongkan saat data asli? Keputusan T10.
 4. **69 capaian dummy mundur** — disepakati dibiarkan; konfirmasi ulang sebelum T9.
 5. **Level 6 (4 santri)** belum punya pengampu/jadwal — apa yang ditampilkan (T8).
-6. **Hari Efektif hanya ada untuk Al Qur'an bulan 1–7**; bulan 8–12 dan Wasilah/Ghayah belum punya (layar pengisian di T8).
+6. ~~**Hari Efektif hanya ada untuk Al Qur'an bulan 1–7**~~ — **SEBAGIAN TERJAWAB (Mudir, 25 Nov 2026):** Wasilah dan Ghayah kini punya Hari Efektif **DUMMY** bulan 1-7 (izin khusus, disamakan dengan Al Qur'an) + kehadiran 0/0/0. Bulan 8-12 **masih belum** punya untuk domain mana pun; layar pengisiannya T8. Lihat Keputusan final 3c dan DATA-NOTES butir 3.
 7. **Matriks RLS: 8 sel SKIP** — butuh profil wali dan contoh target berstatus `diajukan` (T9).
 
 ---

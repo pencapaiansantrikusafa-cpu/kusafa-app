@@ -34,7 +34,8 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T5c-2** | Satu permintaan per tahap (boot + isi form) | **SELESAI** — 0,97 s median produksi (lihat 2f) | migrasi `000012`, `InputPage.tsx`, bagian 2f |
 | **T5c-3** | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — uji E2E 9/9, data utuh (lihat 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx`, bagian 2g |
 | **Pra-T6 [6]** | Jawaban Mudir + verifikasi & penutupan celah | **SELESAI** | bagian 2d: `scripts/qa/test_auth_signup_closed.py`, `regression_execute.py`, `smoke_e2e.py`, `test_data_awal_tahun_kedua.py`, migrasi `000010` | Urutan berikutnya: merge react-router (**sudah**), T5c percepat input, lalu T6 |
-| **T6** | Tabel dan input Wasilah & Ghayah | **BELUM** (berikutnya; belum boleh dimulai tanpa aba-aba Mudir) | `TabelCapaian.tsx` masih menulis "dikerjakan pada T6" | Prasyarat T5c **sudah selesai** |
+| **T6a** | Tabel capaian Wasilah & Ghayah | **SELESAI** (lihat 2h) | `src/pages/TabelWasilah.tsx`, `TabelCapaian.tsx`; uji `scripts/qa/test_t6a_tabel.py` 14/14 | — |
+| **T6b** | Input Wasilah & Ghayah | **BELUM** | - | Prasyarat T6a selesai |
 | **T7** | Target dinamis (ajukan/setujui) | **BELUM** | Rute `/target` memakai `PlaceholderPage` | - |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **BELUM** | Baru `tests/putaran.test.mjs` (6 uji) + uji manual ad hoc | Uji RLS otomatis belum dibuat; uji tulis RLS manual pernah dilakukan (lihat HANDOVER) |
@@ -255,6 +256,43 @@ Hasil: **9/9 LULUS** lokal dan **9/9 LULUS** di produksi; data uji pulih (2.036 
 **Uji lain:** `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, banding Excel 7/7,
 data awal 5/5, no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9,
 matriks RLS 38/46 OK (8 SKIP, 0 GAGAL), smoke E2E **29/29** lokal & **28/28** produksi.
+
+## 2h. T6a - Tabel capaian Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
+
+**Aba-aba Mudir:** T6 boleh dimulai, dipecah T6a (tabel) lalu T6b (input).
+
+**Yang diubah**
+- `src/pages/TabelWasilah.tsx` (baru): per mata pelajaran **Capaian bulan lalu / bulan ini / selisih / target**,
+  lalu tabel anggota **Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan** (bentuk `docs/SPEC.md` 5.6).
+- `TabelCapaian.tsx`: tulisan "dikerjakan pada T6" dihapus; Wasilah/Ghayah memakai `TabelWasilah`.
+  Anggota kini hanya dari `halaqah_members` dengan `left_on is null`; mata pelajaran dari `halaqah_subjects`.
+- `PemilihTahunBulan.tsx`: notifikasi "data belum lengkap" kini **per domain** (sebelumnya selalu menulis
+  "capaian Al Qur'an" walau halaman Wasilah/Ghayah). Yang dihitung hanya santri yang punya halaqah di domain itu
+  dan hanya mata pelajaran yang ditetapkan halaqahnya.
+
+**Tidak ada perhitungan di React.** Posisi, selisih, Hadir, Hari Efektif, dan target dibaca dari
+`v_monthly_report` / `v_attendance`. Bulan kosong = "belum diisi", bukan 0.
+
+**Data DUMMY (izin khusus Mudir)**
+- `scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql`: Hari Efektif **Wasilah & Ghayah = Al Qur'an**
+  untuk bulan 1-7, plus kehadiran **0/0/0** untuk tiap anggota (dipilih Mudir, karena tanpa baris kehadiran
+  Hadir tetap kosong). Skrip aman dijalankan ulang dan **tidak menimpa** nilai yang sudah ada.
+- Alasan: Excel Wasilah/Ghayah **tidak punya** kolom HE/Hadir/izin/sakit/alpha.
+- Hasil: 14 baris `month_domain_settings` Wasilah/Ghayah (HE 3-21), 756 baris kehadiran Wasilah,
+  749 baris kehadiran Ghayah, total absen 0. **Wajib diganti data asli di T8/T10** (DATA-NOTES butir 3).
+- **Tidak** dibuat `progress_entries` (capaian), target, atau catatan: itu tugas T6b/T7 dan tidak boleh dikarang.
+
+**Uji `scripts/qa/test_t6a_tabel.py`: 14/14 LULUS** — baris view selalu punya entri asli; posisi = `item_position`;
+Hadir = HE − (izin+sakit+alpha); santri tanpa halaqah tidak muncul (023/024); tidak ada posisi 0 palsu;
+0 baris capaian Wasilah/Ghayah (belum dikarang); halaqah tanpa mata pelajaran dikenali (Level 6);
+HE DUMMY = Al Qur'an bulan 1-7 dan tidak melebar ke bulan 8-12; kehadiran DUMMY 0/0/0 tanpa override;
+tiap anggota punya kehadiran 7 bulan; anon 0 baris (RLS); authenticated boleh membaca `halaqah_subjects`.
+
+**Tampilan diuji (Playwright, role Mudir):** halaman Capaian Ilmu Wasilah dan Ilmu Ghayah termuat tanpa galat
+konsol, tulisan "dikerjakan pada T6" hilang, tabel anggota tampil (6 santri Level 1A, 13 santri Kelompok 1),
+notifikasi menulis "capaian Ilmu Wasilah"/"capaian Ilmu Ghayah" (bukan Al Qur'an).
+
+---
 
 ---
 

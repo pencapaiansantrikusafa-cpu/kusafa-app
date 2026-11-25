@@ -41,6 +41,13 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - Hasil: halaman siap **1,44-1,95 s -> 0,97 s median produksi** (0,93-0,99 s lokal); HP 360 ~0,95-1,05 s; permintaan data 3.
 - Perhitungan identik (114 baris; paket RPC vs view: 0 beda). QA: npm test 14/14, DB 16/16, regresi 7/7, smoke 29/29 lokal & 28/28 produksi.
 
+### T6a - Tabel capaian Ilmu Wasilah & Ilmu Ghayah (25 November 2026)
+- `src/pages/TabelWasilah.tsx` (baru): per mata pelajaran Lalu / Kini / Selisih / target, lalu tabel anggota Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan (SPEC 5.6). Semua angka dari `v_monthly_report`/`v_attendance`.
+- `TabelCapaian.tsx`: tulisan "dikerjakan pada T6" dihapus; anggota hanya `left_on is null`; mata pelajaran dari `halaqah_subjects`.
+- `PemilihTahunBulan.tsx`: notifikasi "data belum lengkap" per domain (dulu selalu "capaian Al Qur'an").
+- **DUMMY (izin Mudir):** `scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql` - Hari Efektif Wasilah/Ghayah = Al Qur'an bulan 1-7 + kehadiran 0/0/0. Excel sumber tidak punya kolom HE. Wajib diganti data asli (T8/T10).
+- Uji `scripts/qa/test_t6a_tabel.py` **14/14**; tampilan diuji Playwright (Mudir) untuk kedua domain, konsol bersih.
+
 ### T5c-3 - Perbaikan bug label dropdown Input (25 November 2026)
 - **Laporan Mudir (produksi):** setelah memilih item, dropdown tetap menulis "— belum diisi —".
 - **Akar masalah:** pada mode pencarian server (T5c), `opsi` dropdown hanya berisi item yang sudah tersimpan; item yang baru dipilih tidak masuk daftar sehingga `DropdownCari` tidak menemukan labelnya. Akibat turunan: keterangan "Bulan lalu" dan centang "khatam" juga tidak muncul karena item baru tidak dikenali.
