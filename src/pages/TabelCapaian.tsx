@@ -6,6 +6,7 @@ import { DOMAIN_LABEL, type Domain } from "../lib/roles";
 import { supabase } from "../lib/supabase";
 import { angka, type BarisLaporan } from "../lib/laporan";
 import TabelAlQuran from "./TabelAlQuran";
+import TabelWasilah, { type BarisHadir } from "./TabelWasilah";
 
 interface Halaqah {
   id: string;
@@ -41,6 +42,11 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   const [baris, setBaris] = useState<BarisLaporan[]>([]);
   const [santri, setSantri] = useState<Santri[]>([]);
   const [bidang, setBidang] = useState<Bidang[]>([]);
+  /** Mata pelajaran yang ditetapkan untuk halaqah terpilih (`halaqah_subjects`). */
+  const [bidangHalaqah, setBidangHalaqah] = useState<Bidang[]>([]);
+  /** Kehadiran + catatan (Wasilah/Ghayah): keduanya dari tabel/view, bukan hitungan React. */
+  const [hadir, setHadir] = useState<BarisHadir[]>([]);
+  const [catatan, setCatatan] = useState<Record<string, string>>({});
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
   const [detail, setDetail] = useState<Santri | null>(null);
@@ -113,7 +119,9 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     setMemuat(true);
     setGalat(null);
     async function muat() {
-      const [r, m] = await Promise.all([
+      // Anggota diambil dari keanggotaan aktif halaqah ini saja. Santri yang tidak ikut
+      // halaqah pada domain ini (mis. 1447.dummy-nis.023 di Ghayah) tidak pernah masuk.
+      const [r, m, hs] = await Promise.all([
         supabase
           .from("v_monthly_report")
           .select(
@@ -122,33 +130,69 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           .eq("halaqah_id", halaqahId)
           .eq("month_id", bulanId)
           .eq("domain", domain),
-        supabase.from("halaqah_members").select("student_id").eq("halaqah_id", halaqahId),
+        supabase
+          .from("halaqah_members")
+          .select("student_id")
+          .eq("halaqah_id", halaqahId)
+          .is("left_on", null),
+        supabase.from("halaqah_subjects").select("subject_id").eq("halaqah_id", halaqahId),
       ]);
       if (!aktif) return;
-      if (r.error || m.error) {
-        setGalat(r.error?.message ?? m.error?.message ?? null);
+      if (r.error || m.error || hs.error) {
+        setGalat(r.error?.message ?? m.error?.message ?? hs.error?.message ?? null);
         setMemuat(false);
         return;
       }
       const anggota = (m.data ?? []).map((x) => x.student_id);
-      const { data: st, error: e2 } = anggota.length
-        ? await supabase.from("students").select("id, full_name").in("id", anggota).order("full_name")
-        : { data: [], error: null };
+      const mapelHalaqah = new Set((hs.data ?? []).map((x) => x.subject_id));
+
+      const [st, att, notes] = await Promise.all([
+        anggota.length
+          ? supabase.from("students").select("id, full_name").in("id", anggota).order("full_name")
+          : Promise.resolve({ data: [], error: null }),
+        anggota.length
+          ? supabase
+              .from("v_attendance")
+              .select("student_id, effective_days, izin, sakit, alpha, hadir")
+              .eq("month_id", bulanId)
+              .eq("domain", domain)
+              .in("student_id", anggota)
+          : Promise.resolve({ data: [], error: null }),
+        anggota.length
+          ? supabase
+              .from("monthly_notes")
+              .select("student_id, note")
+              .eq("month_id", bulanId)
+              .eq("domain", domain)
+              .in("student_id", anggota)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
       if (!aktif) return;
-      if (e2) {
-        setGalat(e2.message);
+      if (st.error || att.error || notes.error) {
+        setGalat(st.error?.message ?? att.error?.message ?? notes.error?.message ?? null);
         setMemuat(false);
         return;
       }
       setBaris((r.data ?? []) as unknown as BarisLaporan[]);
-      setSantri((st ?? []) as Santri[]);
+      setSantri((st.data ?? []) as Santri[]);
+      setHadir((att.data ?? []) as unknown as BarisHadir[]);
+      setCatatan(
+        Object.fromEntries(
+          ((notes.data ?? []) as Array<{ student_id: string; note: string }>).map((n) => [
+            n.student_id,
+            n.note,
+          ]),
+        ),
+      );
+      // Wasilah/Ghayah: hanya mata pelajaran yang ditetapkan halaqah ini (urutan `subjects`).
+      setBidangHalaqah(bidang.filter((bd) => mapelHalaqah.has(bd.id)));
       setMemuat(false);
     }
     void muat();
     return () => {
       aktif = false;
     };
-  }, [halaqahId, bulanId, domain]);
+  }, [halaqahId, bulanId, domain, bidang]);
 
   function gantiTahun(t: number) {
     setTahun(t);
@@ -162,17 +206,18 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   const ringkasanHp = useMemo(() => {
     const peta = new Map<string, BarisLaporan>();
     for (const b of baris) peta.set(`${b.student_id}|${b.subject_id}`, b);
+    const daftarBidang = domain === "alquran" ? bidang : bidangHalaqah;
     return santri.map((s) => {
       const masalah: string[] = [];
       const kosong: string[] = [];
-      for (const bd of bidang) {
+      for (const bd of daftarBidang) {
         const r = peta.get(`${s.id}|${bd.id}`);
         if (!r || r.pos === null || r.target_monthly === null) kosong.push(bd.name);
         else if (r.below_target) masalah.push(bd.name);
       }
       return { santri: s, masalah, kosong };
     });
-  }, [santri, bidang, baris]);
+  }, [santri, bidang, bidangHalaqah, domain, baris]);
 
   const pengampuTerpilih = pengampu[halaqahId] ?? "";
 
@@ -199,6 +244,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
             idAwalan={`tahun-bulan-${domain}`}
             onTahun={gantiTahun}
             onBulan={setBulanId}
+            domain={domain}
             catatan="Pembanding otomatis bulan sebelumnya."
           />
         </div>
@@ -260,12 +306,15 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
               {domain === "alquran" ? (
                 <TabelAlQuran santri={santri} baris={baris} bidang={bidang} memuat={memuat} />
               ) : (
-                <div className="px-4 py-8 text-center text-sm text-gray-700">
-                  <p>
-                    Tabel Wasilah/Ghayah (per mata pelajaran: Capaian Bulan Lalu, Bulan Ini, Selisih,
-                    lalu daftar anggota) dikerjakan pada <strong>T6</strong>.
-                  </p>
-                </div>
+                <TabelWasilah
+                  santri={santri}
+                  baris={baris}
+                  bidang={bidangHalaqah}
+                  hadir={hadir}
+                  catatan={catatan}
+                  domain={domain}
+                  memuat={memuat}
+                />
               )}
             </div>
           </>
@@ -289,7 +338,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
       {detail && (
         <DialogDetail
           santri={detail}
-          bidang={bidang}
+          bidang={domain === "alquran" ? bidang : bidangHalaqah}
           baris={baris}
           domain={domain}
           namaHalaqah={halaqahList.find((h) => h.id === halaqahId)?.code ?? ""}

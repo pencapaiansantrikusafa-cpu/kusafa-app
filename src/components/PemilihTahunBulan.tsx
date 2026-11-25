@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import DropdownCari from "./DropdownCari";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth-context";
-import { isPeninjau } from "../lib/roles";
+import { isPeninjau, type Domain } from "../lib/roles";
 
 export interface BulanData {
   id: string;
@@ -23,6 +23,11 @@ interface Props {
   /** Sembunyikan bulan "Data Awal" (month_no 0) untuk form input. */
   tanpaDataAwal?: boolean;
   catatan?: string;
+  /**
+   * Domain yang diperiksa notifikasi "data belum lengkap". Sebelumnya selalu
+   * Al Qur'an sehingga halaman Ilmu Wasilah/Ilmu Ghayah menulis "capaian Al Qur'an".
+   */
+  domain?: Domain;
 }
 
 /**
@@ -39,6 +44,7 @@ export default function PemilihTahunBulan({
   idAwalan,
   tanpaDataAwal = false,
   catatan,
+  domain = "alquran",
 }: Props) {
   const daftarTahun = useMemo(
     () => [...new Set(bulan.map((b) => Number(b.hijri_year)))].sort((a, b) => a - b),
@@ -74,7 +80,7 @@ export default function PemilihTahunBulan({
           placeholderCari="Ketik bulan..."
         />
         {catatan && <p className="mt-1 text-xs text-gray-500">{catatan}</p>}
-        {Number(tahun) && <PenandaBelumLengkap bulanId={bulanId} />}
+        {Number(tahun) && <PenandaBelumLengkap bulanId={bulanId} domain={domain} />}
       </div>
     </div>
   );
@@ -86,12 +92,23 @@ interface BarisLengkap {
   month_id: string;
 }
 
+const NAMA_DOMAIN: Record<Domain, string> = {
+  alquran: "Al Qur'an",
+  wasilah: "Ilmu Wasilah",
+  ghayah: "Ilmu Ghayah",
+};
+
 /**
  * Pemberitahuan "data belum lengkap" per bulan untuk laman Capaian.
  * Hanya untuk Mudir/Admin/Masul (guru lain hanya melihat halaqahnya di halaman Input).
  * Bulan dikosongkan = belum diisi, bukan 0 (docs/SPEC.md).
+ *
+ * Diperiksa per domain: yang dihitung hanya santri yang punya halaqah aktif di domain
+ * itu (santri tanpa halaqah dilaporkan kotak notifikasi tersendiri), dan hanya mata
+ * pelajaran yang ditetapkan untuk halaqahnya. Definisi "lengkap" mengikuti perilaku
+ * yang sudah dipakai untuk Al Qur'an: sedikitnya satu mata pelajaran sudah terisi.
  */
-function PenandaBelumLengkap({ bulanId }: { bulanId: string }) {
+function PenandaBelumLengkap({ bulanId, domain }: { bulanId: string; domain: Domain }) {
   const { profile } = useAuth();
   const [jumlah, setJumlah] = useState<{ belum: number; total: number } | null>(null);
   const boleh = !!profile && isPeninjau(profile.role);
@@ -103,33 +120,63 @@ function PenandaBelumLengkap({ bulanId }: { bulanId: string }) {
       return;
     }
     void (async () => {
-      const { data, error } = await supabase
-        .from("progress_entries")
-        .select("student_id, subject_id, month_id")
-        .eq("month_id", bulanId);
-      if (!aktif || error) return;
+      // Halaqah aktif domain ini + anggotanya.
+      const { data: halaqah } = await supabase
+        .from("halaqahs")
+        .select("id")
+        .eq("domain", domain)
+        .eq("is_active", true);
+      const idHalaqah = (halaqah ?? []).map((h) => h.id);
+      if (!aktif) return;
+      if (idHalaqah.length === 0) {
+        setJumlah({ belum: 0, total: 0 });
+        return;
+      }
+      const [{ data: anggota }, { data: mapel }, { data: entri }] = await Promise.all([
+        supabase
+          .from("halaqah_members")
+          .select("student_id, halaqah_id")
+          .in("halaqah_id", idHalaqah)
+          .is("left_on", null),
+        supabase.from("halaqah_subjects").select("halaqah_id, subject_id").in("halaqah_id", idHalaqah),
+        supabase.from("progress_entries").select("student_id, subject_id").eq("month_id", bulanId),
+      ]);
+      if (!aktif) return;
+
       const terisi = new Set(
-        ((data ?? []) as BarisLengkap[]).map((r) => `${r.student_id}|${r.subject_id}`),
+        ((entri ?? []) as BarisLengkap[]).map((r) => `${r.student_id}|${r.subject_id}`),
       );
-      const { data: santri } = await supabase.from("students").select("id").eq("is_active", true);
+      // Mapel yang ditetapkan per halaqah. Bila halaqah belum punya penetapan,
+      // dipakai semua bidang aktif domain itu (perilaku lama untuk Al Qur'an).
+      const mapelHalaqah = new Map<string, Set<string>>();
+      for (const r of (mapel ?? []) as Array<{ halaqah_id: string; subject_id: string }>) {
+        const set = mapelHalaqah.get(r.halaqah_id) ?? new Set<string>();
+        set.add(r.subject_id);
+        mapelHalaqah.set(r.halaqah_id, set);
+      }
       const { data: bidang } = await supabase
         .from("subjects")
         .select("id")
-        .eq("domain", "alquran")
+        .eq("domain", domain)
         .eq("is_active", true);
       if (!aktif) return;
-      const n = (santri ?? []).length;
+      const semuaMapel = (bidang ?? []).map((b) => b.id);
+
       const kosongSantri = new Set<string>();
-      for (const s of santri ?? []) {
-        const ada = (bidang ?? []).some((bd) => terisi.has(`${s.id}|${bd.id}`));
-        if (!ada) kosongSantri.add(s.id);
+      const dilihat = new Set<string>();
+      for (const a of (anggota ?? []) as Array<{ student_id: string; halaqah_id: string }>) {
+        dilihat.add(a.student_id);
+        const perlu = [...(mapelHalaqah.get(a.halaqah_id) ?? new Set(semuaMapel))];
+        if (perlu.length === 0) continue;
+        const ada = perlu.some((id) => terisi.has(`${a.student_id}|${id}`));
+        if (!ada) kosongSantri.add(a.student_id);
       }
-      setJumlah({ belum: kosongSantri.size, total: n });
+      setJumlah({ belum: kosongSantri.size, total: dilihat.size });
     })();
     return () => {
       aktif = false;
     };
-  }, [bulanId, boleh]);
+  }, [bulanId, boleh, domain]);
 
   if (!jumlah || jumlah.total === 0) return null;
   return (
@@ -139,8 +186,8 @@ function PenandaBelumLengkap({ bulanId }: { bulanId: string }) {
       }
     >
       {jumlah.belum > 0
-        ? `Data belum lengkap: ${jumlah.belum} dari ${jumlah.total} santri belum punya capaian Al Qur'an bulan ini.`
-        : "Semua santri sudah punya capaian Al Qur'an bulan ini."}
+        ? `Data belum lengkap: ${jumlah.belum} dari ${jumlah.total} santri belum punya capaian ${NAMA_DOMAIN[domain]} bulan ini.`
+        : `Semua santri sudah punya capaian ${NAMA_DOMAIN[domain]} bulan ini.`}
     </p>
   );
 }
