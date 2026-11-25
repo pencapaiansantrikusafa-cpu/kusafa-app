@@ -1,10 +1,10 @@
 {
-  "ran_at": "2026-11-25T09:49:06.695574",
+  "ran_at": "2026-11-25T10:19:49.989200",
   "tests": [
     {
       "name": "A_anon_tanpa_execute_loop_pg_proc",
       "ok": true,
-      "detail": "24 fungsi public diperiksa; 0 terbuka ke anon.",
+      "detail": "28 fungsi public diperiksa; 0 terbuka ke anon.",
       "evidence": {
         "terbuka_ke_anon": []
       }

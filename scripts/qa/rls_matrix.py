@@ -157,6 +157,27 @@ for role, exp in (("mudir", "DITERIMA"), ("admin", "DITERIMA")):
 rec("masul_alquran", "progress_entries", "insert(halaqah tak diampu oleh profil uji)", "DITOLAK(RLS)",
     probe("masul_alquran", PID["masul_alquran"], INS_PROG, (st_lain, bulan_syawal, sub_alquran, item_alquran)))
 
+# Masul Wasilah/Masul Ghayah = penanggung jawab domain (keputusan Mudir 25 Nov 2026, T6b).
+# Mereka boleh menulis capaian di domainnya walau bukan pengampu mapel itu; domain lain ditolak.
+sub_was = satu("select id from public.subjects where domain='wasilah' order by sort_order limit 1")
+item_was = satu(
+    "select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id "
+    "where b.subject_id=%s and ci.is_active order by ci.seq limit 1", (sub_was,))
+sub_gh2 = satu("select id from public.subjects where domain='ghayah' order by sort_order limit 1")
+item_gh = satu(
+    "select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id "
+    "where b.subject_id=%s and ci.is_active order by ci.seq limit 1", (sub_gh2,))
+for role, sub, item, exp in (
+    ("masul_wasilah", sub_was, item_was, "DITERIMA"),
+    ("masul_wasilah", sub_gh2, item_gh, "DITOLAK(RLS)"),
+    ("masul_ghayah", sub_gh2, item_gh, "DITERIMA"),
+    ("masul_ghayah", sub_was, item_was, "DITOLAK(RLS)"),
+    ("masul_alquran", sub_was, item_was, "DITOLAK(RLS)"),
+    ("musyrif", sub_was, item_was, "DITOLAK(RLS)"),
+):
+    rec(role, "progress_entries", f"insert(domain {'wasilah' if sub == sub_was else 'ghayah'})", exp,
+        probe(role, PID[role], INS_PROG, (st_lain, bulan_syawal, sub, item)))
+
 # ---------------------------------------------------------------- 3. attendance pada bulan terkunci
 INS_ATT = ("insert into public.attendance (student_id,month_id,domain,izin,sakit,alpha) "
            "values (%s,%s,'alquran',0,0,0)")

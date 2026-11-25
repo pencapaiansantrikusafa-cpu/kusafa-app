@@ -1,6 +1,6 @@
 {
   "base": "http://localhost:4173",
-  "ran_at": "2026-11-25T09:52:44.683264",
+  "ran_at": "2026-11-25T10:28:43.124072",
   "hasil": [
     {
       "role": "mudir",
@@ -22,6 +22,18 @@
     },
     {
       "role": "mudir",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "mudir",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "mudir",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -46,6 +58,18 @@
     },
     {
       "role": "admin",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "admin",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "admin",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -70,6 +94,18 @@
     },
     {
       "role": "masul_alquran",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/alquran"
+    },
+    {
+      "role": "masul_alquran",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/alquran"
+    },
+    {
+      "role": "masul_alquran",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -94,6 +130,18 @@
     },
     {
       "role": "masul_wasilah",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "masul_wasilah",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/wasilah"
+    },
+    {
+      "role": "masul_wasilah",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -118,6 +166,18 @@
     },
     {
       "role": "masul_ghayah",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/ghayah"
+    },
+    {
+      "role": "masul_ghayah",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "masul_ghayah",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -142,6 +202,18 @@
     },
     {
       "role": "musyrif",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/alquran"
+    },
+    {
+      "role": "musyrif",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "dialihkan ke /input/alquran"
+    },
+    {
+      "role": "musyrif",
       "langkah": "halaman_capaian",
       "ok": true,
       "pesan": "termuat tanpa galat"
@@ -163,6 +235,18 @@
       "langkah": "notifikasi",
       "ok": true,
       "pesan": "tidak tampil (wajar untuk role ini)"
+    },
+    {
+      "role": "mudarris",
+      "langkah": "input_wasilah",
+      "ok": true,
+      "pesan": "halaman input tampil"
+    },
+    {
+      "role": "mudarris",
+      "langkah": "input_ghayah",
+      "ok": true,
+      "pesan": "halaman input tampil"
     },
     {
       "role": "mudarris",

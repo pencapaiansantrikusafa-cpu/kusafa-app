@@ -231,6 +231,20 @@ def main():
                 if role == "mudir" and DATA_UJI:
                     status, ket = simpan_capaian(page, conn)
                     catat(role, "simpan_dan_kembalikan", status in ("berhasil", "lompati"), f"[{status}] {ket}")
+
+                # T6b: halaman Input Ilmu Wasilah & Ilmu Ghayah harus termuat untuk role
+                # yang berhak, dan TIDAK menawarkan domain yang bukan haknya.
+                hak_wasilah = role in ("mudir", "admin", "masul_wasilah", "mudarris")
+                hak_ghayah = role in ("mudir", "admin", "masul_ghayah", "mudarris")
+                for domain, berhak in (("wasilah", hak_wasilah), ("ghayah", hak_ghayah)):
+                    page.goto(BASE + f"/input/{domain}", wait_until="load")
+                    tunggu_muat(page)
+                    page.wait_for_timeout(1500)
+                    url = page.url
+                    # Haknya: URL tetap di domain itu. Bukan haknya: dialihkan ke domainnya sendiri.
+                    benar = (url.endswith(f"/input/{domain}")) if berhak else (not url.endswith(f"/input/{domain}"))
+                    catat(role, f"input_{domain}", benar,
+                          "halaman input tampil" if berhak else f"dialihkan ke {url.replace(BASE, '')}")
                 page.goto(BASE + "/capaian/alquran", wait_until="load")
                 tunggu_muat(page)
                 page.wait_for_timeout(1200)

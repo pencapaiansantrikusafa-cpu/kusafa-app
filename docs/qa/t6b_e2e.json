@@ -1,0 +1,90 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 14,
+  "gagal": [],
+  "ringkasan": "14 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "wasilah: halaman siap < 1,5 s",
+      "ok": true,
+      "detik": 0.89
+    },
+    {
+      "uji": "wasilah: belum ada capaian -> placeholder wajar",
+      "ok": true,
+      "dropdown": [
+        "— belum diisi —",
+        "— belum diisi —"
+      ]
+    },
+    {
+      "uji": "wasilah: pilih dari pencarian -> label tampil",
+      "ok": true,
+      "dipilih": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad",
+      "tampil": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad"
+    },
+    {
+      "uji": "wasilah: simpan menulis ke database untuk semua anggota",
+      "ok": true,
+      "baris": 6,
+      "anggota": 6
+    },
+    {
+      "uji": "wasilah: semua anggota mendapat item yang sama",
+      "ok": true,
+      "variasi": 1
+    },
+    {
+      "uji": "wasilah: setelah muat ulang label tetap tampil",
+      "ok": true,
+      "diharapkan": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad",
+      "tampil": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad"
+    },
+    {
+      "uji": "ghayah: halaman siap < 1,5 s",
+      "ok": true,
+      "detik": 0.88
+    },
+    {
+      "uji": "ghayah: belum ada capaian -> placeholder wajar",
+      "ok": true,
+      "dropdown": [
+        "— belum diisi —"
+      ]
+    },
+    {
+      "uji": "ghayah: pilih dari pencarian -> label tampil",
+      "ok": true,
+      "dipilih": "Aqidah dan Fiqih · Matan Safinatun Najah - Bab 1 : Rukun Islam",
+      "tampil": "Aqidah dan Fiqih · Matan Safinatun Najah - Bab 1 : Rukun Islam"
+    },
+    {
+      "uji": "ghayah: simpan menulis ke database untuk semua anggota",
+      "ok": true,
+      "baris": 13,
+      "anggota": 13
+    },
+    {
+      "uji": "ghayah: semua anggota mendapat item yang sama",
+      "ok": true,
+      "variasi": 1
+    },
+    {
+      "uji": "ghayah: setelah muat ulang label tetap tampil",
+      "ok": true,
+      "diharapkan": "Aqidah dan Fiqih · Matan Safinatun Najah - Bab 1 : Rukun Islam",
+      "tampil": "Aqidah dan Fiqih · Matan Safinatun Najah - Bab 1 : Rukun Islam"
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "data uji dipulihkan (jumlah baris sama seperti semula)",
+      "ok": true,
+      "sebelum": 0,
+      "sesudah": 0
+    }
+  ]
+}

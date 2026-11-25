@@ -1,10 +1,10 @@
 {
   "ringkasan": {
-    "total": 46,
-    "ok": 38,
+    "total": 52,
+    "ok": 44,
     "skip": 8,
     "gagal": 0,
-    "ran_at": "2026-11-25T09:49:53.414284"
+    "ran_at": "2026-11-25T10:19:05.816057"
   },
   "baris": [
     {
@@ -290,6 +290,60 @@
       "role": "masul_alquran",
       "tabel": "progress_entries",
       "operasi": "insert(halaqah tak diampu oleh profil uji)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
       "diharapkan": "DITOLAK(RLS)",
       "aktual": "DITOLAK(RLS)",
       "status": "OK",

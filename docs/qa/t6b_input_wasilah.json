@@ -1,0 +1,184 @@
+{
+  "lulus": 29,
+  "gagal": [],
+  "ringkasan": "29 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "0. titik awal: belum ada capaian Wasilah/Ghayah",
+      "ok": true,
+      "baris": 0
+    },
+    {
+      "uji": "1. simpan sekali per halaqah x mapel disalin ke semua anggota",
+      "ok": true,
+      "hasil": {
+        "baris": 6,
+        "mapel": 1,
+        "anggota": 6,
+        "tersimpan": true
+      },
+      "anggota_aktif": 6
+    },
+    {
+      "uji": "2. semua baris berisi item yang sama",
+      "ok": true,
+      "jumlah": 6
+    },
+    {
+      "uji": "3. santri di luar halaqah tidak tersentuh",
+      "ok": true
+    },
+    {
+      "uji": "4. anggota contoh benar-benar mendapat baris",
+      "ok": true
+    },
+    {
+      "uji": "5. form menampilkan capaian tersimpan beserta labelnya",
+      "ok": true,
+      "capaian": [
+        {
+          "jumlah": 6,
+          "item_id": "cd7267f2-c163-54e2-b123-326a75e36a1d",
+          "variasi": 1,
+          "subject_id": "c7f94c36-ca17-5f17-a6a9-b03b520ac9b4"
+        }
+      ],
+      "label": [
+        "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad"
+      ]
+    },
+    {
+      "uji": "6. Hadir & Hari Efektif dari v_attendance (bukan hitungan React)",
+      "ok": true,
+      "presensi": {
+        "izin": 0,
+        "alpha": 0,
+        "hadir": 3,
+        "sakit": 0,
+        "student_id": "2edd050b-07e2-569a-8ff2-69147ce2f826",
+        "effective_days": 3,
+        "effective_days_override": null
+      }
+    },
+    {
+      "uji": "7. menyimpan ulang memperbarui baris (tidak menggandakan)",
+      "ok": true,
+      "baris": 6
+    },
+    {
+      "uji": "8. dua mata pelajaran sekaligus dalam satu permintaan",
+      "ok": true,
+      "hasil": {
+        "baris": 12,
+        "mapel": 2,
+        "anggota": 6,
+        "tersimpan": true
+      }
+    },
+    {
+      "uji": "9. halaqah Ilmu Ghayah juga bisa menyimpan",
+      "ok": true,
+      "hasil": {
+        "baris": 13,
+        "mapel": 1,
+        "anggota": 13,
+        "tersimpan": true
+      }
+    },
+    {
+      "uji": "10. anggota yang sudah keluar: baris lama tidak diubah",
+      "ok": true
+    },
+    {
+      "uji": "11. bulan 0 (Data Awal) ditolak",
+      "ok": true,
+      "pesan": "Bulan Data Awal bukan bulan input. Data Awal hanya diisi Admin/Mudir."
+    },
+    {
+      "uji": "12. item milik mapel lain ditolak",
+      "ok": true,
+      "pesan": "Item yang dipilih bukan milik mata pelajaran tersebut."
+    },
+    {
+      "uji": "13. mapel yang bukan milik halaqah ditolak",
+      "ok": true,
+      "pesan": "Mata pelajaran itu tidak ditetapkan untuk halaqah ini."
+    },
+    {
+      "uji": "14. Masul Wasilah boleh menulis Wasilah (penanggung jawab domain)",
+      "ok": true,
+      "pesan": ""
+    },
+    {
+      "uji": "15. Masul Wasilah ditolak menulis Ghayah",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Aqidah dan Fiqih di halaqah ini."
+    },
+    {
+      "uji": "16. Masul Ghayah boleh menulis Ghayah (penanggung jawab domain)",
+      "ok": true,
+      "pesan": ""
+    },
+    {
+      "uji": "17. Masul Al Quran ditolak menulis Wasilah",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Sirah di halaqah ini."
+    },
+    {
+      "uji": "18. Musyrif (Al Qur'an) ditolak menulis Wasilah",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Sirah di halaqah ini."
+    },
+    {
+      "uji": "19. Mudarris pengampu mapel itu boleh menulis",
+      "ok": true,
+      "guru": "Ustadzah Mudarrisah 1",
+      "pesan": ""
+    },
+    {
+      "uji": "20. Mudarris ditolak pada mapel yang tidak diampu",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Hisab di halaqah ini."
+    },
+    {
+      "uji": "21. pengampu ditolak pada bulan terkunci",
+      "ok": true,
+      "pesan": "Bulan ini sudah dikunci. Hanya Mudir atau Admin yang dapat mengubahnya."
+    },
+    {
+      "uji": "22. Mudir diterima pada bulan terkunci",
+      "ok": true,
+      "pesan": ""
+    },
+    {
+      "uji": "22b. Masul Wasilah tetap ditolak pada bulan terkunci",
+      "ok": true,
+      "pesan": "Bulan ini sudah dikunci. Hanya Mudir atau Admin yang dapat mengubahnya."
+    },
+    {
+      "uji": "22c. Masul Wasilah ditolak menulis capaian Al Qur'an",
+      "ok": true,
+      "pesan": "new row violates row-level security policy for table \"progress_entries\""
+    },
+    {
+      "uji": "22d. Masul Al Quran tetap ditolak di halaqah yang tidak diampu",
+      "ok": true,
+      "pesan": "new row violates row-level security policy for table \"progress_entries\""
+    },
+    {
+      "uji": "22e. Masul Ghayah ditolak menulis Ilmu Wasilah",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Sirah di halaqah ini."
+    },
+    {
+      "uji": "23. anon tidak boleh memanggil fungsi input",
+      "ok": true,
+      "pesan": "permission denied for function wasilah_input_boot"
+    },
+    {
+      "uji": "24. rollback: tidak ada baris uji tertinggal",
+      "ok": true,
+      "baris": 0
+    }
+  ]
+}

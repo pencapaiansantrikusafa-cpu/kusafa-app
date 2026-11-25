@@ -11,6 +11,16 @@
       ]
     },
     {
+      "langkah": "a2. 'Bulan lalu' tampil sejak awal (dropdown belum dipilih)",
+      "ok": true,
+      "dropdown_kosong": 3,
+      "baris_bulan_lalu": [
+        "Bulan lalu: Karima - 1 (putaran 2)",
+        "Bulan lalu: Al Fatihah - 1 (putaran 1)",
+        "Bulan lalu: IBQ PAUD - 1 (putaran 1)"
+      ]
+    },
+    {
       "langkah": "b. pilih dari daftar -> label tampil",
       "ok": true,
       "dipilih": "Tilawah · Karima - 1",
@@ -58,13 +68,13 @@
       "galat": []
     }
   ],
-  "lulus": 9,
+  "lulus": 10,
   "gagal": [],
   "pemulihan": {
-    "jumlah_awal": 2036,
-    "jumlah_akhir": 2036,
+    "jumlah_awal": 2039,
+    "jumlah_akhir": 2039,
     "baris_dipulihkan": "f92df2fe-5123-53d6-8981-379d5e659c21",
     "cocok": true
   },
-  "ringkasan": "9 LULUS, []"
+  "ringkasan": "10 LULUS, []"
 }
