@@ -250,11 +250,11 @@ persis** (item, putaran, entered_by, entered_at) — sudah diverifikasi; tidak a
 ia tidak pernah memeriksa **teks tombol dropdown** setelah memilih. Uji baru
 `scripts/qa/test_input_dropdown_e2e.py` menutup celah itu: pilih dari daftar, pilih lewat pencarian,
 centang/batalkan khatam, simpan → periksa isi database → muat ulang → label harus tetap tampil.
-Hasil: **9/9 LULUS** lokal, data uji pulih (2.036 baris).
+Hasil: **9/9 LULUS** lokal dan **9/9 LULUS** di produksi; data uji pulih (2.036 baris).
 
 **Uji lain:** `npm test` 14/14, `tsc` & `build` lulus, DB 16/16, regresi 7/7, banding Excel 7/7,
 data awal 5/5, no-halaqah 9/9, tanpa-halaqah 13/13 (+6/7, 1 SKIP), signup tertutup 9/9,
-matriks RLS 38/46 OK (8 SKIP, 0 GAGAL), smoke E2E **29/29** lokal.
+matriks RLS 38/46 OK (8 SKIP, 0 GAGAL), smoke E2E **29/29** lokal & **28/28** produksi.
 
 ---
 

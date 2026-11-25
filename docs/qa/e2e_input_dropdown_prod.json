@@ -1,0 +1,70 @@
+{
+  "base": "https://kusafa-app.vercel.app",
+  "langkah": [
+    {
+      "langkah": "a. nilai tersimpan tampil saat dibuka",
+      "ok": true,
+      "teks": [
+        "Tilawah · Al Qur'an - 125",
+        "Tahfidz · An Nazi'at - 29",
+        "Kitabah · Menyalin - 74"
+      ]
+    },
+    {
+      "langkah": "b. pilih dari daftar -> label tampil",
+      "ok": true,
+      "dipilih": "Tilawah · Karima - 1",
+      "tampil": "Tilawah · Karima - 1"
+    },
+    {
+      "langkah": "d. centang/batalkan 'khatam' pada buku siklik",
+      "ok": true,
+      "item": "Tilawah · Al Qur'an - 351",
+      "jumlah_checkbox": 1
+    },
+    {
+      "langkah": "c. pilih lewat pencarian 'quraisy' -> label tampil",
+      "ok": true,
+      "dipilih": "Tahfidz · Quraisy - 1",
+      "tampil": "Tahfidz · Quraisy - 1"
+    },
+    {
+      "langkah": "c2. pilih Tilawah lewat pencarian -> label tampil",
+      "ok": true,
+      "dipilih": "Tilawah · Al Qur'an - 351",
+      "tampil": "Tilawah · Al Qur'an - 351"
+    },
+    {
+      "langkah": "e0. penyimpanan menulis item yang dipilih ke database",
+      "ok": true,
+      "diharapkan": "2a542f9a-4f8d-53fb-9cef-ed4c56b3ab6e",
+      "tersimpan": "2a542f9a-4f8d-53fb-9cef-ed4c56b3ab6e"
+    },
+    {
+      "langkah": "e1. database berisi item yang dipilih",
+      "ok": true,
+      "dipilih": "Tilawah · Al Qur'an - 351",
+      "tersimpan": "Tilawah · Al Qur'an - 351"
+    },
+    {
+      "langkah": "e2. setelah simpan + muat ulang label tetap tampil",
+      "ok": true,
+      "diharapkan": "Tilawah · Al Qur'an - 351",
+      "tampil": "Tilawah · Al Qur'an - 351"
+    },
+    {
+      "langkah": "konsol bersih",
+      "ok": true,
+      "galat": []
+    }
+  ],
+  "lulus": 9,
+  "gagal": [],
+  "pemulihan": {
+    "jumlah_awal": 2036,
+    "jumlah_akhir": 2036,
+    "baris_dipulihkan": "f92df2fe-5123-53d6-8981-379d5e659c21",
+    "cocok": true
+  },
+  "ringkasan": "9 LULUS, []"
+}
