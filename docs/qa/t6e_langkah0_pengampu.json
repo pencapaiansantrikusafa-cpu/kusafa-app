@@ -1,0 +1,84 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 12,
+  "gagal": [],
+  "ringkasan": "12 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "Mudarris/ah hanya ditawari halaqah yang diampu (Wasilah)",
+      "ok": true,
+      "ditawarkan": 6,
+      "contoh": [
+        "Level 2A - Ustadz Mudarris 1, Ustadzah Mudarrisah 2",
+        "Level 3A - Ustadz Mudarris 1, Ustadzah Mudarrisah 2",
+        "Level 3B - Ustadz Mudarris 1, Ustadzah Mudarrisah 2"
+      ]
+    },
+    {
+      "uji": "Mudarris/ah: ada dropdown item Wasilah",
+      "ok": true,
+      "jumlah": 2
+    },
+    {
+      "uji": "Mudarris/ah: Simpan menulis capaian Wasilah ke semua anggota",
+      "ok": true,
+      "dipilih": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad",
+      "sebelum": 0,
+      "sesudah": 10
+    },
+    {
+      "uji": "Mudarris/ah: label tersimpan tampil lagi setelah muat ulang",
+      "ok": true,
+      "diharapkan": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad",
+      "tampil": [
+        "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad"
+      ]
+    },
+    {
+      "uji": "Musyrif/ah hanya ditawari halaqah yang diampu (Al Qur'an)",
+      "ok": true,
+      "ditawarkan": 1,
+      "contoh": [
+        "HLQ-PA-1 - Ust. Fulan 1"
+      ]
+    },
+    {
+      "uji": "Musyrif/ah: ada santri 'belum lengkap' di halaqahnya",
+      "ok": true,
+      "kartu": 1
+    },
+    {
+      "uji": "Musyrif/ah: Simpan menulis capaian Al Qur'an",
+      "ok": true,
+      "sebelum": 2049,
+      "sesudah": 2050
+    },
+    {
+      "uji": "Level 6 muncul di dropdown halaqah Wasilah untuk Mudir",
+      "ok": true,
+      "opsi": "Level 6"
+    },
+    {
+      "uji": "Level 6: halaman terbuka, menunjukkan jumlah anggota, tanpa mata pelajaran",
+      "ok": true,
+      "anggota": 4,
+      "mapel": 0,
+      "dropdown_item": 0
+    },
+    {
+      "uji": "Level 6: belum ada capaian (bukan dikarang)",
+      "ok": true,
+      "capaian": 0
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "data uji dipulihkan persis (seluruh nilai & jejak sama)",
+      "ok": true,
+      "beda": {}
+    }
+  ]
+}
