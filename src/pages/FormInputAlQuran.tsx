@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { angka } from "../lib/laporan";
 import { bolehKhatam, putaranUntukSimpan } from "../lib/putaran";
 import { posisiItem } from "../lib/posisi";
-import DropdownCari, { type CariDiServer } from "../components/DropdownCari";
+import DropdownCari, { type CariDiServer, type OpsiCari } from "../components/DropdownCari";
 import KonfirmasiPutaran, { type KasusTurun } from "../components/KonfirmasiPutaran";
 
 export interface InfoLalu {
@@ -107,6 +107,20 @@ export default function FormInputAlQuran({
    * disentuh tidak boleh ditanyakan, karena gurunya memang tidak mengubah apa pun.
    */
   const [diubahBidang, setDiubahBidang] = useState<Record<string, true>>({});
+  /**
+   * Item yang dipilih dari hasil pencarian server tetapi belum ada di `items`.
+   * Disimpan beserta label & siklik agar tampilan, keterangan "bulan lalu", centang
+   * "khatam", dan nilai yang disimpan memakai data yang benar (T5c-3).
+   */
+  const [itemPilihan, setItemPilihan] = useState<Record<string, Item>>({});
+
+  /** Semua item yang dikenal form: item tersimpan + item yang baru dipilih. */
+  const semuaItem = useMemo(() => {
+    const p = new Map<string, Item>();
+    for (const it of items) p.set(it.id, it);
+    for (const it of Object.values(itemPilihan)) p.set(it.id, it);
+    return [...p.values()];
+  }, [items, itemPilihan]);
 
   /**
    * T5c: daftar pilihan per bidang datang dari server (60 hasil pertama). `items` hanya
@@ -114,19 +128,19 @@ export default function FormInputAlQuran({
    */
   const itemPerBidang = useMemo(() => {
     const p: Record<string, Item[]> = {};
-    for (const it of items) {
+    for (const it of semuaItem) {
       const daftar = p[it.subject_id];
       if (daftar) daftar.push(it);
       else p[it.subject_id] = [it];
     }
     return p;
-  }, [items]);
+  }, [semuaItem]);
 
   const petaItem = useMemo(() => {
     const p = new Map<string, Item>();
-    for (const it of items) p.set(it.id, it);
+    for (const it of semuaItem) p.set(it.id, it);
     return p;
-  }, [items]);
+  }, [semuaItem]);
 
   /** Lengkap = semua bidang terisi dan kehadiran (izin+sakit+alpha) masuk akal. */
   function statusSantri(b: BarisInput) {
@@ -165,9 +179,22 @@ export default function FormInputAlQuran({
     setBaris(baris.map((b) => (b.santri_id === santriId ? { ...b, ...patch } : b)));
   }
 
-  function ubahBidang(santriId: string, bidangId: string, itemId: string) {
+  function ubahBidang(santriId: string, bidangId: string, itemId: string, opsi?: OpsiCari) {
     const b = baris.find((x) => x.santri_id === santriId);
     if (!b) return;
+    // Simpan objek item yang dipilih (label + siklik) walau belum ada di `items`.
+    if (opsi && itemId) {
+      setItemPilihan((p) => ({
+        ...p,
+        [itemId]: {
+          id: itemId,
+          subject_id: bidangId,
+          label: opsi.label,
+          value: null,
+          siklik: !!opsi.siklik,
+        },
+      }));
+    }
     setDiubahBidang((d) => ({ ...d, [`${santriId}|${bidangId}`]: true }));
     ubah(santriId, {
       itemPerBidang: { ...b.itemPerBidang, [bidangId]: itemId || null },
@@ -468,7 +495,7 @@ export default function FormInputAlQuran({
                             }))}
                             diServer={cariItemServer(bd.id)}
                             nilai={itemId ?? ""}
-                            onChange={(v) => ubahBidang(b.santri_id, bd.id, v)}
+                            onChange={(v, o) => ubahBidang(b.santri_id, bd.id, v, o)}
                             opsiKosong="— belum diisi —"
                             placeholderCari={`Cari ${bd.name} (mis. "qura")...`}
                           />

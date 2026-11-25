@@ -98,7 +98,6 @@ export default function InputPage() {
   const [semuaHalaqah, setSemuaHalaqah] = useState<{ id: string; code: string }[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   // Item capaian yang sudah tersimpan tetapi belum ada di daftar aktif (mis. sudah dinonaktifkan).
-  const [itemTambahan, setItemTambahan] = useState<Item[]>([]);
   const [baris, setBaris] = useState<BarisInput[]>([]);
   /** Teks capaian bulan lalu per santri|bidang, dari view (bukan dihitung di sini). */
   const [infoLalu, setInfoLalu] = useState<Record<string, InfoLalu>>({});
@@ -217,7 +216,6 @@ export default function InputPage() {
       siklik: !!it.siklik,
     }));
     setItems(daftarItem);
-    setItemTambahan(daftarItem);
 
     const barisCapaian = paket.capaian ?? [];
     const petaCapaian = new Map(barisCapaian.map((c) => [`${c.student_id}|${c.subject_id}`, c.item_id]));
@@ -320,7 +318,11 @@ export default function InputPage() {
           p_limit: 60,
         });
         if (error) throw new Error(error.message);
-        return ((data ?? []) as Item[]).map((it) => ({ nilai: it.id, label: it.label }));
+        return ((data ?? []) as Item[]).map((it) => ({
+          nilai: it.id,
+          label: it.label,
+          siklik: it.siklik,
+        }));
       },
       cari: async (kata: string) => {
         const { data, error } = await supabase.rpc("curriculum_items_search", {
@@ -329,7 +331,11 @@ export default function InputPage() {
           p_limit: 60,
         });
         if (error) throw new Error(error.message);
-        return ((data ?? []) as Item[]).map((it) => ({ nilai: it.id, label: it.label }));
+        return ((data ?? []) as Item[]).map((it) => ({
+          nilai: it.id,
+          label: it.label,
+          siklik: it.siklik,
+        }));
       },
     }),
     [],
@@ -401,7 +407,7 @@ export default function InputPage() {
           bidang={bidang}
           baris={baris}
           setBaris={setBaris}
-          items={[...items, ...itemTambahan]}
+          items={items}
           cariItemServer={cariItemServer}
           infoLalu={infoLalu}
           hariEfektif={hariEfektif}

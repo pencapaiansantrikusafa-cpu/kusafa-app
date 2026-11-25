@@ -24,6 +24,11 @@ export interface OpsiCari {
   label: string;
   /** Teks tambahan untuk pencocokan (mis. nama pengampu), tidak wajib ditampilkan. */
   cariJuga?: string;
+  /**
+   * Buku siklik (dipakai halaman Input untuk menentukan boleh/tidaknya "khatam").
+   * Diisi hanya oleh pemanggil yang membutuhkannya; komponen ini tidak mengolahnya.
+   */
+  siklik?: boolean;
 }
 
 /**
@@ -43,7 +48,12 @@ interface Props {
   label: string;
   opsi: OpsiCari[];
   nilai: string;
-  onChange: (nilai: string) => void;
+  /**
+   * `opsi` berisi objek pilihan yang diklik (bila ada), sehingga pemanggil bisa
+   * menyimpan label/siklik item baru yang belum ada di daftar `opsi` — penting pada
+   * mode `diServer`, karena daftar hanya memuat item yang sudah tersimpan.
+   */
+  onChange: (nilai: string, opsi?: OpsiCari) => void;
   /** Teks pilihan kosong (mis. "— belum diisi —"). Bila diisi, muncul sebagai pilihan pertama. */
   opsiKosong?: string;
   keterangan?: string;
@@ -86,6 +96,14 @@ export default function DropdownCari({
   const [memuatServer, setMemuatServer] = useState(false);
   /** Posisi panel (diukur dari tombol), karena panel dilayangkan ke <body> lewat portal. */
   const [posisi, setPosisi] = useState({ top: 0, left: 0, lebar: 0, keAtas: false });
+  /**
+   * Pilihan yang pernah diklik, disimpan beserta labelnya.
+   *
+   * Diperlukan karena `opsi` pada mode `diServer` hanya berisi item yang sudah tersimpan:
+   * begitu pengguna memilih item dari hasil pencarian, item itu tidak ada di `opsi`, sehingga
+   * tanpa simpanan ini tombol jatuh ke teks kosong ("— belum diisi —") walau nilainya terpilih.
+   */
+  const [pilihan, setPilihan] = useState<Record<string, OpsiCari>>({});
 
   /**
    * Pencarian di server, ditunda 200 ms agar tidak memanggil database setiap ketukan.
@@ -143,7 +161,10 @@ export default function DropdownCari({
     };
   }, [terbuka]);
 
-  const terpilih = opsi.find((o) => o.nilai === nilai);
+  const terpilih =
+    nilai === ""
+      ? undefined
+      : opsi.find((o) => o.nilai === nilai) ?? pilihan[nilai];
 
   const tersaring = useMemo(() => {
     // Mode server: hasil sudah disaring & diurutkan database (60 per permintaan).
@@ -202,8 +223,11 @@ export default function DropdownCari({
     if (terbuka) inputRef.current?.focus();
   }, [terbuka]);
 
-  function pilih(n: string) {
-    onChange(n);
+  function pilih(o: OpsiCari) {
+    if (o.nilai) {
+      setPilihan((p) => ({ ...p, [o.nilai]: o }));
+    }
+    onChange(o.nilai, o.nilai ? o : undefined);
     setTerbuka(false);
     setCari("");
   }
@@ -218,7 +242,7 @@ export default function DropdownCari({
     } else if (e.key === "Enter") {
       e.preventDefault();
       const pilihOpsi = daftarTampil[sorot];
-      if (pilihOpsi) pilih(pilihOpsi.nilai);
+      if (pilihOpsi) pilih(pilihOpsi);
     } else if (e.key === "Escape") {
       setTerbuka(false);
       setCari("");
@@ -288,7 +312,7 @@ export default function DropdownCari({
                 <li role="option" aria-selected={nilai === ""}>
                   <button
                     type="button"
-                    onClick={() => pilih("")}
+                    onClick={() => pilih({ nilai: "", label: opsiKosong })}
                     className={
                       "block w-full px-3 py-1.5 text-left text-sm " +
                       (nilai === "" ? "bg-kusafa-light font-medium text-kusafa" : "text-gray-600 hover:bg-gray-50")
@@ -312,7 +336,7 @@ export default function DropdownCari({
                 <li key={o.nilai} role="option" aria-selected={o.nilai === nilai}>
                   <button
                     type="button"
-                    onClick={() => pilih(o.nilai)}
+                    onClick={() => pilih(o)}
                     onMouseEnter={() => setSorot(i)}
                     className={
                       "block w-full px-3 py-1.5 text-left text-sm " +
