@@ -1,9 +1,9 @@
 {
   "tests": [
     {
-      "uji": "1a_jumlah_capaian_2039",
+      "uji": "1a_jumlah_capaian_2036",
       "ok": true,
-      "detail": "progress_entries: 2039 (harus 2.039 = 2.036 seed + 3 baris uji Mudir)"
+      "detail": "progress_entries: 2036 (harus 2.036 = jumlah baris seed)"
     },
     {
       "uji": "1_ramadhan_tanpa_capaian_0",
@@ -13,12 +13,17 @@
     {
       "uji": "2_jumlah_kehadiran",
       "ok": true,
-      "detail": "kehadiran Al Qur'an 606 (606), Wasilah 756 (756), Ghayah 749 (749)",
+      "detail": "kehadiran Al Qur'an 599 (599), Wasilah 756 (756), Ghayah 749 (749)",
       "jumlah": {
         "wasilah": 756,
         "ghayah": 749,
-        "alquran": 606
+        "alquran": 599
       }
+    },
+    {
+      "uji": "2b_kehadiran_bulan_8_kosong",
+      "ok": true,
+      "detail": "baris kehadiran bulan 8: 0 (harus 0)"
     },
     {
       "uji": "3_capaian_wasilah_ghayah_0",

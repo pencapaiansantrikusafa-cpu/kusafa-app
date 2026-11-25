@@ -1,0 +1,91 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 16,
+  "gagal": [],
+  "ringkasan": "16 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "Masul Al Quran tidak melihat tombol hapus",
+      "ok": true,
+      "tombol": 0
+    },
+    {
+      "uji": "Mudir melihat tombol hapus (per santri & massal)",
+      "ok": true,
+      "tombol": 30
+    },
+    {
+      "uji": "dialog menyebut bidang & bulan & nilai",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTilawah · Rabiul Awwal · Santriwan fulan 1\n\nNilai sekarang: Al Qur'an - 351 (posisi 485)\n\nBulan sesudahnya sudah terisi (Rabiul Akhir: Al Qur'an - 357). Menghapus bulan ini membuat selisih bulan sesudahnya"
+    },
+    {
+      "uji": "dialog menyebut santri",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTilawah · Rabiul Awwal · Santriwan fulan 1\n\nNilai sekarang: Al Qur'an - 351 (posisi 485)\n\nBulan sesudahnya sudah terisi (Rabiul Akhir: Al Qur'an "
+    },
+    {
+      "uji": "UI setelah hapus satu: pesan hasil tampil",
+      "ok": true,
+      "potongan": "Capaian Al Qur'an\n\nMelihat capaian santri per halaqah dan bulan.\n\nAl Qur'an\nIlmu Wasilah\nIlmu Ghayah\nHalaqah\nHLQ-PA-3 - Ust. Fulan 2\n▾\n\nPengampu: Ust. Fulan 2\n\nTahun Hijriyah\n1447 H\n▾\nBulan\nRabiul Awwal\n▾\n\nPembanding otomatis bulan sebelumnya.\n\nData belum lengkap: 3 dari 109 santri belum punya capai"
+    },
+    {
+      "uji": "hapus lewat UI tercatat di log (DELETE, aktor Mudir)",
+      "ok": true,
+      "log_delete": 14,
+      "sebelumnya": 13
+    },
+    {
+      "uji": "ada tombol hapus massal yang aktif",
+      "ok": true,
+      "jumlah": 3
+    },
+    {
+      "uji": "dialog massal menyebut jumlah santri terdampak",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTilawah · Rabiul Awwal · 8 santri di halaqah HLQ-PA-3\n\nSantri terdampak (8): nilai berbeda antar santri (8 nilai)\n\nSantriwan fulan 11 — Al Qur'an - 157\nSantriwan fulan 2 — Al Qur'an - 1"
+    },
+    {
+      "uji": "hapus massal menghapus sejumlah santri yang dijanjikan dialog",
+      "ok": true,
+      "terdampak": 8,
+      "log_delete": 38,
+      "sebelumnya": 29
+    },
+    {
+      "uji": "bulan terkunci: tombol hapus tetap ada untuk Mudir",
+      "ok": true
+    },
+    {
+      "uji": "bulan terkunci: dialog meminta konfirmasi eksplisit",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTilawah · Rabiul Awwal · Santriwan fulan 16\n\nNilai sekarang: Al Qur'an - 125 (posisi 259)\n\nBulan ini sudah dikunci. Saya (Mudir/Admin) tetap ingin menghapus.\nBulan sesudahnya sudah teri"
+    },
+    {
+      "uji": "bulan terkunci: tombol hapus nonaktif sebelum dicentang",
+      "ok": true,
+      "disabled": true
+    },
+    {
+      "uji": "bulan terkunci: tombol hapus aktif setelah konfirmasi",
+      "ok": true,
+      "jumlah_konfirmasi": 2
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "data uji dipulihkan persis (seluruh nilai & jejak sama)",
+      "ok": true,
+      "beda": {}
+    },
+    {
+      "uji": "log bertambah (append-only, bukan dihapus)",
+      "ok": true,
+      "awal": 86,
+      "akhir": 96
+    }
+  ]
+}

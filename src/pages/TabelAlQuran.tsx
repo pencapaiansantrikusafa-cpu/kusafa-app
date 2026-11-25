@@ -12,11 +12,14 @@ export default function TabelAlQuran({
   baris,
   bidang,
   memuat,
+  onHapus,
 }: {
   santri: { id: string; full_name: string }[];
   baris: BarisLaporan[];
   bidang: { id: string; name: string }[];
   memuat: boolean;
+  /** T6e: hanya diberikan untuk Mudir/Admin; tombol hapus per santri+bidang. */
+  onHapus?: (santriId: string, mapelId: string) => void;
 }) {
   const peta = useMemo(() => {
     const p = new Map<string, BarisLaporan>();
@@ -116,6 +119,16 @@ export default function TabelAlQuran({
                             <span className="font-normal text-gray-500">Selisih: </span>
                             {r.selisih === null ? "–" : (r.selisih > 0 ? "+" : "") + angka(r.selisih)}
                           </div>
+                          {onHapus && (
+                            <button
+                              type="button"
+                              onClick={() => onHapus(s.id, bidang[i].id)}
+                              className="mt-1 w-full rounded border border-red-300 px-1.5 py-0.5 text-[11px] font-medium text-red-700 hover:bg-red-50"
+                              aria-label={`Hapus capaian ${bidang[i].name} ${s.full_name}`}
+                            >
+                              Hapus {bidang[i].name}
+                            </button>
+                          )}
                           {r.target_monthly === null ? (
                             <div className="text-amber-800">target belum ada</div>
                           ) : r.below_target ? (

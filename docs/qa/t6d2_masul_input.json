@@ -467,13 +467,13 @@
       "uji": "uji tidak meninggalkan baris baru",
       "ok": true,
       "sebelum": {
-        "progress_entries": 2039,
-        "attendance": 2111,
+        "progress_entries": 2036,
+        "attendance": 2104,
         "monthly_notes": 0
       },
       "sesudah": {
-        "progress_entries": 2039,
-        "attendance": 2111,
+        "progress_entries": 2036,
+        "attendance": 2104,
         "monthly_notes": 0
       }
     },
@@ -482,23 +482,23 @@
       "ok": true,
       "sebelum": {
         "capaian": {
-          "alquran": 2039
+          "alquran": 2036
         },
         "kehadiran": {
           "wasilah": 756,
           "ghayah": 749,
-          "alquran": 606
+          "alquran": 599
         },
         "catatan": {}
       },
       "sesudah": {
         "capaian": {
-          "alquran": 2039
+          "alquran": 2036
         },
         "kehadiran": {
           "wasilah": 756,
           "ghayah": 749,
-          "alquran": 606
+          "alquran": 599
         },
         "catatan": {}
       }

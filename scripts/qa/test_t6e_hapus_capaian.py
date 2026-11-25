@@ -232,9 +232,17 @@ def main() -> int:  # noqa: C901
           bool(log_note) and log_note[1] == "update" and log_note[2] == "uji log awal"
           and log_note[3] == "uji log baru", log=log_note if log_note else None)
 
-    # Tanpa JWT (skrip/seed): sumber = skrip:<user>
+    # UPDATE tanpa perubahan nilai TIDAK dicatat (log hanya perubahan berarti).
     c.execute("begin")
     c.execute("update public.attendance set alpha = alpha where student_id=%s and month_id=%s and domain=%s",
+              (att[0], att[1], att[2]))
+    n_noop = c.execute("select count(*) from public.change_log").fetchone()[0]
+    c.execute("rollback")
+    catat("LOG tidak mencatat UPDATE tanpa perubahan nilai", n_noop == 0, log=n_noop)
+
+    # Tanpa JWT (skrip/seed): sumber = skrip:<user> (pakai perubahan nyata)
+    c.execute("begin")
+    c.execute("update public.attendance set alpha = alpha + 1 where student_id=%s and month_id=%s and domain=%s",
               (att[0], att[1], att[2]))
     log_skrip = c.execute("""select aktor, sumber, aktor_role from public.change_log order by id desc limit 1""").fetchone()
     c.execute("rollback")

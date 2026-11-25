@@ -8,6 +8,8 @@ import { ambilSemua } from "../lib/ambil-semua";
 import { angka, type BarisLaporan } from "../lib/laporan";
 import TabelAlQuran from "./TabelAlQuran";
 import TabelWasilah, { type BarisHadir } from "./TabelWasilah";
+import DialogHapusCapaian, { type InfoHapus, type InfoHapusMassal } from "../components/DialogHapusCapaian";
+import { useAuth } from "../lib/auth-context";
 
 interface Halaqah {
   id: string;
@@ -51,6 +53,14 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   const [memuat, setMemuat] = useState(true);
   const [galat, setGalat] = useState<string | null>(null);
   const [detail, setDetail] = useState<Santri | null>(null);
+  /** Admin/Mudir: dialog hapus sedang terbuka (satu capaian atau massal). */
+  const [hapus, setHapus] = useState<
+    | { jenis: "satu"; info: InfoHapus; siswa: string; mapel: string }
+    | { jenis: "massal"; info: InfoHapusMassal; mapel: string }
+    | null
+  >(null);
+  const [hapusSedang, setHapusSedang] = useState(false);
+  const [hapusPesan, setHapusPesan] = useState<string | null>(null);
 
   // Daftar halaqah + pengampu, bulan, dan bidang.
   useEffect(() => {
@@ -121,6 +131,10 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   }, [domain]);
 
   // Isi tabel ketika pilihan berubah.
+  const [muatUlangKe, setMuatUlangKe] = useState(0);
+  async function muatUlang() {
+    setMuatUlangKe((k) => k + 1);
+  }
   useEffect(() => {
     let aktif = true;
     if (!halaqahId || !bulanId) return;
@@ -200,7 +214,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     return () => {
       aktif = false;
     };
-  }, [halaqahId, bulanId, domain, bidang]);
+  }, [halaqahId, bulanId, domain, bidang, muatUlangKe]);
 
   function gantiTahun(t: number) {
     setTahun(t);
@@ -228,6 +242,89 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
   }, [santri, bidang, bidangHalaqah, domain, baris]);
 
   const pengampuTerpilih = pengampu[halaqahId] ?? "";
+
+  // ---- Hapus capaian (T6e): hanya Mudir/Admin. Cek role juga di dalam RPC (penjaga akhir). ----
+  const { profile } = useAuth();
+  const bolehHapus = profile?.role === "mudir" || profile?.role === "admin";
+
+  async function bukaHapusSatu(siswa: string, mapel: string) {
+    setHapusPesan(null);
+    const { data, error } = await supabase.rpc("hapus_capaian_info", {
+      p_siswa: siswa,
+      p_mapel: mapel,
+      p_bulan: bulanId,
+    });
+    if (error) {
+      setHapusPesan(`Gagal memuat pratinjau: ${error.message}`);
+      return;
+    }
+    const info = data as unknown as InfoHapus;
+    if (!info?.ada) {
+      setHapusPesan("Capaian itu sudah tidak ada (mungkin baru saja dihapus).");
+      return;
+    }
+    setHapus({ jenis: "satu", info, siswa, mapel });
+  }
+
+  async function bukaHapusMassal(mapel: string) {
+    setHapusPesan(null);
+    const { data, error } = await supabase.rpc("hapus_capaian_massal_info", {
+      p_halaqah: halaqahId,
+      p_mapel: mapel,
+      p_bulan: bulanId,
+    });
+    if (error) {
+      setHapusPesan(`Gagal memuat pratinjau: ${error.message}`);
+      return;
+    }
+    const info = data as unknown as InfoHapusMassal;
+    if (!info?.ada) {
+      setHapusPesan("Tidak ada capaian untuk halaqah, mata pelajaran, dan bulan itu.");
+      return;
+    }
+    setHapus({ jenis: "massal", info, mapel });
+  }
+
+  async function jalankanHapus(opsi: { setujuTerkunci: boolean; setujuLanjutan: boolean }) {
+    if (!hapus) return;
+    setHapusSedang(true);
+    setHapusPesan(null);
+    try {
+      if (hapus.jenis === "satu") {
+        const { data, error } = await supabase.rpc("hapus_capaian", {
+          p_siswa: hapus.siswa,
+          p_mapel: hapus.mapel,
+          p_bulan: bulanId,
+          p_setuju_terkunci: opsi.setujuTerkunci,
+          p_setuju_lanjutan: opsi.setujuLanjutan,
+        });
+        if (error) throw new Error(error.message);
+        const h = data as unknown as { baris: number; santri: string; label: string | null };
+        setHapusPesan(
+          `${h.santri}: "${h.label ?? "—"}" dihapus (${h.baris} baris). Tampilan kembali "belum diisi".`,
+        );
+      } else {
+        const { data, error } = await supabase.rpc("hapus_capaian_massal", {
+          p_halaqah: halaqahId,
+          p_mapel: hapus.mapel,
+          p_bulan: bulanId,
+          p_setuju_terkunci: opsi.setujuTerkunci,
+          p_setuju_lanjutan: opsi.setujuLanjutan,
+        });
+        if (error) throw new Error(error.message);
+        const h = data as unknown as { baris: number; mapel: string; bulan: string };
+        setHapusPesan(`Dihapus ${h.baris} capaian ${h.mapel} bulan ${h.bulan}.`);
+      }
+      setHapus(null);
+      // Muat ulang supaya tabel menampilkan "belum diisi" (kosong, bukan 0).
+      setBulanId((b) => b);
+      await muatUlang();
+    } catch (e) {
+      setHapusPesan(`Gagal menghapus: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setHapusSedang(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -264,6 +361,15 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
         </p>
       )}
 
+      {hapusPesan && (
+        <p
+          role="alert"
+          className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"
+        >
+          {hapusPesan}
+        </p>
+      )}
+
       <div className="rounded-xl bg-white ring-1 ring-black/5">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 px-4 py-3">
           <h2 className="text-base font-bold text-gray-900">Capaian {DOMAIN_LABEL[domain]}</h2>
@@ -271,6 +377,28 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
             {santri.length} santri · {memuat ? "memuat..." : `${baris.filter((b) => b.below_target).length} di bawah target`}
           </p>
         </div>
+
+        {bolehHapus && (domain === "alquran" ? bidang : bidangHalaqah).length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-b border-black/5 px-4 py-2">
+            <span className="text-xs font-medium text-gray-600">Hapus capaian massal (Mudir/Admin):</span>
+            {(domain === "alquran" ? bidang : bidangHalaqah).map((bd) => {
+              const ada = baris.some(
+                (b) => b.subject_id === bd.id && b.pos !== null && b.pos !== undefined,
+              );
+              return (
+                <button
+                  key={bd.id}
+                  type="button"
+                  onClick={() => void bukaHapusMassal(bd.id)}
+                  disabled={!ada}
+                  className="rounded-lg border border-red-300 bg-white px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-40"
+                >
+                  Hapus semua {bd.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {memuat && santri.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-gray-600">Memuat data...</p>
@@ -312,7 +440,13 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
             {/* Desktop: tabel lengkap. */}
             <div className="hidden lg:block">
               {domain === "alquran" ? (
-                <TabelAlQuran santri={santri} baris={baris} bidang={bidang} memuat={memuat} />
+                <TabelAlQuran
+                  santri={santri}
+                  baris={baris}
+                  bidang={bidang}
+                  memuat={memuat}
+                  onHapus={bolehHapus ? (s, m) => void bukaHapusSatu(s, m) : undefined}
+                />
               ) : (
                 <TabelWasilah
                   santri={santri}
@@ -322,6 +456,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
                   catatan={catatan}
                   domain={domain}
                   memuat={memuat}
+                  onHapus={bolehHapus ? (s, m) => void bukaHapusSatu(s, m) : undefined}
                 />
               )}
             </div>
@@ -343,6 +478,16 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
         </p>
       </div>
 
+      {hapus && (
+        <DialogHapusCapaian
+          info={hapus.info}
+          massal={hapus.jenis === "massal"}
+          sedang={hapusSedang}
+          onBatal={() => setHapus(null)}
+          onHapus={(opsi) => void jalankanHapus(opsi)}
+        />
+      )}
+
       {detail && (
         <DialogDetail
           santri={detail}
@@ -350,6 +495,11 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
           baris={baris}
           domain={domain}
           namaHalaqah={halaqahList.find((h) => h.id === halaqahId)?.code ?? ""}
+          bolehHapus={bolehHapus}
+          onHapus={(mapel) => {
+            setDetail(null);
+            void bukaHapusSatu(detail.id, mapel);
+          }}
           hadirTeks={(() => {
             const hd = baris.find((b) => b.student_id === detail.id && b.hadir !== null);
             return hd
@@ -371,6 +521,8 @@ function DialogDetail({
   domain,
   namaHalaqah,
   hadirTeks,
+  bolehHapus,
+  onHapus,
   onTutup,
 }: {
   santri: Santri;
@@ -380,6 +532,9 @@ function DialogDetail({
   namaHalaqah: string;
   /** Hadir/HE cukup ditampilkan sekali di kepala pop-up. */
   hadirTeks: string;
+  /** T6e: hanya Admin/Mudir yang boleh menghapus capaian. */
+  bolehHapus: boolean;
+  onHapus: (mapelId: string) => void;
   onTutup: () => void;
 }) {
   useEffect(() => {
@@ -475,6 +630,16 @@ function DialogDetail({
                       )}
                     </div>
                   </dl>
+                )}
+                {bolehHapus && r && r.pos !== null && r.pos !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => onHapus(b.id)}
+                    className="mt-2 w-full rounded-lg border border-red-300 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
+                    aria-label={`Hapus capaian ${b.name} ${santri.full_name}`}
+                  >
+                    Hapus capaian {b.name}
+                  </button>
                 )}
               </div>
             );

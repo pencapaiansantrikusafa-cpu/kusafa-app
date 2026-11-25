@@ -22,6 +22,8 @@ Role: `mudir`, `admin`, `masul_alquran` (Masul Al Quran), `masul_wasilah` (Masul
 |---|---|---|---|
 | Melihat semua halaqah dan santri | Ya | Ya | Ya |
 | Input capaian, catatan, kehadiran | Semua halaqah, kapan saja | **Semua halaqah di domainnya** (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah), memperbaiki/menimpa isian, **bukan** menghapus | Halaqah yang diampu |
+| **Hapus capaian** (satu santri atau massal satu halaqah × mapel × bulan) | **Ya** (bulan terkunci dan bulan sesudahnya terisi wajib konfirmasi eksplisit) | **Tidak** | **Tidak** |
+| Membaca **log perubahan** | **Ya** | Tidak | Tidak |
 | Mengajukan target | Ya | Ya | Ya, halaqah yang diampu |
 | Menyetujui target | Ya | Hanya domain masing-masing | Tidak |
 | Hari Efektif, kunci bulan, pengguna | Ya | Tidak | Tidak |
@@ -46,6 +48,43 @@ Yang **tetap** berlaku untuk Masul:
 (siapa terakhir mengubah). Trigger `catat_jejak` mengisi jejak saat menyimpan dan mencatat pengubah
 terakhir saat orang lain menimpa; pada koneksi tanpa JWT (seed/skrip) trigger **tidak menyentuh** baris
 yang sudah ada.
+
+## 3b. Hapus capaian dan log perubahan (keputusan final Mudir 25 November 2026, T6e)
+
+- **Siapa:** hanya **Mudir** dan **Admin**. Pengampu dan Masul tetap hanya bisa **input/menimpa**, tidak
+  menghapus. Diperiksa di dalam RPC (`is_full_access()`), bukan hanya di tampilan; RLS hapus tabel tetap
+  `is_full_access()` sebagai penjaga terakhir. Anon tanpa `EXECUTE`.
+- **Arti hapus:** menghapus baris `progress_entries`. Rumus, view, target, dan kehadiran **tidak berubah**.
+  Setelah dihapus, tampilan kembali **“belum diisi”** (kosong, bukan 0).
+- **Cakupan:**
+  1. **satu capaian satu santri** (`hapus_capaian_info` + `hapus_capaian`);
+  2. **massal** satu halaqah × mata pelajaran × bulan (hasil input massal Wasilah/Ghayah)
+     (`hapus_capaian_massal_info` + `hapus_capaian_massal`), dialog menyebut **jumlah santri terdampak**
+     dan daftarnya.
+- **Bulan terkunci:** Mudir/Admin **boleh** menghapus, tetapi wajib **centang konfirmasi eksplisit**
+  (`p_setuju_terkunci`); tanpa itu RPC menolak.
+- **Bulan 0 (Data Awal):** tetap bukan bulan input staf, **tidak** bisa dihapus lewat fitur ini.
+- **Dampak putaran/selisih:** bila **bulan sesudahnya sudah terisi** untuk santri+mapel yang sama,
+  penghapusan membuat pembanding bulan sesudahnya berubah (selisih tidak konsisten). RPC **menolak**
+  dengan pesan jelas (sarankan hapus mulai dari bulan terakhir) kecuali pemanggil memberi
+  `p_setuju_lanjutan = true`. Bila capaian itu **khatam/mulai putaran baru** (putaran > putaran bulan
+  lalu), dialog memperingatkan bahwa putaran bulan sesudahnya perlu ditinjau.
+
+### 3b-1. Log perubahan (satu mekanisme)
+
+- Tabel **`public.change_log`** mencatat **UPDATE dan DELETE** pada `progress_entries`, `attendance`,
+  dan `monthly_notes`: `nilai_lama` (JSON seluruh baris), `nilai_baru` (JSON untuk UPDATE), `aktor`,
+  `aktor_role`, `terjadi_pada`, `sumber`, dan `kunci` baris.
+- **`sumber`**: `aplikasi` bila ada pengguna ber-JWT; `skrip:<user database>` bila tanpa JWT
+  (seed/skrip lokal) — dengan `aktor = NULL`. Jadi perubahan tanpa jejak (seperti nilai Shafar yang
+  dulu berubah ke 0) dapat dilacak sejak T6e.
+- **UPDATE yang tidak mengubah nilai apa pun tidak dicatat** (migrasi `000020`), supaya pemulihan data
+  tidak membanjiri log dengan baris palsu. **DELETE selalu dicatat.**
+- **Log tidak bisa diubah/dihapus lewat aplikasi:** RLS aktif, hanya policy SELECT untuk
+  `is_full_access()`; INSERT/UPDATE/DELETE/TRUNCATE dicabut dari `authenticated`; anon tanpa akses.
+  Penulis satu-satunya adalah trigger `catat_perubahan` (SECURITY DEFINER, tanpa EXECUTE untuk siapa pun).
+- **Catatan jujur:** `TRUNCATE` (dipakai seed ulang) **tidak** memicu trigger baris, jadi seed ulang
+  tidak tercatat di log. Karena itu `scripts/qa/test_seed_bersih.py` dan sidik jari database tetap wajib.
 
 ## 4. Model data
 Skema ada di `supabase/migrations/`. Inti:
@@ -147,6 +186,11 @@ Login sebagai: Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyri
 - **Masul** (ketiga role) diterima menulis capaian, kehadiran, dan catatan di **semua halaqah domainnya**
   (termasuk halaqah yang bukan ampuannya), ditolak di **domain lain**, ditolak pada **bulan terkunci** dan
   **bulan 0**, dan **tidak bisa menghapus**.
+- **Hapus capaian:** Mudir/Admin diterima; Masul (ketiga), Musyrif/ah, Mudarris/ah, anon **ditolak**.
+  Bulan terkunci: Mudir/Admin ditolak tanpa konfirmasi, diterima dengan konfirmasi. Bulan sesudahnya
+  terisi: ditolak tanpa konfirmasi lanjutan. Bulan 0: selalu ditolak.
+- **Log perubahan:** Mudir/Admin bisa membaca; Masul/pengampu tidak; anon tidak. Tidak ada peran yang
+  bisa INSERT/UPDATE/DELETE log.
 - Pengampu tidak bisa menyetujui target; Masul sesuai domain bisa, Masul domain lain tidak.
 - Hari Efektif hanya bisa diubah Admin/Mudir.
 

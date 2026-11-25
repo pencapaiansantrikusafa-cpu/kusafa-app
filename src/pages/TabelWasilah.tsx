@@ -38,6 +38,7 @@ export default function TabelWasilah({
   catatan,
   domain,
   memuat,
+  onHapus,
 }: {
   santri: Santri[];
   baris: BarisLaporan[];
@@ -48,6 +49,8 @@ export default function TabelWasilah({
   catatan: Record<string, string>;
   domain: Domain;
   memuat: boolean;
+  /** T6e: hanya diberikan untuk Mudir/Admin; tombol hapus per santri+mata pelajaran. */
+  onHapus?: (santriId: string, mapelId: string) => void;
 }) {
   const petaBaris = useMemo(() => {
     const p = new Map<string, BarisLaporan>();
@@ -171,6 +174,11 @@ export default function TabelWasilah({
               <th scope="col" className="px-3 py-2 text-left">
                 Catatan
               </th>
+              {onHapus && (
+                <th scope="col" className="px-3 py-2 text-left">
+                  Hapus capaian
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -219,6 +227,27 @@ export default function TabelWasilah({
                       )}
                     </td>
                   ))}
+                  {onHapus && (
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <div className="flex flex-col gap-1">
+                        {bidang.map((bd) => {
+                          const r = petaBaris.get(`${s.id}|${bd.id}`);
+                          if (!r || r.pos === null || r.pos === undefined) return null;
+                          return (
+                            <button
+                              key={bd.id}
+                              type="button"
+                              onClick={() => onHapus(s.id, bd.id)}
+                              className="rounded border border-red-300 px-1.5 py-0.5 text-[11px] font-medium text-red-700 hover:bg-red-50"
+                              aria-label={`Hapus capaian ${bd.name} ${s.full_name}`}
+                            >
+                              Hapus {bd.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  )}
                   <td className="max-w-[22rem] px-3 py-3 text-xs text-gray-700">
                     {catatan[s.id] ? catatan[s.id] : <span className="text-gray-400">–</span>}
                   </td>

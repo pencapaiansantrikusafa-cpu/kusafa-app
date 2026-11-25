@@ -63,6 +63,13 @@ def pulihkan(db, asli: dict) -> None:
         for k, v in asli_t.items():
             if sekarang.get(k) == v:
                 continue
+            if k not in sekarang:
+                # Baris DIHAPUS uji: masukkan kembali nilai aslinya (bukan dibiarkan hilang).
+                db.execute(
+                    f"insert into public.{t} ({', '.join(kol)}) values ({', '.join('%s' for _ in kol)})",
+                    tuple(v[c] for c in kol),
+                )
+                continue
             db.execute(
                 f"update public.{t} set {', '.join(f'{c}=%s' for c in kol)} where {kondisi}",
                 tuple(v[c] for c in kol) + tuple(k),

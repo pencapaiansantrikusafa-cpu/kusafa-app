@@ -1,0 +1,160 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 15,
+  "gagal": [],
+  "ringkasan": "15 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "ada 3 baris percobaan Mudir (Tilawah/Tahfidz/Kitabah, Jumadal Ula)",
+      "ok": true,
+      "target": [
+        [
+          "Kitabah",
+          "IBQ PAUD - 1"
+        ],
+        [
+          "Tahfidz",
+          "Al Fatihah - 1"
+        ],
+        [
+          "Tilawah",
+          "Karima - 1"
+        ]
+      ]
+    },
+    {
+      "uji": "tombol hapus Kitabah tersedia",
+      "ok": true,
+      "jumlah": 1
+    },
+    {
+      "uji": "dialog Kitabah menyebut santri/bulan/nilai",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nKitabah · Jumadal Ula · Santriwan fulan 16\n\nNilai sekarang: IBQ PAUD - 1 (posisi 1)\n\nTampilan akan kembali “belum diisi” (kosong, bukan 0). Penghapusan dicatat di log perubahan (siapa, "
+    },
+    {
+      "uji": "Kitabah: baris database benar-benar terhapus",
+      "ok": true,
+      "sisa": 0
+    },
+    {
+      "uji": "tombol hapus Tahfidz tersedia",
+      "ok": true,
+      "jumlah": 1
+    },
+    {
+      "uji": "dialog Tahfidz menyebut santri/bulan/nilai",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTahfidz · Jumadal Ula · Santriwan fulan 16\n\nNilai sekarang: Al Fatihah - 1 (posisi 1)\n\nTampilan akan kembali “belum diisi” (kosong, bukan 0). Penghapusan dicatat di log perubahan (siapa"
+    },
+    {
+      "uji": "Tahfidz: baris database benar-benar terhapus",
+      "ok": true,
+      "sisa": 0
+    },
+    {
+      "uji": "tombol hapus Tilawah tersedia",
+      "ok": true,
+      "jumlah": 1
+    },
+    {
+      "uji": "dialog Tilawah menyebut santri/bulan/nilai",
+      "ok": true,
+      "potongan": "Hapus capaian\n\nTilawah · Jumadal Ula · Santriwan fulan 16\n\nNilai sekarang: Karima - 1 (posisi 1)\n\nCapaian ini tercatat khatam, mulai putaran baru (putaran 2, bulan lalu putaran 1). Setelah dihapus, pu"
+    },
+    {
+      "uji": "Tilawah: baris database benar-benar terhapus",
+      "ok": true,
+      "sisa": 0
+    },
+    {
+      "uji": "setelah hapus, tampilan kembali 'belum diisi'",
+      "ok": true,
+      "potongan": "Capaian Al Qur'an\n\nMelihat capaian santri per halaqah dan bulan.\n\nAl Qur'an\nIlmu Wasilah\nIlmu Ghayah\nHalaqah\nHLQ-PA-1 - Ust. Fulan 1\n▾\n\nPengampu: Ust. Fulan 1\n\nTahun Hijriyah\n1447 H\n▾\nBulan\nJumadal Ula\n▾\n\nPembanding otomatis bulan sebelumnya.\n\nData belum lengkap: 108 dari 109 santri belum punya capa"
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "log mencatat 3 DELETE progress_entries oleh Mudir",
+      "ok": true,
+      "log": [
+        [
+          "45",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "4642c9fb-5035-5aa4-aeba-710296929b48",
+          "2"
+        ],
+        [
+          "44",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "5fc41afa-1bab-5c5a-a47c-e78ad5c25d1a",
+          "1"
+        ],
+        [
+          "43",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "2c9466f1-ad58-5c24-9428-eb5327b2e21c",
+          "1"
+        ]
+      ]
+    },
+    {
+      "uji": "sidik jari berubah tepat -3 capaian",
+      "ok": true,
+      "sebelum": 2039,
+      "sesudah": 2036
+    },
+    {
+      "uji": "log bertambah (3 delete; tidak ada perubahan tabel lain)",
+      "ok": true,
+      "log_sebelum": 0,
+      "log_sesudah": 3
+    },
+    {
+      "uji": "isi log 3 DELETE",
+      "ok": true,
+      "log": [
+        [
+          "45",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "4642c9fb-5035-5aa4-aeba-710296929b48",
+          "2"
+        ],
+        [
+          "44",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "5fc41afa-1bab-5c5a-a47c-e78ad5c25d1a",
+          "1"
+        ],
+        [
+          "43",
+          "progress_entries",
+          "delete",
+          "mudir",
+          "aplikasi",
+          "2c9466f1-ad58-5c24-9428-eb5327b2e21c",
+          "1"
+        ]
+      ]
+    }
+  ],
+  "catatan": "UJI PENERIMAAN: 3 baris dihapus permanen atas perintah Mudir, TIDAK dipulihkan."
+}

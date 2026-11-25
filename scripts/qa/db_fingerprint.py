@@ -105,7 +105,18 @@ def rekam() -> dict:
     return hasil
 
 
-def banding(a: dict, b: dict) -> list[dict]:
+def cek_log_sampai(maks_id: int) -> str:
+    """Checksum baris log yang SUDAH ADA saat perekaman (id <= maks_id) pada keadaan sekarang."""
+    conn = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
+    c = conn.cursor()
+    cek = c.execute(
+        "select coalesce(md5(string_agg(t::text, '' order by id)), '') "
+        "from public.change_log t where t.id <= %s", (maks_id,)).fetchone()[0]
+    conn.close()
+    return cek
+
+
+def banding(a: dict, b: dict, log_lama_utuh: bool | None = None) -> list[dict]:
     beda = []
     for t in sorted(set(a) | set(b)):
         x, y = a.get(t), b.get(t)
@@ -113,9 +124,10 @@ def banding(a: dict, b: dict) -> list[dict]:
             # Log: hanya boleh TUMBUH; baris lama (id <= maks sebelum) tidak boleh berubah.
             if x is None or y is None:
                 beda.append({"tabel": "change_log", "sebelum": x, "sesudah": y, "selisih_baris": 0})
-            elif y["baris"] < x["baris"] or y["checksum_sampai_maks"] != x["checksum_sampai_maks"]:
+            elif y["baris"] < x["baris"] or log_lama_utuh is False:
                 beda.append({"tabel": "change_log", "sebelum": x, "sesudah": y,
-                             "selisih_baris": y["baris"] - x["baris"]})
+                             "selisih_baris": y["baris"] - x["baris"],
+                             "baris_lama_utuh": log_lama_utuh})
             continue
         if x != y:
             beda.append({
@@ -146,7 +158,13 @@ def main() -> int:
 
     if a.banding:
         lama = json.loads(pathlib.Path(a.banding).read_text(encoding="utf-8"))
-        beda = banding(lama, sekarang)
+        log_lama = lama.get("_log_change_log")
+        # Baris log yang sudah ada saat perekaman harus UTUH: checksum sekarang (id <= maks lama)
+        # wajib sama dengan checksum yang tersimpan di berkas.
+        log_utuh = None
+        if log_lama and log_lama.get("maks_id"):
+            log_utuh = cek_log_sampai(log_lama["maks_id"]) == log_lama["checksum_sampai_maks"]
+        beda = banding(lama, sekarang, log_utuh)
         if not beda:
             print(f"SAMA: {total} baris, {len(sekarang)} tabel (sidik jari identik)")
             return 0

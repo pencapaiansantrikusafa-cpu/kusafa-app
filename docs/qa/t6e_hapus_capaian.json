@@ -1,7 +1,7 @@
 {
-  "lulus": 34,
+  "lulus": 35,
   "gagal": [],
-  "ringkasan": "34 LULUS, 0 gagal",
+  "ringkasan": "35 LULUS, 0 gagal",
   "rincian": [
     {
       "uji": "pratinjau hapus: mudir -> DITERIMA",
@@ -273,6 +273,11 @@
         "uji log awal",
         "uji log baru"
       ]
+    },
+    {
+      "uji": "LOG tidak mencatat UPDATE tanpa perubahan nilai",
+      "ok": true,
+      "log": 0
     },
     {
       "uji": "LOG koneksi tanpa JWT: aktor NULL, sumber skrip:<user>",

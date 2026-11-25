@@ -40,12 +40,12 @@ def rec(nama: str, ok: bool, detail: str, **ev) -> None:
 def main() -> int:
     c = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
 
-    # 1. Capaian harus sama dengan seed + baris uji Mudir (2.036 + 3 = 2.039).
-    #    2.036 = jumlah baris `progress_entries` di berkas seed (diverifikasi terpisah
-    #    oleh uji banding Excel penuh). 3 baris bulan Jumadal Ula adalah percobaan Mudir.
+    # 1. Capaian harus 2.036 = jumlah baris `progress_entries` di berkas seed
+    #    (diverifikasi terpisah oleh uji banding Excel penuh). Sejak T6e, 3 baris percobaan
+    #    Mudir bulan Jumadal Ula dihapus lewat fitur hapus capaian (uji penerimaan).
     n_prog = c.execute("select count(*) from public.progress_entries").fetchone()[0]
-    rec("1a_jumlah_capaian_2039", n_prog == 2039,
-        f"progress_entries: {n_prog} (harus 2.039 = 2.036 seed + 3 baris uji Mudir)")
+    rec("1a_jumlah_capaian_2036", n_prog == 2036,
+        f"progress_entries: {n_prog} (harus 2.036 = jumlah baris seed)")
 
     # 2. Ramadhan tanpa capaian (keputusan Mudir 23 Nov 2026 + T6d3)
     n = c.execute("""
@@ -61,10 +61,16 @@ def main() -> int:
 
     # 3. Kehadiran harus sama dengan jumlah yang disetujui
     per = dict(c.execute("select domain, count(*) from public.attendance group by 1").fetchall())
-    rec("2_jumlah_kehadiran", per.get("alquran", 0) == 606 and per.get("wasilah", 0) == 756
+    rec("2_jumlah_kehadiran", per.get("alquran", 0) == 599 and per.get("wasilah", 0) == 756
         and per.get("ghayah", 0) == 749,
-        f"kehadiran Al Qur'an {per.get('alquran')} (606), Wasilah {per.get('wasilah')} (756), "
+        f"kehadiran Al Qur'an {per.get('alquran')} (599), Wasilah {per.get('wasilah')} (756), "
         f"Ghayah {per.get('ghayah')} (749)", jumlah=per)
+
+    # 3b. Tidak ada kehadiran di bulan 8 (Jumadal Ula): percobaan Admin dihapus T6e,
+    #     dan bulan itu belum punya Hari Efektif (bukan bulan input).
+    n8 = c.execute("""select count(*) from public.attendance a
+                      join public.hijri_months m on m.id = a.month_id where m.month_no = 8""").fetchone()[0]
+    rec("2b_kehadiran_bulan_8_kosong", n8 == 0, f"baris kehadiran bulan 8: {n8} (harus 0)")
 
     # 4. Capaian Wasilah/Ghayah belum dikarang (harus 0)
     bocor = dict(c.execute("""
