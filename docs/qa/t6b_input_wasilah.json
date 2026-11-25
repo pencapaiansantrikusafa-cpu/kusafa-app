@@ -163,7 +163,7 @@
     {
       "uji": "22d. Masul Al Quran tetap ditolak di halaqah yang tidak diampu",
       "ok": true,
-      "pesan": "new row violates row-level security policy for table \"progress_entries\""
+      "pesan": "duplicate key value violates unique constraint \"progress_entries_student_id_subject_id_month_id_key\""
     },
     {
       "uji": "22e. Masul Ghayah ditolak menulis Ilmu Wasilah",

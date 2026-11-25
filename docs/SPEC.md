@@ -21,14 +21,31 @@ Role: `mudir`, `admin`, `masul_alquran` (Masul Al Quran), `masul_wasilah` (Masul
 | Aksi | Mudir, Admin | Masul Al Quran / Masul Wasilah / Masul Ghayah | Musyrif/ah, Mudarris/ah |
 |---|---|---|---|
 | Melihat semua halaqah dan santri | Ya | Ya | Ya |
-| Input capaian, catatan, kehadiran | Semua halaqah, kapan saja | **Ilmu Wasilah/Ilmu Ghayah:** semua halaqah di domainnya (penanggung jawab domain). **Al Qur'an:** halaqah yang diampu | Halaqah yang diampu |
+| Input capaian, catatan, kehadiran | Semua halaqah, kapan saja | **Semua halaqah di domainnya** (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah), memperbaiki/menimpa isian, **bukan** menghapus | Halaqah yang diampu |
 | Mengajukan target | Ya | Ya | Ya, halaqah yang diampu |
 | Menyetujui target | Ya | Hanya domain masing-masing | Tidak |
 | Hari Efektif, kunci bulan, pengguna | Ya | Tidak | Tidak |
 | Kurikulum, halaqah, pengampu | Ya | Hanya domain masing-masing | Tidak |
 Pengampu hanya bisa mengisi bulan yang belum terkunci. Mudir dan Admin bisa mengubah bulan terkunci. Hari Efektif khusus santri hanya Mudir/Admin.
 
-**Catatan (keputusan Mudir 25 November 2026, T6b):** Masul Wasilah dan Masul Ghayah adalah **penanggung jawab domain**, bukan hanya pengampu mata pelajaran. Mereka boleh menulis capaian **semua halaqah di domainnya** walau tidak tercatat di `halaqah_teachers`. Ditegakkan oleh policy `progress_insert_masul_domain` / `progress_update_masul_domain` (khusus `wasilah` dan `ghayah`) dan oleh `wasilah_can_write`. Yang **tidak** berubah: mereka tetap tidak boleh menyentuh domain lain, tetap tidak boleh menulis pada bulan terkunci, dan **Masul Al Quran tetap "halaqah yang diampu"** (belum ada keputusan untuk menyamakan).
+**Catatan (keputusan final Mudir 25 November 2026, T6d2 — menggantikan catatan T6b/3d):** **ketiga Masul**
+(Masul Al Quran, Masul Wasilah, Masul Ghayah) adalah **penanggung jawab domain** dan boleh **input capaian,
+catatan, dan kehadiran di SEMUA halaqah domainnya**, walau tidak tercatat di `halaqah_teachers`.
+Ditegakkan oleh policy `progress_insert`/`progress_update`, `attendance_insert`/`attendance_update`,
+`notes_insert`/`notes_update` (migrasi `20261125000017`), dan `wasilah_can_write`.
+
+Yang **tetap** berlaku untuk Masul:
+- **Tidak boleh menyentuh domain lain** (`is_masul_of` memeriksa domainnya).
+- **Bulan terkunci ditolak** (Masul bukan `is_full_access()`); hanya Mudir/Admin yang boleh mengubah.
+- **Bulan 0 (Data Awal) ditolak** oleh RLS (`month_is_open`) dan oleh fungsi input.
+- **Tidak boleh menghapus** — policy hapus hanya `is_full_access()`.
+- Pengampu (Musyrif/ah, Mudarris/ah) **tetap hanya halaqahnya sendiri**.
+
+**Jejak pengisi:** ketiga tabel (`progress_entries`, `attendance`, `monthly_notes`) punya `entered_by`
++ `entered_at` (siapa mengisi) dan, sejak migrasi `20261125000017`, `updated_by` + `updated_at`
+(siapa terakhir mengubah). Trigger `catat_jejak` mengisi jejak saat menyimpan dan mencatat pengubah
+terakhir saat orang lain menimpa; pada koneksi tanpa JWT (seed/skrip) trigger **tidak menyentuh** baris
+yang sudah ada.
 
 ## 4. Model data
 Skema ada di `supabase/migrations/`. Inti:
@@ -127,6 +144,9 @@ Login sebagai: Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyri
 - Musyrif/ah hanya bisa menulis capaian santri di halaqah Al Qur'an yang diampu; ditolak di halaqah lain.
 - Mudarris/ah hanya bisa menulis mata pelajaran yang diampunya di Level tersebut.
 - Pengampu ditolak menulis pada bulan terkunci; Mudir/Admin diterima.
+- **Masul** (ketiga role) diterima menulis capaian, kehadiran, dan catatan di **semua halaqah domainnya**
+  (termasuk halaqah yang bukan ampuannya), ditolak di **domain lain**, ditolak pada **bulan terkunci** dan
+  **bulan 0**, dan **tidak bisa menghapus**.
 - Pengampu tidak bisa menyetujui target; Masul sesuai domain bisa, Masul domain lain tidak.
 - Hari Efektif hanya bisa diubah Admin/Mudir.
 

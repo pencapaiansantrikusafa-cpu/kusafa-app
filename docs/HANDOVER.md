@@ -25,6 +25,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`, kunci service 
 | T5c-3 | Perbaikan bug label dropdown Input ("— belum diisi —") | **SELESAI** — E2E 9/9, data utuh (STATUS 2g) | `DropdownCari.tsx`, `FormInputAlQuran.tsx`, `InputPage.tsx` |
 | T6a | Tabel capaian Wasilah & Ghayah | **SELESAI** (STATUS 2h) | `TabelWasilah.tsx`, `TabelCapaian.tsx`, `test_t6a_tabel.py` 14/14 |
 | T6b | Input Wasilah & Ghayah | **SELESAI** (STATUS 2i) | migrasi `000013`-`000016`, `InputWasilahPage.tsx`, `test_t6b_*` 29/29 & 14/14 |
+| T6d2 | Seragamkan hak input Masul + jejak pengisi | **SELESAI** (STATUS 2k) | migrasi `000017`-`000018`, `roles.ts` (`bolehInputDomain`), `test_t6d2_*` 68/68 & 14/14, matriks RLS 67/75 |
 | T6c | "Bulan lalu" tampil sejak awal | **SELESAI** | `FormInputAlQuran.tsx`; E2E 10/10 |
 | T6d | Tab domain di halaman Capaian (seperti Input) | **SELESAI** (STATUS 2j) | `TabDomain.tsx`, `CapaianPage.tsx`; E2E 28/28 lokal & produksi |
 | T7 | Target dinamis (ajukan/setujui) | **BELUM** | - |
@@ -108,6 +109,9 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 
 ### 3d. Keputusan Mudir 25 November 2026 (T6b) — sudah final
 
+> **DIGANTIKAN oleh Keputusan final 3f (T6d2, 25 November 2026).** Isi di bawah dipertahankan sebagai
+> riwayat; yang berlaku sekarang adalah 3f.
+
 - **Masul Wasilah dan Masul Ghayah adalah penanggung jawab domain**, bukan hanya pengampu mata pelajaran. Mereka **boleh menulis capaian semua halaqah di domainnya** walau tidak tercatat di `halaqah_teachers`.
   - Ditegakkan oleh `wasilah_can_write` dan policy `progress_insert_masul_domain` / `progress_update_masul_domain`.
   - Policy itu **khusus `wasilah` dan `ghayah`**. **Masul Al Quran TIDAK ikut berubah** (tetap "halaqah yang diampu"); menyamakannya harus diputuskan Mudir terpisah.
@@ -137,6 +141,39 @@ Aturan bisnis lengkap: `docs/SPEC.md`. Ringkas:
 - **Submenu Capaian di menu samping/bilah bawah dihapus** — sudah digantikan tab.
 - **Hak akses tidak berubah:** ketiga domain tetap dapat dilihat semua staf; yang tidak berhak (wali, non-staf) tetap tidak membuka halaman Capaian sama sekali. Bila kelak Capaian dibatasi per domain, harus diputuskan Mudir dan diubah bersama RLS.
 
+### 3f. Keputusan Mudir 25 November 2026 (T6d2) — sudah final, MENGGANTIKAN 3d
+
+- **Hak input ketiga Masul diseragamkan.** Masul Al Quran, Masul Wasilah, dan Masul Ghayah boleh
+  **input capaian, catatan, dan kehadiran di SEMUA halaqah domainnya** (Al Qur'an / Ilmu Wasilah /
+  Ilmu Ghayah), walau tidak tercatat di `halaqah_teachers`. Masul = **penanggung jawab domain**.
+- **Cakupan mengikuti satu baris tabel SPEC bagian 3:** capaian + catatan + kehadiran.
+- **Tetap ditolak untuk Masul:** domain lain, **bulan terkunci**, **bulan 0 (Data Awal)**, dan
+  **menghapus** (hapus tetap hanya Mudir/Admin).
+- **Pengampu (Musyrif/ah, Mudarris/ah) tidak berubah:** tetap **hanya halaqah yang diampu**.
+- **Rumus Hadir dan view tidak berubah.**
+- **Jejak pengisi wajib tercatat** untuk capaian, catatan, dan kehadiran: `entered_by`/`entered_at`
+  = pengisi terakhir, `updated_by`/`updated_at` = pengubah terakhir. Kolom `updated_by`/`updated_at`
+  ditambahkan lewat migrasi `20261125000017_masul_input_domain.sql`; trigger `catat_jejak` mengisi
+  keduanya. Pada koneksi tanpa JWT (seed/skrip) trigger **tidak menyentuh** baris yang sudah ada
+  (migrasi `20261125000018_catat_jejak_tanpa_jwt.sql`).
+- **Sanksi teknis:** policy `progress_insert`/`progress_update`, `attendance_insert`/`attendance_update`,
+  `notes_insert`/`notes_update` memakai aturan yang sama untuk ketiga domain; `is_masul_of(domain)`
+  memastikan domain lain tetap ditolak dan `month_is_open` memastikan bulan terkunci/bulan 0 ditolak.
+- **Uji:** `test_t6d2_masul_input.py` 68/68, `test_t6d2_e2e_masul.py` 14/14, matriks RLS 67 OK / 8 SKIP
+  / 0 GAGAL, seluruh uji lama hijau (rincian di STATUS 2k).
+
+### 3g. Catatan data terbuka (perlu keputusan Mudir, bukan keputusan final)
+
+1. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian** masih ada di database, padahal
+   `docs/DATA-NOTES.md` butir 3 mencatat penghapusannya (606 → 599) sudah disetujui 23 Nov 2026.
+   Tidak tersentuh T6d2. Pilihan: hapus lagi atau pertahankan.
+2. **Nilai izin/sakit/alpha Shafar (bulan 5)** di database (0) berbeda dari berkas seed (36 baris > 0).
+   Tidak ada uji yang memeriksa bulan itu; tidak ada jejak perubahan (kolom jejak baru ada sejak T6d2).
+   Pilihan: ikuti seed atau pertahankan database.
+3. **3 baris `progress_entries` + 7 baris `attendance` bulan Jumadal Ula** bertanda `entered_by = Admin`
+   (25 Nov 2026, 02:14-02:16 UTC) adalah percobaan Mudir sendiri, **tidak disentuh**. Perlu konfirmasi
+   apakah boleh dihapus sebelum data asli masuk (T8/T10).
+
 Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_years`; semua dropdown `DropdownCari` (panel layang `z-60`); tahun & bulan dua dropdown terpisah; label item ber-awalan nama bidang; daftar panjang wajib `ambilSemua`; frontend hanya `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`; migrasi lama **tidak diubah** (berikutnya `20261121000010_...`).
 
 ---
@@ -146,9 +183,9 @@ Struktur teknis (SPES & STATUS): `hijri_months` 13 baris, tahun di `academic_yea
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`.
 Kredensial hanya di `.env.local` (**tidak dicetak/commit**). `DATABASE_URL` adalah koneksi Postgres Supabase yang dipakai skrip lokal (`scripts/db/run_sql.py`, seed, uji QA); tipe spesifik (pooler langsung vs transaction-pooler) periksa di Dashboard supaya tidak keliru dipakai dari luar.
 
-- **Migrasi dijalankan (16)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search`, `20261124000012_input_alquran_data` (T5c-2), `20261125000013_wasilah_input`, `20261125000014_wasilah_input_hadir`, `20261125000015_masul_domain_write`, `20261125000016_masul_domain_scope_fix` (T6b).
+- **Migrasi dijalankan (18)**: `000001`–`000009`, `20261124000010_attendance_guard_revoke`, `20261124000011_curriculum_search`, `20261124000012_input_alquran_data` (T5c-2), `20261125000013_wasilah_input`, `20261125000014_wasilah_input_hadir`, `20261125000015_masul_domain_write`, `20261125000016_masul_domain_scope_fix` (T6b), `20261125000017_masul_input_domain` + `20261125000018_catat_jejak_tanpa_jwt` (T6d2).
 - **Auth**: `disable_signup = true`, provider email **aktif** (`external.email=true`), `mailer_autoconfirm=false`. Signup ditolak `422 signup_disabled`; login 7 role lulus (24 Nov 2026). Diubah lewat Management API (`PATCH /v1/projects/<ref>/config/auth`).
-- **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **38 OK / 8 SKIP / 0 GAGAL**.
+- **RLS**: 18 tabel `relrowsecurity=true`; semua kebijakan bertarget role `authenticated`; fungsi di-hardening (cabut `EXECUTE` anon/PUBLIC, grant authenticated+service_role). Matriks RLS otomatis: **67 OK / 8 SKIP / 0 GAGAL** (T6d2; sebelumnya 38).
 - **Fungsi trigger**: `attendance_guard_override()` kini **tanpa** EXECUTE untuk authenticated/anon/PUBLIC; trigger tetap berjalan (SECURITY DEFINER).
 - **Seed**: data dummy 1447 dimuat; destruktif, jangan ulang tanpa izin Mudir. `month_domain_settings` hanya Al Qur'an bulan 1-7 (Rabiul Awwal=3 karena libur, Syawwal=4); `is_locked` semua `false`.
 - **Ekstensi**: `pg_trgm` dipasang di skema **`extensions`** (bukan `public`) untuk indeks pencarian label.

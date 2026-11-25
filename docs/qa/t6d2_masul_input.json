@@ -1,0 +1,507 @@
+{
+  "lulus": 68,
+  "gagal": [],
+  "ringkasan": "68 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "mudir | capaian | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | capaian | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | capaian | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | kehadiran | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | kehadiran | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | kehadiran | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | catatan | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | catatan | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "mudir | catatan | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | capaian | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | capaian | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | capaian | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | kehadiran | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | kehadiran | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | kehadiran | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | catatan | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | catatan | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "admin | catatan | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_alquran | capaian | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_alquran | capaian | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | capaian | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | kehadiran | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_alquran | kehadiran | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | kehadiran | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | catatan | alquran | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_alquran | catatan | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | catatan | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | capaian | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | capaian | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_wasilah | capaian | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | kehadiran | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | kehadiran | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_wasilah | kehadiran | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | catatan | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_wasilah | catatan | wasilah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_wasilah | catatan | ghayah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | capaian | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | capaian | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | capaian | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_ghayah | kehadiran | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | kehadiran | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"attendance\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | kehadiran | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_ghayah | catatan | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | catatan | wasilah | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_ghayah | catatan | ghayah | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "musyrif | capaian | alquran (halaqahnya) | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "musyrif | capaian | wasilah (bukan halaqahnya) | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "musyrif | capaian | alquran halaqah lain | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "Masul Wasilah mengisi baris kosong: entered_by = Masul",
+      "ok": true,
+      "rowcount": 1,
+      "jejak": [
+        "578977c3-6d10-4ce0-8e95-271cd28ffe2b",
+        null
+      ]
+    },
+    {
+      "uji": "Admin menimpa isian Masul: updated_by mencatat Masul",
+      "ok": true,
+      "rowcount": 1,
+      "jejak": [
+        "a8681d83-302a-4e53-96a6-3473d14c9055",
+        "578977c3-6d10-4ce0-8e95-271cd28ffe2b"
+      ]
+    },
+    {
+      "uji": "Menyunting sendiri: tidak mengubah pengisi",
+      "ok": true,
+      "jejak": [
+        "578977c3-6d10-4ce0-8e95-271cd28ffe2b",
+        null
+      ]
+    },
+    {
+      "uji": "Masul Al Quran bisa menimpa capaian Al Qur'an (entered_by = Masul)",
+      "ok": true,
+      "rowcount": 1,
+      "jejak": [
+        "3e4912f0-d26f-4879-b9e7-f80f943e2137"
+      ]
+    },
+    {
+      "uji": "Catatan: entered_by terisi oleh Masul Ghayah",
+      "ok": true,
+      "jejak": [
+        "511a7830-773b-4613-bda4-96824ca6238e"
+      ]
+    },
+    {
+      "uji": "Catatan: menyunting sendiri mencatat updated_by",
+      "ok": true,
+      "jejak": [
+        "511a7830-773b-4613-bda4-96824ca6238e",
+        null,
+        "uji2"
+      ]
+    },
+    {
+      "uji": "masul_alquran | capaian | alquran (bulan terkunci) | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "musyrif | capaian | alquran (bulan terkunci) | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "mudir | capaian | alquran (bulan terkunci) | insert -> DITERIMA",
+      "ok": true,
+      "dapat": "DITERIMA",
+      "pesan": "",
+      "rowcount": 1
+    },
+    {
+      "uji": "masul_alquran | catatan | alquran (bulan terkunci) | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"monthly_notes\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "masul_alquran | capaian | bulan 0 | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "mudir | capaian | bulan 0 | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "duplicate key value violates unique constraint \"progress_entries_student_id_subj",
+      "rowcount": 0
+    },
+    {
+      "uji": "Masul TIDAK bisa menghapus capaian",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "masih_ada": 1
+    },
+    {
+      "uji": "Pengampu TIDAK bisa menghapus capaian",
+      "ok": true,
+      "dapat": "DITOLAK"
+    },
+    {
+      "uji": "Mudir BISA menghapus capaian",
+      "ok": true,
+      "dapat": "DITERIMA"
+    },
+    {
+      "uji": "anon | capaian | alquran | insert -> DITOLAK",
+      "ok": true,
+      "dapat": "DITOLAK",
+      "pesan": "new row violates row-level security policy for table \"progress_entries\"",
+      "rowcount": 0
+    },
+    {
+      "uji": "anon ditolak memanggil fungsi input (tanpa EXECUTE)",
+      "ok": true
+    },
+    {
+      "uji": "jejak kehadiran lama dipulihkan",
+      "ok": true,
+      "beda": 0
+    },
+    {
+      "uji": "uji tidak meninggalkan baris baru",
+      "ok": true,
+      "sebelum": {
+        "progress_entries": 2038,
+        "attendance": 2118,
+        "monthly_notes": 0
+      },
+      "sesudah": {
+        "progress_entries": 2038,
+        "attendance": 2118,
+        "monthly_notes": 0
+      }
+    },
+    {
+      "uji": "uji tidak menghapus/menambah baris lama (per domain)",
+      "ok": true,
+      "sebelum": {
+        "capaian": {
+          "alquran": 2038
+        },
+        "kehadiran": {
+          "wasilah": 756,
+          "ghayah": 749,
+          "alquran": 613
+        },
+        "catatan": {}
+      },
+      "sesudah": {
+        "capaian": {
+          "alquran": 2038
+        },
+        "kehadiran": {
+          "wasilah": 756,
+          "ghayah": 749,
+          "alquran": 613
+        },
+        "catatan": {}
+      }
+    }
+  ]
+}

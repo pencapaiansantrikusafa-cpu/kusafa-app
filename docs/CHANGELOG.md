@@ -5,7 +5,17 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
-## 24 November 2026 - Pra-T6 (audit & perbaikan data sebelum T6)
+## 25 November 2026 - T6d2 (seragamkan hak input Masul + jejak pengisi)
+
+- **Keputusan Mudir:** Masul Al Quran, Masul Wasilah, dan Masul Ghayah boleh **input capaian, catatan, dan kehadiran di SEMUA halaqah domainnya**. Tetap ditolak: domain lain, bulan terkunci, bulan 0, menghapus. Pengampu tetap hanya halaqahnya. Menggantikan keputusan 3d.
+- **Migrasi `20261125000017_masul_input_domain.sql`**: satu aturan tulis untuk ketiga domain; policy khusus `wasilah`/`ghayah` dihapus; kolom `updated_by`/`updated_at` + trigger `catat_jejak` pada capaian, kehadiran, catatan.
+- **Migrasi `20261125000018_catat_jejak_tanpa_jwt.sql`**: trigger tidak menyentuh baris lama saat `auth.uid()` NULL (seed/skrip), agar jejak seed tidak tertimpa.
+- **Kode**: `roles.ts` (`hanyaHalaqahDiampu` kini hanya Musyrif/ah & Mudarris/ah, fungsi baru `bolehInputDomain`), `InputAlQuranPage.tsx`, `InputWasilahPage.tsx`, `TabelCapaian.tsx` (`ambilSemua` menggantikan `.limit(2000)`).
+- **Uji**: `test_t6d2_masul_input.py` **68/68**; `test_t6d2_e2e_masul.py` **14/14**; matriks RLS **67 OK / 8 SKIP / 0 GAGAL**; seluruh uji lama hijau (T6a 14/14, T6b 29/29, DB 16/16, regresi 7/7, Excel 7/7, smoke).
+- **Perbaikan data**: 1 baris capaian Wasilah sisa uji matriks dihapus; 1 baris kehadiran Ghayah yang hilang dipulihkan; kedua skrip uji diperbaiki agar tidak lagi meninggalkan/menghapus baris (baris sasaran uji hapus kini dibuat di dalam transaksi; uji T6d2 memeriksa hitungan per domain).
+- Dokumen: STATUS 2k + catatan data terbuka, HANDOVER 3f (menggantikan 3d) & 3g, SPEC bagian 3 dan 8, FILE-MAP.
+
+---
 
 ### Langkah [6] - Jawaban Mudir + verifikasi & penutupan celah
 - **Signup**: celah ditemukan — signup tertutup hanya karena provider email dimatikan, yang **ikut mematikan login**; dengan email valid signup berhasil. Ditutup dengan `disable_signup=true` (provider email aktif). Uji `scripts/qa/test_auth_signup_closed.py` **9/9**.

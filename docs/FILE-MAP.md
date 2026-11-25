@@ -65,7 +65,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 |---|---|
 | `supabase.ts` | Klien Supabase dari `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Tidak boleh memakai kunci service role. |
 | `auth-context.ts` | Konteks React untuk profil pengguna. |
-| `roles.ts` | Tipe role, label role lengkap (Masul Al Quran, Masul Wasilah, Masul Ghayah), daftar menu per role, `hanyaHalaqahDiampu()`, `batasiPemberitahuan()`, `isPeninjau()`. |
+| `roles.ts` | Tipe role, label role lengkap (Masul Al Quran, Masul Wasilah, Masul Ghayah), daftar menu per role, `hanyaHalaqahDiampu()` (kini hanya Musyrif/ah & Mudarris/ah), `bolehInputDomain()` (Masul = semua halaqah domainnya), `batasiPemberitahuan()`, `isPeninjau()`. |
 | `laporan.ts` | Tipe baris `v_monthly_report` + pemformat angka. **Tidak** menghitung selisih/target/kehadiran (itu di database). |
 | `putaran.ts` | Aturan putaran Tilawah: `bolehKhatam()`, `putaranUntukSimpan()`. Diuji di `tests/putaran.test.mjs`. |
 | `posisi.ts` | Pemanggil RPC `item_position` dengan cache, dipakai form input saat memeriksa capaian lebih kecil dari bulan lalu. |
@@ -109,11 +109,13 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261124000010_attendance_guard_revoke.sql` | Cabut `EXECUTE` `attendance_guard_override()` dari authenticated/PUBLIC/anon (fungsi trigger; trigger tetap jalan karena SECURITY DEFINER). |
 | `migrations/20261124000012_input_alquran_data.sql` | T5c-2: RPC `input_alquran_boot()` (halaqah+bulan+pengampu) & `input_alquran_data()` (seluruh isi form dalam satu JSON; angka dari view, tidak dihitung ulang). |
 | `migrations/20261124000011_curriculum_search.sql` | T5c: RPC `curriculum_items_search` (cari item per bidang, maks 60, skor = versi klien) & `curriculum_items_by_ids`; indeks GIN trigram label; `pg_trgm` di skema `extensions`; EXECUTE hanya authenticated/service_role. |
+| `migrations/20261125000017_masul_input_domain.sql` | T6d2: satu aturan tulis untuk **ketiga domain** (`is_full_access` ATAU Masul domainnya ATAU pengampu halaqah, dengan `month_is_open`); hapus tetap hanya Mudir/Admin. Menambah `updated_by`/`updated_at` di `progress_entries`, `attendance`, `monthly_notes` + trigger `catat_jejak`. |
+| `migrations/20261125000018_catat_jejak_tanpa_jwt.sql` | T6d2: trigger `catat_jejak` tidak menyentuh baris lama bila `auth.uid()` NULL (seed/skrip), supaya jejak seed tidak tertimpa. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
-Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261125000017_...`
-(nomor `000010`-`000016` sudah terpakai).
+Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru `20261125000019_...`
+(nomor `000010`-`000018` sudah terpakai).
 
 ---
 
@@ -130,7 +132,9 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/create_auth_users.py` | Membuat akun dummy di Supabase Auth (memakai kunci service role di `.env.local`, hanya lokal). |
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
-| `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi; tiap probe transaksi sendiri + ROLLBACK. |
+| `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi (67 OK / 8 SKIP); tiap probe transaksi sendiri + ROLLBACK — termasuk baris sasaran uji hapus yang dibuat **di dalam** transaksi agar tidak tertinggal. |
+| `scripts/qa/test_t6d2_masul_input.py` | T6d2 (68 uji, transaksi + ROLLBACK): ketiga Masul boleh insert/update capaian+kehadiran+catatan di semua halaqah domainnya, ditolak di domain lain/bulan terkunci/bulan 0, tidak boleh hapus; jejak `entered_by`/`updated_by`; hitungan baris per domain tidak berubah. |
+| `scripts/qa/test_t6d2_e2e_masul.py` | T6d2 E2E (14 uji): ketiga Masul melihat semua halaqah domainnya, domain lain dialihkan, Simpan menulis capaian dengan `entered_by`, Musyrif tetap satu halaqah, data & jejak dipulihkan. |
 | `scripts/qa/run_pre_t6_db_tests.py` | Uji DB pra-T6 (16 uji): trigger Hari Efektif, bulan terkunci, RLS lintas halaqah, `can_manage`, Hari Efektif Rabiul Awwal = **3** (libur). |
 | `scripts/qa/test_no_halaqah.py` | Santri tanpa halaqah di suatu domain: tidak tampil, RLS menolak penulisan. |
 | `scripts/qa/test_students_without_halaqah.py` | Notifikasi per role (Mudir/Admin semua domain, Masul domainnya, Musyrif/Mudarris 0). |

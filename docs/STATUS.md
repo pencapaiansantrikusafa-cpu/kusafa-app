@@ -382,6 +382,77 @@ Tangkapan layar: `docs/qa/t6d/` (`hp360_capaian_*.png`, `desktop_0*_capaian_*.pn
 
 ---
 
+## 2k. T6d2 - Masul boleh input di semua halaqah domainnya + jejak pengisi (25 November 2026)
+
+**Keputusan Mudir (25 November 2026, menggantikan keputusan 3d):** **seragamkan** hak input ketiga Masul.
+Masul Al Quran, Masul Wasilah, dan Masul Ghayah boleh **input capaian + catatan + kehadiran di SEMUA
+halaqah domainnya** (walau tidak tercatat di `halaqah_teachers`). **Tetap ditolak:** domain lain, bulan
+terkunci, bulan 0, dan menghapus. Pengampu (Musyrif/ah, Mudarris/ah) **tetap hanya halaqahnya sendiri**.
+Rumus Hadir dan view **tidak berubah**. Jejak siapa mengisi/mengubah wajib tercatat.
+
+- **Migrasi `20261125000017_masul_input_domain.sql`** (sudah dijalankan di produksi):
+  - menulis ulang `progress_insert` / `progress_update`, `attendance_insert` / `attendance_update`,
+    `notes_insert` / `notes_update` menjadi **satu aturan seragam untuk ketiga domain**:
+    `is_full_access()` ATAU `month_is_open(...)` dan (`is_masul_of(domain)` ATAU pengampu halaqah itu);
+  - **hak hapus tidak berubah** (`progress_delete`, `attendance_delete`, `notes_delete` tetap hanya
+    `is_full_access()` = Mudir/Admin);
+  - menghapus policy lama `progress_insert_masul_domain` / `progress_update_masul_domain` (khusus
+    Wasilah/Ghayah) karena sudah tercakup aturan baru;
+  - menambah kolom **`updated_by`** + **`updated_at`** pada `progress_entries`, `attendance`, dan
+    `monthly_notes`, serta trigger **`catat_jejak`** (satu fungsi untuk tiga tabel).
+- **Migrasi `20261125000018_catat_jejak_tanpa_jwt.sql`** (sudah dijalankan di produksi): koreksi
+  trigger. Versi pertama memakai `is distinct from` sehingga pada koneksi **tanpa JWT** (seed/skrip
+  `service_role`) `null is distinct from null` = FALSE dan jejak baris seed ikut tertimpa.
+  Sekarang: bila `auth.uid()` NULL trigger **tidak menyentuh** baris yang sudah ada.
+- **Arti jejak:** `entered_by`/`entered_at` = **pengisi terakhir**; `updated_by`/`updated_at` =
+  **pengubah terakhir** (pengisi lama dipindahkan ke sini saat orang lain menimpa). Menyunting isian
+  sendiri tidak menghapus jejak.
+- **Kode**:
+  - `src/lib/roles.ts` — `hanyaHalaqahDiampu()` kini **hanya** `musyrif`/`mudarris`; fungsi baru
+    `bolehInputDomain(role, domain)` (Mudir/Admin semua domain, tiap Masul domainnya).
+  - `InputAlQuranPage.tsx` & `InputWasilahPage.tsx` — daftar halaqah memakai `bolehInputDomain`,
+    jadi Masul melihat **semua** halaqah domainnya dan pengampu tetap satu halaqah.
+  - `TabelCapaian.tsx` — `.limit(2000)` (terpotong diam-diam di 1.000 baris) diganti `ambilSemua`
+    + saringan domain, untuk menentukan bulan awal yang benar.
+- **Uji baru**:
+  - `scripts/qa/test_t6d2_masul_input.py` **68/68 LULUS** — matriks role x domain x tabel
+    (capaian, kehadiran, catatan) untuk INSERT & UPDATE, tolak domain lain/bulan terkunci/bulan 0,
+    tolak hapus untuk Masul & pengampu, terima hapus untuk Mudir, anon ditolak, dan uji jejak
+    (`entered_by` terisi, `updated_by` mencatat pengubah). Semua penulisan di-ROLLBACK; jumlah baris
+    **per domain** dibandingkan sebelum/sesudah.
+  - `scripts/qa/test_t6d2_e2e_masul.py` **14/14 LULUS** — lewat UI: ketiga Masul ditawari semua
+    halaqah domainnya, domain lain dialihkan, tombol **Simpan** benar-benar menulis capaian
+    (`entered_by` tercatat), Musyrif tetap hanya halaqahnya, konsol bersih, data dipulihkan
+    (jumlah & jejak sama).
+  - `scripts/qa/rls_matrix.py` diperluas: **67 OK / 8 SKIP / 0 GAGAL** (sebelumnya 44 OK).
+- **Pembersihan data (temuan saat menguji)**: dua uji sempat meninggalkan jejak di database produksi
+  dan sudah dibersihkan/diperbaiki:
+  - **1 baris capaian Wasilah** (`Santriwan fulan 51`, Shafar) tertinggal dari uji hapus matriks RLS
+    yang me-COMMIT baris sasaran → dihapus; matriks kini menyiapkan baris **di dalam transaksi** lalu
+    ROLLBACK.
+  - **1 baris kehadiran Ghayah** (bulan Dzul Hijjah) hilang karena uji T6d2 menghapus baris kehadiran
+    lama → dipulihkan (0/0/0); uji tidak lagi menghapus data lama dan kini memeriksa hitungan
+    **per domain**.
+- **Keadaan data setelah T6d2**: `progress_entries` 2.038 (2.035 seed + 3 baris uji Mudir bulan
+  Jumadal Ula), capaian Wasilah/Ghayah **0**; `attendance` alquran 613 (606 + 7 baris uji Mudir
+  bulan Jumadal Ula), Wasilah 756, Ghayah 749; `monthly_notes` 0.
+- **Uji lain tetap hijau:** `npm test` 14/14; `tsc` & `build` lulus; DB 16/16; regresi 7/7; Excel 7/7;
+  data awal 5/5; no-halaqah 9/9; tanpa-halaqah 13/13 (+6/7, 1 SKIP); signup 9/9; T6a 14/14; T6b DB 29/29.
+- Tangkapan layar: `docs/qa/t6d2/` (`masul_alquran_simpan.png`, `masul_wasilah_simpan.png`,
+  `masul_ghayah_simpan.png`).
+
+### Catatan data yang perlu keputusan Mudir (bukan bagian T6d2)
+
+1. **7 baris `attendance` Ramadhan (Al Qur'an) tanpa capaian** masih ada di database, padahal
+   `docs/DATA-NOTES.md` butir 3 mencatat penghapusannya (606 → 599) sudah disetujui 23 November 2026.
+   Baris ini bertanggal seed (22 November) dan tidak tersentuh T6d2. Perlu keputusan: dihapus lagi
+   atau dipertahankan.
+2. **Nilai izin/sakit/alpha Shafar (bulan 5) di database berbeda dari berkas seed** (36 baris di seed
+   bernilai > 0, di database 0). Tidak ada uji yang memeriksa bulan itu dan tidak ada jejak perubahan
+   (kolom jejak baru ada sejak T6d2). Perlu keputusan: ikuti seed atau pertahankan database.
+
+---
+
 ---
 
 ## 3. Status Supabase
@@ -389,7 +460,7 @@ Tangkapan layar: `docs/qa/t6d/` (`hp360_capaian_*.png`, `desktop_0*_capaian_*.pn
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-16 berkas migrasi, **keenambelasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+18 berkas migrasi, **kedelapan belasnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -409,16 +480,19 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261125000014 | wasilah_input_hadir (T6b) |
 | 20261125000015 | masul_domain_write (T6b) |
 | 20261125000016 | masul_domain_scope_fix (T6b) |
+| 20261125000017 | masul_input_domain (T6d2 - seragamkan hak Masul + kolom jejak) |
+| 20261125000018 | catat_jejak_tanpa_jwt (T6d2 - koreksi trigger tanpa JWT) |
 
-Migrasi berikutnya wajib memakai nomor `20261125000017_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261125000019_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
 - **18 dari 18 tabel** memiliki `relrowsecurity = true`.
 - **44 kebijakan** tersebar di 18 tabel (`attendance`, `monthly_notes`, `progress_entries`, `targets` masing-masing 4; sisanya 2).
-- Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
+- Sejak T6d2 `progress_entries`, `attendance`, dan `monthly_notes` masing-masing **4 kebijakan**
+  (insert/update seragam untuk ketiga domain, read, delete khusus Mudir/Admin). Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
 
 ### Fungsi dan view
-- **28 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write`. Daftar lengkap di `docs/FILE-MAP.md`.
+- **29 fungsi** di skema `public` - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
 - **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
 
 ### Isi seed (data dummy, hasil hitung langsung)
@@ -439,7 +513,7 @@ Migrasi berikutnya wajib memakai nomor `20261125000017_...` dan **tidak boleh** 
 | `halaqah_subjects` | 78 |
 | `targets` | 327 |
 | `progress_entries` | 2.036 |
-| `attendance` | 599 |
+| `attendance` | 599 (berkas seed; DB produksi 613 - lihat 2k) |
 | `monthly_notes` | **0** |
 | `month_domain_settings` | 7 |
 | `profiles` | 24 |

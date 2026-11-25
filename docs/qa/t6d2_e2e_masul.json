@@ -1,0 +1,105 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 14,
+  "gagal": [],
+  "ringkasan": "14 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "Masul Al Quran: hanya Al Qur'an (domain lain dialihkan)",
+      "ok": true,
+      "url": "http://localhost:4173/input/alquran"
+    },
+    {
+      "uji": "Masul Al Quran ditawari SEMUA halaqah Al Qur'an",
+      "ok": true,
+      "ditawarkan": 14,
+      "total": 14,
+      "contoh": [
+        "HLQ-PA-1 - Ust. Fulan 1",
+        "HLQ-PA-2 - Ust. Fulan 6"
+      ]
+    },
+    {
+      "uji": "Masul Al Quran bisa membuka halaqah di luar ampuannya",
+      "ok": true,
+      "halaqah": "HLQ-PA-1 - Ust. Fulan 1"
+    },
+    {
+      "uji": "Masul Al Quran: label pilihan tampil",
+      "ok": true,
+      "dipilih": "Tilawah · Karima - 2",
+      "tampil": "Tilawah · Karima - 2"
+    },
+    {
+      "uji": "Masul Al Quran: Simpan menulis capaian (entered_by tercatat)",
+      "ok": true,
+      "sebelum": 0,
+      "sesudah": 1
+    },
+    {
+      "uji": "masul_wasilah: domain lain dialihkan ke domainnya",
+      "ok": true,
+      "url": "http://localhost:4173/input/wasilah"
+    },
+    {
+      "uji": "masul_wasilah: ditawari semua halaqah domainnya",
+      "ok": true,
+      "ditawarkan": 13,
+      "total": 13
+    },
+    {
+      "uji": "masul_wasilah: Simpan menulis capaian untuk semua anggota",
+      "ok": true,
+      "sebelum": 0,
+      "sesudah": 6
+    },
+    {
+      "uji": "masul_ghayah: domain lain dialihkan ke domainnya",
+      "ok": true,
+      "url": "http://localhost:4173/input/ghayah"
+    },
+    {
+      "uji": "masul_ghayah: ditawari semua halaqah domainnya",
+      "ok": true,
+      "ditawarkan": 11,
+      "total": 11
+    },
+    {
+      "uji": "masul_ghayah: Simpan menulis capaian untuk semua anggota",
+      "ok": true,
+      "sebelum": 0,
+      "sesudah": 13
+    },
+    {
+      "uji": "Musyrif tetap hanya ditawari halaqahnya sendiri",
+      "ok": true,
+      "ditawarkan": 1,
+      "contoh": [
+        "HLQ-PA-1 - Ust. Fulan 1"
+      ]
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "data uji dipulihkan (jumlah & jejak sama)",
+      "ok": true,
+      "sebelum": {
+        "progress_entries": 2038,
+        "attendance": 2117,
+        "monthly_notes": 0
+      },
+      "sesudah": {
+        "progress_entries": 2038,
+        "attendance": 2117,
+        "monthly_notes": 0
+      },
+      "jejak_beda": {
+        "attendance": 0,
+        "monthly_notes": 0
+      }
+    }
+  ]
+}
