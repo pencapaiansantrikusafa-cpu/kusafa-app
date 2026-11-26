@@ -1,8 +1,8 @@
 {
   "base": "http://localhost:4173",
-  "lulus": 32,
+  "lulus": 36,
   "gagal": [],
-  "ringkasan": "32 LULUS, 0 gagal",
+  "ringkasan": "36 LULUS, 0 gagal",
   "rincian": [
     {
       "uji": "1. /target dialihkan ke /target/alquran",
@@ -56,6 +56,19 @@
       "ok": true
     },
     {
+      "uji": "6b. halaman target siap < 1,5 detik",
+      "ok": true,
+      "ms": 847
+    },
+    {
+      "uji": "6c. kotak notifikasi memuat bagian Target Al Qur'an",
+      "ok": true
+    },
+    {
+      "uji": "6d. notifikasi menandai target DUMMY dan sasaran tanpa target",
+      "ok": true
+    },
+    {
       "uji": "7. klik tab mengganti URL ke /target/wasilah",
       "ok": true
     },
@@ -105,6 +118,10 @@
     },
     {
       "uji": "13. Musyrif dibatasi halaqah amanah (tanpa 'Semua halaqah')",
+      "ok": true
+    },
+    {
+      "uji": "13b. pengampu tidak melihat bagian persetujuan target di notifikasi",
       "ok": true
     },
     {

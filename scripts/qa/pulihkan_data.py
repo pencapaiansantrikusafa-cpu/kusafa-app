@@ -21,11 +21,14 @@ from __future__ import annotations
 # `change_log` sengaja TIDAK dipulihkan: log bersifat append-only, perubahan yang
 # dilakukan uji memang harus tercatat. db_fingerprint.py menanganinya terpisah
 # ("boleh tumbuh, isi lama utuh").
-TABEL = ("progress_entries", "attendance", "monthly_notes")
+# T7 [2/2]: `targets` ikut disimpan/dipulihkan PERSIS (seluruh kolom, termasuk
+# entered_by/updated_by), karena uji UI target mengajukan/menyetujui/menolak lewat RPC.
+TABEL = ("progress_entries", "attendance", "monthly_notes", "targets")
 KUNCI = {
     "progress_entries": ("id",),
     "attendance": ("student_id", "month_id", "domain"),
     "monthly_notes": ("student_id", "month_id", "domain"),
+    "targets": ("id",),
 }
 
 

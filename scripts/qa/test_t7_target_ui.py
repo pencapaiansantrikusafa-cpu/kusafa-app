@@ -28,6 +28,7 @@ import json
 import os
 import pathlib
 import sys
+import time
 
 from playwright.sync_api import sync_playwright
 
@@ -115,6 +116,27 @@ def main() -> int:  # noqa: C901
         catat("6. Mudir melihat tombol aksi (Ubah/Riwayat)", ada_setuju or page.get_by_role("button", name="Ubah", exact=True).count() > 0)
         page.screenshot(path=str(FOTO / "desktop_01_target_alquran.png"), full_page=True)
 
+        # Waktu siap halaman: dari buka rute sampai tabel target tampil (< 1,5 detik).
+        page.goto(f"{BASE}/target/wasilah", wait_until="commit")
+        t0 = time.perf_counter()
+        page.wait_for_selector("tbody tr", timeout=60000)
+        siap_ms = int((time.perf_counter() - t0) * 1000)
+        catat("6b. halaman target siap < 1,5 detik", siap_ms < 1500, ms=siap_ms)
+        page.goto(f"{BASE}/target/alquran", wait_until="load")
+        tunggu_tabel(page)
+
+        # Notifikasi target di kotak "Data belum lengkap" (halaman Input).
+        page.goto(f"{BASE}/input/alquran", wait_until="load")
+        page.wait_for_timeout(4000)
+        teks_input = page.inner_text("main")
+        catat("6c. kotak notifikasi memuat bagian Target Al Qur'an",
+              "Target Al Qur'an" in teks_input and "menunggu persetujuan" in teks_input)
+        catat("6d. notifikasi menandai target DUMMY dan sasaran tanpa target",
+              "target DUMMY" in teks_input and "belum punya target" in teks_input)
+        page.screenshot(path=str(FOTO / "desktop_08_notifikasi_target.png"), full_page=True)
+        page.goto(f"{BASE}/target/alquran", wait_until="load")
+        tunggu_tabel(page)
+
         # Tab Wasilah: URL + judul berubah.
         page.get_by_role("tab", name="Ilmu Wasilah", exact=True).click()
         page.wait_for_url("**/target/wasilah", timeout=20000)
@@ -201,6 +223,13 @@ def main() -> int:  # noqa: C901
         teks_saringan = page.inner_text("main")
         catat("13. Musyrif dibatasi halaqah amanah (tanpa 'Semua halaqah')",
               "Semua halaqah" not in teks_saringan and "Hanya halaqah yang Anda ampu" in teks_saringan)
+        page.goto(f"{BASE}/input/alquran", wait_until="load")
+        page.wait_for_timeout(4000)
+        catat("13b. pengampu tidak melihat bagian persetujuan target di notifikasi",
+              "Buka halaman Target" not in page.inner_text("main"))
+        # Kembali ke halaman Target sebelum memeriksa tombolnya.
+        page.goto(f"{BASE}/target/alquran", wait_until="load")
+        tunggu_tabel(page)
         catat("14. Musyrif tidak melihat tombol Setujui",
               page.get_by_role("button", name="Setujui", exact=True).count() == 0)
         catat("15. Musyrif melihat tombol Ubah",
