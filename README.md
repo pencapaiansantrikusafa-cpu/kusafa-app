@@ -35,7 +35,8 @@ Diperbarui 27 November 2026, HEAD sebelum dokumen ini `73970ab`. Rincian lengkap
 | **T7 [1b/2]** | **Fondasi target dinamis (database, RPC, uji)** | **SELESAI** |
 | **T7 [2/2]** | **UI `/target` + uji tulis** | **SELESAI** |
 | **T7c [1/3]** | **Target Wasilah/Ghayah = tujuan akhir (database, RPC, bulk, DUMMY, uji)** | **SELESAI** |
-| **T7c [2/3]-[3/3]** | **UI butir tujuan akhir + pembuktian** | **BELUM** |
+| **T7c [2/3]** | **BACKEND: simpan gabungan capaian + target bulan depan, tuntas, laporan** | **BELUM** |
+| **T7c [3/3]** | **UI butir tujuan akhir + pembuktian** | **BELUM** |
 | T8 | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | BELUM |
 | T9 | Pengujian & QA penuh | SEBAGIAN |
 | T10 | Deploy akhir, hapus dummy, repo privat | BELUM |

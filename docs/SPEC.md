@@ -238,7 +238,7 @@ Memperbaiki §5d untuk domain Wasilah/Ghayah. Al Qur'an **tidak berubah** (jumla
     & buku), `setujui_target_halaqah` (bulk);
   - `REVOKE EXECUTE` dari **PUBLIC + anon** untuk seluruh keluarga fungsi target; hanya `authenticated`
     yang dapat menjalankan RPC (dijaga `regression_execute.py`).
-  - **Sementara sampai UI [2/3]:** `v_monthly_report.target_monthly` untuk target Wasilah/Ghayah = NULL
+  - **Sementara sampai BACKEND [2/3]:** `v_monthly_report.target_monthly` untuk target Wasilah/Ghayah = NULL
     (tidak ada angka target); laporan tetap mengenali `target_id`. Bukan 0.
 
 ## 6. Alur kerja

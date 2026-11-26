@@ -19,7 +19,7 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 - Skrip bentuk baru: `scripts/db/fixes/2026-11-26_t7c_target_dummy_tujuan.sql` (idempoten, satu per
   halaqah x mapel). Skrip T7b lama **usang** dan tidak boleh dijalankan lagi (database menolaknya).
 - Karena Wasilah/Ghayah tidak punya angka target, `v_monthly_report.target_monthly` untuk target ini
-  **NULL** (bukan 0) sampai UI/report T7c [2/3] menampilkan butir sebagai posisi.
+  **NULL** (bukan 0) sampai BACKEND/UI T7c [2/3]-[3/3] menampilkan butir sebagai posisi.
 - **Wajib diganti data asli di T8/T10.** Jangan menganggap butir ini target nyata.
 - 327 target Al Qur'an lama **tidak berubah**; semuanya tetap `effective_month_id` = Data Awal 1447
   (`month_no=0`), bentuk `amount` + `harian`.

@@ -62,7 +62,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
 | **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
 | **T7** | Target dinamis (ajukan/setujui) | **SELESAI** (lihat 2n, 2o, 2p); uji tulis 38/38 & E2E ulang hijau | migrasi `000021`-`000031`, RPC lengkap, `src/pages/Target*` + `FormTarget` dkk, `test_targets_t7.py` 34/34, `test_t7_target_ui.py` 36/36 (baca saja), `test_t7_target_tulis.py` 38/38 (menulis) | Uji UI yang menulis (item 4) & E2E lama (item 5) **LULUS**; sidik jari SAMA |
-| **T7c [1/3]** | Target Wasilah/Ghayah = TUJUAN AKHIR (database, RPC, DUMMY, uji) | **SELESAI** (lihat 2q); UI menyusul [2/3] | migrasi `000032`, `test_t7c_target_tujuan.py` 48/48, `regression_execute.py` 8/8, sidik jari SAMA | Form UI Wasilah/Ghayah **belum** mengirim butir; pengajuan dari UI ditolak sampai [2/3] |
+| **T7c [1/3]** | Target Wasilah/Ghayah = TUJUAN AKHIR (database, RPC, DUMMY, uji) | **SELESAI** (lihat 2q); BACKEND [2/3] & UI [3/3] menyusul | migrasi `000032`, `test_t7c_target_tujuan.py` 48/48, `regression_execute.py` 8/8, sidik jari SAMA | Form UI Wasilah/Ghayah **belum** mengirim butir; pengajuan dari UI ditolak sampai [3/3] |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
@@ -833,7 +833,7 @@ Dari `src/App.tsx`:
 | `/capaian/:domain` | `CapaianPage` | Berfungsi untuk ketiga domain (tab Al Qur'an / Ilmu Wasilah / Ilmu Ghayah); tombol hapus capaian untuk Mudir/Admin (T6e) |
 | `/santri/:id` | `SantriPage` | Berfungsi |
 | `/input` | `InputPage` | Berfungsi (tab Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) |
-| `/target`, `/target/:domain` | `TargetPage` | Berfungsi (T7 [2/2]); form Wasilah/Ghayah mengirim `amount` sampai T7c [2/3] |
+| `/target`, `/target/:domain` | `TargetPage` | Berfungsi (T7 [2/2]); form Wasilah/Ghayah mengirim `amount` sampai T7c [3/3] |
 | `/kurikulum` | `PlaceholderPage` | Belum diisi (T8) |
 | `/halaqah` | `PlaceholderPage` | Belum diisi (T8) |
 | `/pengaturan` | `PlaceholderPage` | Belum diisi (T8) |
@@ -1038,13 +1038,14 @@ Cakupan uji baru (per butir perintah kerja):
 `progress_entries` 2.036, kehadiran 599 / 756 / 749, `monthly_notes` 0, `month_domain_settings` 21,
 `change_log` bertambah (append-only; baris lama utuh). Tidak ada baris uji T7c yang tertinggal.
 
-### Belum (T7c [2/3]) - UI
+### Belum - BACKEND [2/3] dan UI [3/3]
 
-- Halaman `/target` belum mengenal `target_item_id`: form Wasilah/Ghayah masih mengirim `amount`, sehingga
-  **pengajuan Wasilah/Ghayah dari UI akan ditolak database** sampai [2/3] selesai. Daftar/riwayat juga
-  belum menampilkan butir tujuan akhir.
-- Laporan (`v_monthly_report`) belum punya kolom target butir untuk Wasilah/Ghayah; angka targetnya NULL
-  (jujur: tidak ada angka). Tampilan "target = posisi/butir" menyusul di [2/3].
+- **BACKEND [2/3]**: `halaqah_mapel_aktif`, RPC simpan gabungan capaian + target bulan depan, tuntas/Level 6,
+  dan kolom target butir untuk Wasilah/Ghayah di `v_monthly_report` (angka targetnya kini NULL —
+  jujur: tidak ada angka; tampilan "target = posisi/butir" menyusul di [2/3]).
+- **UI [3/3]**: halaman `/target` belum mengenal `target_item_id`: form Wasilah/Ghayah masih mengirim
+  `amount`, sehingga **pengajuan Wasilah/Ghayah dari UI akan ditolak database** sampai [3/3] selesai.
+  Daftar/riwayat juga belum menampilkan butir tujuan akhir.
 - Notifikasi "target DUMMY" masih mengenali catatan DUMMY (pola lama tetap cocok).
 
 ### Uji lama yang dijalankan ulang setelah T7c [1/3]

@@ -64,6 +64,15 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - Bila butuh memeriksa isi berkas panjang, pakai `read` dengan `offset`/`limit` atau `grep`
   untuk bagian yang relevan, bukan seluruh berkas.
 
+## Batas token sesi (perintah Mudir 27 November 2026)
+
+- **Hentikan dan buat handover bila Total Tokens sesi mencapai 250.000** (angka sementara), JANGAN
+  menunggu 50% dari 1.000.000. Sesi sebelumnya mati oleh galat **413 (request terlalu besar)** dari gateway,
+  bukan karena kehabisan token model.
+- Pantau angka **Total Tokens** di info sesi. Bila angka itu **tidak bisa dibaca sendiri** oleh agent,
+  hentikan setiap **3-4 sub-tugas selesai**, commit + push + perbarui `docs/HANDOVER.md`, lalu beri tahu
+  Mudir agar sesi dapat ditutup secara terkendali.
+
 ## Cara bekerja (aturan tetap)
 - **Satu sub-tugas, satu commit kecil.** Setelah sub-tugas selesai: jalankan `npm run typecheck` dan `npm run build`,
   perbarui `docs/STATUS.md` dan `docs/HANDOVER.md`, lalu commit dan **push** ke `main`. Jangan menumpuk banyak perubahan dalam satu commit besar.

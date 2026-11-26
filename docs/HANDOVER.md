@@ -27,8 +27,8 @@ Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data san
 | T7 [1b/2] | Fondasi target dinamis (database, RPC, uji) | **SELESAI** | migrasi `000021`-`000031`, `scripts/qa/test_targets_t7.py`, `scripts/qa/verify_t7_report_unchanged.sql` |
 | T7 [2/2] | UI `/target` (daftar, ajukan, setujui/tolak, ubah, riwayat) + uji tulis | **SELESAI** | `src/pages/TargetPage.tsx`, `TargetDomainPage.tsx`, `FormTarget.tsx`, `DialogAksiTarget.tsx`, `DialogRiwayatTarget.tsx`, `src/lib/target.ts`, `test_t7_target_ui.py` 36/36, `test_t7_target_tulis.py` 38/38 |
 | **T7c [1/3]** | **Target Wasilah/Ghayah = TUJUAN AKHIR (butir kurikulum): database, RPC, bulk, DUMMY, uji** | **SELESAI** | migrasi `20261126000032_targets_tujuan_akhir.sql`, `scripts/db/fixes/2026-11-26_t7c_*.sql`, `scripts/qa/test_t7c_target_tujuan.py` (48/48) |
-| T7c [2/3] | UI target Wasilah/Ghayah: pilih butir, tampilkan butir, bulk di layar, kewajiban target bulan depan | **BELUM** | belum ada |
-| T7c [3/3] | Pembuktian akhir T7c (E2E penuh + smoke produksi) | **BELUM** | belum ada |
+| T7c [2/3] | **BACKEND**: simpan gabungan capaian + target bulan depan (satu transaksi), `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah menampilkan butir/posisi target | **BELUM** | belum ada |
+| T7c [3/3] | **UI**: form Wasilah/Ghayah pilih butir, tampilkan butir, bulk di layar, kewajiban target bulan depan + pembuktian akhir (E2E + smoke produksi) | **BELUM** | belum ada |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan**, pergantian mapel halaqah | **BELUM** | rute `/kurikulum`, `/halaqah`, `/pengaturan` masih `PlaceholderPage` |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | ± 27 skrip `scripts/qa/`; belum ada proyek Supabase QA terpisah; 3 sel RLS SKIP |
 | T10 | Deploy akhir, hapus dummy, repo privat | **BELUM** | belum ada |
@@ -37,7 +37,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ---
 
-## 2. Tahap yang sedang dikerjakan: T7c [1/3] selesai, UI [2/3] belum
+## 2. Tahap yang sedang dikerjakan: T7c [1/3] selesai, BACKEND [2/3] belum
 
 ### Yang sudah jalan (jangan diulang)
 
@@ -54,9 +54,9 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Yang belum
 
-- **T7c [2/3] (UI)**: form Wasilah/Ghayah masih mengirim `amount`, sehingga pengajuan dari UI **ditolak database** dengan pesan jelas; daftar/riwayat belum menampilkan butir tujuan akhir; belum ada tombol bulk "Setujui semua target halaqah ini" di layar; kewajiban target bulan depan saat input capaian, peringatan target di bawah capaian, dan tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan" belum dibuat.
-- **Laporan Wasilah/Ghayah**: `v_monthly_report.target_monthly` untuk target bentuk baru = NULL (tidak ada angka target). Tampilan butir/posisi target menyusul [2/3]. Ini bukan 0 dan bukan galat.
-- **T7c [3/3]**: E2E penuh + smoke produksi setelah UI selesai.
+- **T7c [2/3] (BACKEND)**: fungsi `halaqah_mapel_aktif(halaqah, bulan)` sebagai satu-satunya sumber mapel aktif; RPC simpan gabungan capaian + target bulan depan dalam satu transaksi (menolak mapel aktif tanpa target, kecuali tuntas); data tuntas & Level 6 "Tuntas, belum ada pelajaran lanjutan"; `v_monthly_report` Wasilah/Ghayah menampilkan butir target + posisi dan status Tercapai/Kurang N. **UI belum diubah** (itu [3/3]).
+- **T7c [3/3] (UI)**: form Wasilah/Ghayah masih mengirim `amount`, sehingga pengajuan dari UI **ditolak database** dengan pesan jelas; daftar/riwayat belum menampilkan butir tujuan akhir; belum ada tombol bulk "Setujui semua target halaqah ini" di layar; kewajiban target bulan depan saat input capaian, peringatan target di bawah capaian, dan tampilan Level 6 "Tuntas" belum dibuat. Ditutup dengan E2E penuh + smoke produksi.
+- **Laporan Wasilah/Ghayah**: setelah [2/3] `v_monthly_report` menampilkan butir target + posisi; sampai saat itu `target_monthly` masih NULL (bukan 0, bukan galat).
 - **T8 belum dimulai** (menunggu perintah): kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah, notifikasi kekurangan target bulan depan.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
 - Usulan proyek Supabase QA terpisah belum dibuat (T9/T10).
@@ -74,8 +74,8 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Langkah berikutnya (berurutan)
 
-1. **T7c [2/3] = UI `/target`** (menunggu perintah Mudir): form Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (tanpa angka), label "Mapel · Buku - nomor"; daftar/riwayat menampilkan butir; tombol **"Setujui semua target halaqah ini"** memakai `setujui_target_halaqah`; peringatan "target di bawah capaian" (boleh, dengan peringatan); tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan"; kewajiban mengisi target bulan depan bersamaan input capaian.
-2. **T7c [3/3]**: jalankan ulang seluruh uji (DB + E2E + smoke produksi), sidik jari SAMA, perbarui STATUS.
+1. **T7c [2/3] = BACKEND** (perintah Mudir 27 Nov 2026, sedang dikerjakan): `halaqah_mapel_aktif`; RPC simpan gabungan capaian + target bulan depan (satu transaksi); tuntas & Level 6; laporan Wasilah/Ghayah menampilkan butir/posisi target. Jangan mulai UI/T8.
+2. **T7c [3/3] = UI `/target`**: form Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (tanpa angka), label "Mapel · Buku - nomor"; daftar/riwayat menampilkan butir; tombol **"Setujui semua target halaqah ini"** memakai `setujui_target_halaqah`; peringatan "target di bawah capaian" (boleh, dengan peringatan); tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan"; kewajiban mengisi target bulan depan bersamaan input capaian. Ditutup E2E penuh + smoke produksi.
 3. **Minta keputusan atas 1 baris target sisa uji** (butir 1 di atas).
 4. **Setelah T7 disetujui**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
 5. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).

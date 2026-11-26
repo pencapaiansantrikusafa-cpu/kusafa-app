@@ -20,7 +20,7 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
   `regression_execute.py` **8/8** (tambah cek EXECUTE PUBLIC), `rls_matrix.py` **94/97** (3 SKIP),
   E2E target baca-saja **36/36**, E2E tulis **38/38**, sidik jari **SAMA** (16.505 baris, 19 tabel).
   `typecheck` hijau; `build` berhasil.
-- **BELUM (T7c [2/3])**: UI `/target` untuk Wasilah/Ghayah (form butir, tampilan butir, bulk di UI).
+- **BELUM (T7c [2/3] BACKEND, [3/3] UI)**: simpan gabungan + tuntas + laporan (BACKEND); lalu UI `/target` untuk Wasilah/Ghayah (form butir, tampilan butir, bulk di UI).
 
 ---
 
