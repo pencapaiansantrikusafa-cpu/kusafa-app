@@ -1,4 +1,9 @@
 -- T7b: Target DUMMY Wasilah/Ghayah (IZIN KHUSUS MUDIR, HANDOVER 26 Nov 2026).
+-- ⚠ DIGANTIKAN sejak T7c (26 Nov 2026): JANGAN Dijalankan lagi. Bentuk target Wasilah/Ghayah
+--   kini tujuan akhir (butir kurikulum, TANPA amount) dan dijaga `targets_bentuk_check`, sehingga
+--   penyisipan bentuk lama (amount=1) di bawah ini otomatis DITOLAK oleh database.
+--   DUMMY bentuk baru: scripts/db/fixes/2026-11-26_t7c_target_dummy_tujuan.sql
+--   Penghapusan bentuk lama: scripts/db/fixes/2026-11-26_t7c_hapus_target_dummy_lama.sql
 -- Tujuan: fondasi uji T7. BUKAN data asli; akan diganti data asli di T8/T10.
 -- Bentuk: per halaqah per mata pelajaran, BULANAN (tidak dikali Hadir), status disetujui.
 -- Berlaku mulai: Syawwal 1447 (bulan 1), berlaku sampai diganti.
