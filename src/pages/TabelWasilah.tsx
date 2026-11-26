@@ -128,7 +128,12 @@ export default function TabelWasilah({
                   <dt className="text-gray-600">Target bulanan</dt>
                   <dd className="text-right">
                     {k.target === null ? (
-                      <span className="text-amber-800">belum ada</span>
+                      <span
+                        className="text-amber-800"
+                        title="Belum ada target disetujui untuk bulan ini (kosong, bukan 0)"
+                      >
+                        –
+                      </span>
                     ) : k.below ? (
                       <span className="rounded bg-pink-100 px-1.5 py-0.5 font-medium text-pink-900">
                         di bawah target

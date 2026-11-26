@@ -612,12 +612,17 @@ function DialogDetail({
                     </div>
                     <div className="flex justify-between gap-2">
                       <dt className="text-gray-600">Target bulanan</dt>
-                      <dd className="text-gray-800">{angka(r.target_monthly)}</dd>
+                      <dd className="text-gray-800">
+                        {r.target_monthly === null ? "–" : angka(r.target_monthly)}
+                      </dd>
                     </div>
                     <div className="pt-1">
                       {r.target_monthly === null ? (
-                        <span className="rounded bg-amber-100 px-1.5 py-0.5 font-medium text-amber-900">
-                          target belum ada
+                        <span
+                          className="rounded bg-amber-100 px-1.5 py-0.5 font-medium text-amber-900"
+                          title="Belum ada target disetujui untuk bulan ini (kosong, bukan 0)"
+                        >
+                          target: –
                         </span>
                       ) : r.below_target ? (
                         <span className="rounded bg-pink-100 px-1.5 py-0.5 font-medium text-pink-900">

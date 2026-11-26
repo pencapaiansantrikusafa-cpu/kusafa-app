@@ -37,10 +37,24 @@ interface Bidang {
   name: string;
 }
 
-interface Santri {
-  id: string;
-  full_name: string;
-}
+/**
+ * Baris target untuk tampilan. Nama sasaran, mapel, bulan, dan pelaku diambil
+ * SEKALIGUS lewat embed PostgREST, supaya halaman tidak perlu mengunduh seluruh
+ * daftar santri/profil hanya untuk menampilkan nama.
+ */
+type BarisTargetTampil = BarisTarget & {
+  santri: { full_name: string } | null;
+  halaqah: { code: string } | null;
+  mapel: { name: string } | null;
+  bulan: {
+    name: string;
+    month_no: number;
+    academic_years: { hijri_year: number } | { hijri_year: number }[];
+  } | null;
+  pengaju: { full_name: string } | null;
+  penyetuju: { full_name: string } | null;
+  penolak: { full_name: string } | null;
+};
 
 const STATUS_URUT: TargetStatus[] = ["diajukan", "disetujui", "ditolak", "dibatalkan"];
 
@@ -68,8 +82,6 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
   const [pengampu, setPengampu] = useState<Record<string, string>>({});
   const [bulanList, setBulanList] = useState<BulanData[]>([]);
   const [bidang, setBidang] = useState<Bidang[]>([]);
-  const [siswaPeta, setSiswaPeta] = useState<Map<string, string>>(new Map());
-  const [profilPeta, setProfilPeta] = useState<Map<string, string>>(new Map());
   const [halaqahPeta, setHalaqahPeta] = useState<Map<string, string>>(new Map());
   /** student_id -> kode halaqah pada domain ini (untuk menampilkan sasaran Al Qur'an). */
   const [siswaHalaqah, setSiswaHalaqah] = useState<Map<string, string[]>>(new Map());
@@ -82,11 +94,11 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
   const [mapelId, setMapelId] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | TargetStatus>("");
 
-  const [baris, setBaris] = useState<BarisTarget[]>([]);
+  const [baris, setBaris] = useState<BarisTargetTampil[]>([]);
   const [memuat, setMemuat] = useState(true);
   const [muatUlangKe, setMuatUlangKe] = useState(0);
 
-  const [form, setForm] = useState<null | { mode: "ajukan" | "ubah"; target?: BarisTarget }>(null);
+  const [form, setForm] = useState<null | { mode: "ajukan" | "ubah"; target?: BarisTargetTampil }>(null);
   const [riwayat, setRiwayat] = useState<null | {
     judul: string;
     subjectId: string;
@@ -95,7 +107,7 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
   }>(null);
   const [aksi, setAksi] = useState<null | {
     jenis: JenisAksiTarget;
-    target: BarisTarget;
+    target: BarisTargetTampil;
     perluKonfirmasi: boolean;
     lewat: boolean;
   }>(null);
@@ -114,7 +126,7 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
     setMemuatAwal(true);
     setGalat(null);
     void (async () => {
-      const [h, b, s, siswa, profil, anggota, guru] = await Promise.all([
+      const [h, b, s, anggota, guru] = await Promise.all([
         supabase
           .from("halaqahs")
           .select("id, code, name")
@@ -126,20 +138,6 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
           .select("id, month_no, name, academic_years!inner(hijri_year)")
           .order("month_no"),
         supabase.from("subjects").select("id, name").eq("domain", domain).order("sort_order"),
-        ambilSemua<Santri>((awal, jumlah) =>
-          supabase
-            .from("students")
-            .select("id, full_name")
-            .order("id", { ascending: true })
-            .range(awal, awal + jumlah - 1),
-        ),
-        ambilSemua<{ id: string; full_name: string }>((awal, jumlah) =>
-          supabase
-            .from("profiles")
-            .select("id, full_name")
-            .order("id", { ascending: true })
-            .range(awal, awal + jumlah - 1),
-        ),
         ambilSemua<{ student_id: string; halaqah_id: string }>((awal, jumlah) =>
           supabase
             .from("halaqah_members")
@@ -153,7 +151,7 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
       ]);
       if (!aktif) return;
 
-      const pesanGalat = h.error?.message ?? b.error?.message ?? s.error?.message ?? siswa.error?.message ?? profil.error?.message ?? anggota.error?.message;
+      const pesanGalat = h.error?.message ?? b.error?.message ?? s.error?.message ?? anggota.error?.message;
       if (pesanGalat) {
         setGalat(pesanGalat);
         setMemuatAwal(false);
@@ -188,8 +186,6 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
       setBulanId("");
 
       setBidang((s.data ?? []) as Bidang[]);
-      setSiswaPeta(new Map((siswa.data ?? []).map((x) => [x.id, x.full_name])));
-      setProfilPeta(new Map((profil.data ?? []).map((x) => [x.id, x.full_name])));
 
       const anggotaMap = new Map<string, string[]>();
       const siswaMap = new Map<string, string[]>();
@@ -248,11 +244,11 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
         }
         return;
       }
-      const { data, error } = await ambilSemua<BarisTarget>((awal, jumlah) => {
+      const { data, error } = await ambilSemua<BarisTargetTampil>((awal, jumlah) => {
         let q = supabase
           .from("targets")
           .select(
-            "id, domain, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, status, proposed_by, approved_by, approved_at, rejected_by, rejected_at, alasan_tolak, note, created_at",
+            "id, domain, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, status, proposed_by, approved_by, approved_at, rejected_by, rejected_at, alasan_tolak, note, created_at, santri:students(full_name), halaqah:halaqahs(code), mapel:subjects(name), bulan:hijri_months(name, month_no, academic_years(hijri_year)), pengaju:profiles!targets_proposed_by_fkey(full_name), penyetuju:profiles!targets_approved_by_fkey(full_name), penolak:profiles!targets_rejected_by_fkey(full_name)",
           )
           .eq("domain", domain)
           .in("effective_month_id", bulanQuery)
@@ -263,7 +259,12 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
         if (halaqahId && !isAlquran) q = q.eq("halaqah_id", halaqahId);
         if (mapelId) q = q.eq("subject_id", mapelId);
         if (statusFilter) q = q.eq("status", statusFilter);
-        return q;
+        // Bentuk hasil sudah sesuai `select` di atas; supabase-js tidak dapat
+        // menyimpulkan tipe embed dari string select, jadi disamakan di sini.
+        return q as unknown as PromiseLike<{
+          data: BarisTargetTampil[] | null;
+          error: { message: string } | null;
+        }>;
       });
       if (!aktif) return;
       if (error) {
@@ -301,20 +302,30 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
     setMuatUlangKe((k) => k + 1);
   }
 
-  function teksSasaran(t: BarisTarget): string {
+  function teksSasaran(t: BarisTargetTampil): string {
     if (t.student_id) {
-      const nama = siswaPeta.get(t.student_id) ?? "—";
+      const nama = t.santri?.full_name ?? "—";
+      // Kode halaqah santri tetap diambil dari keanggotaan (target Al Qur'an tidak
+      // menyimpan halaqah_id, hanya student_id).
       const halaqah = siswaHalaqah.get(t.student_id)?.join(", ");
       return halaqah ? `${nama} (${halaqah})` : nama;
     }
-    if (t.halaqah_id) return halaqahPeta.get(t.halaqah_id) ?? "—";
+    if (t.halaqah_id) return t.halaqah?.code ?? halaqahPeta.get(t.halaqah_id) ?? "—";
     return "—";
   }
 
-  function teksBulan(t: BarisTarget): string {
-    const b = bulanPeta.get(t.effective_month_id);
-    if (!b) return "—";
-    return b.month_no === 0 ? `${b.name} ${b.hijri_year} (Data Awal)` : `${b.name} ${b.hijri_year}`;
+  function teksBulan(t: BarisTargetTampil): string {
+    const b = t.bulan;
+    if (!b) {
+      const peta = bulanPeta.get(t.effective_month_id);
+      if (!peta) return "—";
+      return peta.month_no === 0
+        ? `${peta.name} ${peta.hijri_year} (Data Awal)`
+        : `${peta.name} ${peta.hijri_year}`;
+    }
+    const ay = Array.isArray(b.academic_years) ? b.academic_years[0] : b.academic_years;
+    const tahun = ay?.hijri_year ?? "";
+    return b.month_no === 0 ? `${b.name} ${tahun} (Data Awal)` : `${b.name} ${tahun}`;
   }
 
   const jumlahMenunggu = useMemo(
@@ -322,7 +333,7 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
     [baris],
   );
 
-  async function bukaAksi(jenis: JenisAksiTarget, target: BarisTarget) {
+  async function bukaAksi(jenis: JenisAksiTarget, target: BarisTargetTampil) {
     setPesan(null);
     let perluKonfirmasi = false;
     let lewat = false;
@@ -358,6 +369,69 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
     } finally {
       setSedang(false);
     }
+  }
+
+  /** Tombol aksi yang sama dipakai tabel desktop dan kartu HP. */
+  function tombolAksi(t: BarisTargetTampil) {
+    const bolehBatalkan = t.status === "diajukan" && t.proposed_by === profile?.id;
+    const bolehUbah = t.status === "disetujui" || t.status === "diajukan";
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {t.status === "diajukan" && bolehSetujui && (
+          <>
+            <button
+              type="button"
+              onClick={() => void bukaAksi("setujui", t)}
+              className="rounded border border-emerald-300 bg-white px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50"
+            >
+              Setujui
+            </button>
+            <button
+              type="button"
+              onClick={() => void bukaAksi("tolak", t)}
+              className="rounded border border-red-300 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
+            >
+              Tolak
+            </button>
+          </>
+        )}
+        {bolehBatalkan && (
+          <button
+            type="button"
+            onClick={() => void bukaAksi("batalkan", t)}
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Batalkan
+          </button>
+        )}
+        {bolehUbah && (
+          <button
+            type="button"
+            onClick={() => {
+              setPesan(null);
+              setForm({ mode: "ubah", target: t });
+            }}
+            className="rounded border border-kusafa/40 bg-white px-2 py-1 text-xs font-medium text-kusafa hover:bg-kusafa-light"
+          >
+            Ubah
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() =>
+            setRiwayat({
+              judul: `${teksSasaran(t)} · ${mapelPeta.get(t.subject_id) ?? ""}`,
+              subjectId: t.subject_id,
+              studentId: t.student_id,
+              halaqahId: t.halaqah_id,
+            })
+          }
+          className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+        >
+          Riwayat
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -465,8 +539,44 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
             {memuat ? "Memuat target..." : "Belum ada target pada saringan ini."}
           </p>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[820px] border-collapse text-sm">
+          <>
+            {/* HP 360 px: kartu ringkas, tanpa perlu menggeser tabel 820 px. */}
+            <ul className="divide-y divide-black/5 lg:hidden">
+              {baris.map((t) => (
+                <li key={t.id} className="px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{teksSasaran(t)}</p>
+                      <p className="mt-0.5 text-xs text-gray-700">
+                        {mapelPeta.get(t.subject_id) ?? "—"} · target {angka(t.amount)}{" "}
+                        {t.amount_period === "harian" ? "per hari" : "per bulan"}
+                      </p>
+                      <p className="text-xs text-gray-600">Mulai {teksBulan(t)}</p>
+                      {t.note && <p className="mt-0.5 text-xs text-gray-500">{t.note}</p>}
+                      {t.status === "ditolak" && t.alasan_tolak && (
+                        <p className="mt-0.5 text-xs text-red-700">Alasan: {t.alasan_tolak}</p>
+                      )}
+                    </div>
+                    <span
+                      className={
+                        "shrink-0 rounded px-1.5 py-0.5 text-xs font-medium " + STATUS_GAYA[t.status]
+                      }
+                    >
+                      {STATUS_LABEL[t.status]}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Pengaju: {t.pengaju?.full_name ?? "—"}
+                    {t.penyetuju?.full_name ? ` · Disetujui: ${t.penyetuju.full_name}` : ""}
+                    {t.penolak?.full_name ? ` · Ditolak: ${t.penolak.full_name}` : ""}
+                  </p>
+                  <div className="mt-2">{tombolAksi(t)}</div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden w-full overflow-x-auto lg:block">
+              <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="bg-kusafa-light text-xs uppercase tracking-wide text-kusafa">
                   <th scope="col" className="px-3 py-2 text-left">
@@ -494,8 +604,6 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
               </thead>
               <tbody>
                 {baris.map((t) => {
-                  const bolehBatalkan = t.status === "diajukan" && t.proposed_by === profile?.id;
-                  const bolehUbah = t.status === "disetujui" || t.status === "diajukan";
                   return (
                     <tr key={t.id} className="border-t border-black/5 align-top">
                       <th scope="row" className="px-3 py-3 text-left font-medium text-gray-900">
@@ -531,84 +639,29 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
                       <td className="px-3 py-3 text-xs text-gray-700">
                         <span className="block">
                           <span className="text-gray-500">Pengaju: </span>
-                          {profilPeta.get(t.proposed_by ?? "") ?? "—"}
+                          {t.pengaju?.full_name ?? "—"}
                         </span>
-                        {t.approved_by && (
+                        {t.penyetuju?.full_name && (
                           <span className="block">
                             <span className="text-gray-500">Disetujui: </span>
-                            {profilPeta.get(t.approved_by) ?? "—"}
+                            {t.penyetuju.full_name}
                           </span>
                         )}
-                        {t.rejected_by && (
+                        {t.penolak?.full_name && (
                           <span className="block">
                             <span className="text-gray-500">Ditolak: </span>
-                            {profilPeta.get(t.rejected_by) ?? "—"}
+                            {t.penolak.full_name}
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="flex flex-wrap gap-1.5">
-                          {t.status === "diajukan" && bolehSetujui && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => void bukaAksi("setujui", t)}
-                                className="rounded border border-emerald-300 bg-white px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50"
-                              >
-                                Setujui
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void bukaAksi("tolak", t)}
-                                className="rounded border border-red-300 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
-                              >
-                                Tolak
-                              </button>
-                            </>
-                          )}
-                          {bolehBatalkan && (
-                            <button
-                              type="button"
-                              onClick={() => void bukaAksi("batalkan", t)}
-                              className="rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                            >
-                              Batalkan
-                            </button>
-                          )}
-                          {bolehUbah && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPesan(null);
-                                setForm({ mode: "ubah", target: t });
-                              }}
-                              className="rounded border border-kusafa/40 bg-white px-2 py-1 text-xs font-medium text-kusafa hover:bg-kusafa-light"
-                            >
-                              Ubah
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setRiwayat({
-                                judul: `${teksSasaran(t)} · ${mapelPeta.get(t.subject_id) ?? ""}`,
-                                subjectId: t.subject_id,
-                                studentId: t.student_id,
-                                halaqahId: t.halaqah_id,
-                              })
-                            }
-                            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
-                          >
-                            Riwayat
-                          </button>
-                        </div>
-                      </td>
+                      <td className="px-3 py-3">{tombolAksi(t)}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
 

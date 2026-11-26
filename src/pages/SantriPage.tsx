@@ -309,7 +309,12 @@ export default function SantriPage() {
                                 selisih {(r.selisih > 0 ? "+" : "") + angka(r.selisih)}
                               </span>
                               {r.target_monthly === null ? (
-                                <span className="text-amber-800">target belum ada</span>
+                                <span
+                                  className="text-amber-800"
+                                  title="Belum ada target disetujui untuk bulan ini (kosong, bukan 0)"
+                                >
+                                  target: –
+                                </span>
                               ) : r.below_target ? (
                                 <span className="text-pink-900">di bawah target</span>
                               ) : (
@@ -337,7 +342,9 @@ export default function SantriPage() {
                     </td>
                     <td className="border-l border-black/5 px-3 py-2 text-xs text-gray-800">
                       {adaTarget.length === 0 ? (
-                        <span className="text-gray-500">belum ada</span>
+                        <span className="text-gray-500" title="Belum ada target disetujui untuk bulan ini">
+                          –
+                        </span>
                       ) : (
                         adaTarget.map((r, i) => (
                           <div key={i}>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/auth-context";
 import { ambilSemua } from "../lib/ambil-semua";
@@ -50,6 +51,37 @@ interface SantriTanpaHalaqah {
   nis: string;
   full_name: string;
   level_label: string | null;
+}
+
+/** Baris `targets` yang dipakai notifikasi target (T7 [2/2]). */
+interface TargetBaris {
+  id: string;
+  subject_id: string;
+  student_id: string | null;
+  halaqah_id: string | null;
+  effective_month_id: string;
+  amount: number;
+  amount_period: "harian" | "bulanan";
+  status: "diajukan" | "disetujui" | "ditolak" | "dibatalkan";
+  note: string | null;
+}
+
+/** Target yang menunggu persetujuan. */
+interface MenungguTarget {
+  id: string;
+  sasaran: string;
+  mapel: string;
+  amount: number;
+  period: "harian" | "bulanan";
+  dummy: boolean;
+}
+
+/** Sasaran (santri per mapel Al Qur'an, atau halaqah per mapel Wasilah/Ghayah) tanpa target. */
+interface SasaranTanpaTarget {
+  halaqah: string;
+  mapel: string;
+  /** Hanya Al Qur'an: jumlah santri dalam satu mapel yang belum punya target. */
+  jumlah: number;
 }
 
 /** Domain yang notifikasinya boleh dilihat role ini (cermin aturan database). */
@@ -114,6 +146,15 @@ export default function KotakBelumLengkap({
     halaqah: { id: string; code: string }[];
     /** Peta halaqah -> nama musyrif/ah (untuk label dropdown). */
     musyrif: Record<string, string[]>;
+    /** Nama bulan berjalan (batas pemeriksaan) untuk teks notifikasi. */
+    batasNama: string;
+    /** T7 [2/2]: ringkasan target untuk role peninjau domain ini. */
+    target: {
+      menunggu: MenungguTarget[];
+      dummy: number;
+      tanpa: SasaranTanpaTarget[];
+      totalTanpa: number;
+    } | null;
   } | null>(null);
   /** Notifikasi santri tanpa halaqah per domain (view v_students_without_halaqah). */
   const [tanpaHalaqah, setTanpaHalaqah] = useState<{
@@ -200,7 +241,7 @@ export default function KotakBelumLengkap({
         }
         const idHalaqah = halaqah.map((h) => h.id);
         if (idHalaqah.length === 0 || bidang.length === 0) {
-          if (aktif) setData({ bulan: [], santri: [], halaqah: [], musyrif: {} });
+          if (aktif) setData({ bulan: [], santri: [], halaqah: [], musyrif: {}, batasNama: "", target: null });
           return;
         }
 
@@ -296,8 +337,89 @@ export default function KotakBelumLengkap({
           return { monthId: b.id, nama: b.name, total: daftarAnggota.length, terisi };
         });
 
+        // 9. Ringkasan TARGET (T7 [2/2]) untuk Masul domain, Mudir, Admin.
+        //    Semua angka dibaca dari tabel `targets`; tidak ada aturan target dihitung ulang.
+        //    "Punya target" = ada target `disetujui` dengan bulan berlaku <= bulan yang dipilih
+        //    (target berlaku sampai diganti). Target DUMMY dikenali dari catatannya.
+        let targetRingkas: {
+          menunggu: MenungguTarget[];
+          dummy: number;
+          tanpa: SasaranTanpaTarget[];
+          totalTanpa: number;
+        } | null = null;
+        if (profile && domainNotifikasi(profile.role).includes(DOMAIN)) {
+          const { data: targetRows, error: e7 } = await ambilSemua<TargetBaris>((awal, jumlah) =>
+            supabase
+              .from("targets")
+              .select(
+                "id, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, status, note",
+              )
+              .eq("domain", DOMAIN)
+              .order("id", { ascending: true })
+              .range(awal, awal + jumlah - 1),
+          );
+          if (e7) throw new Error(e7.message);
+          const daftarTarget = targetRows ?? [];
+          const ordBulan = new Map(semua.map((m) => [m.id, m.ord]));
+          const berlakuSampai = (t: TargetBaris) =>
+            t.status === "disetujui" &&
+            (ordBulan.get(t.effective_month_id) ?? Number.POSITIVE_INFINITY) <= batas.ord;
+          const namaMapel = new Map(bidang.map((b) => [b.id, b.name]));
+
+          const menunggu: MenungguTarget[] = daftarTarget
+            .filter((t) => t.status === "diajukan")
+            .map((t) => ({
+              id: t.id,
+              sasaran: t.student_id
+                ? petaNama.get(t.student_id) ?? "(santri)"
+                : petaHalaqah.get(t.halaqah_id ?? "") ?? "(halaqah)",
+              mapel: namaMapel.get(t.subject_id) ?? "",
+              amount: t.amount,
+              period: t.amount_period,
+              dummy: (t.note ?? "").startsWith("DUMMY"),
+            }));
+          const dummy = daftarTarget.filter(
+            (t) => (t.note ?? "").startsWith("DUMMY") && berlakuSampai(t),
+          ).length;
+
+          const tanpa: SasaranTanpaTarget[] = [];
+          let totalTanpa = 0;
+          if (DOMAIN === "alquran") {
+            for (const bd of bidang) {
+              const belum = daftarAnggota.filter(
+                (a) =>
+                  !daftarTarget.some(
+                    (t) => t.subject_id === bd.id && t.student_id === a.student_id && berlakuSampai(t),
+                  ),
+              ).length;
+              totalTanpa += belum;
+              if (belum > 0) tanpa.push({ halaqah: "", mapel: bd.name, jumlah: belum });
+            }
+          } else {
+            for (const h of halaqah) {
+              for (const bd of bidangHalaqah(h.id)) {
+                const ada = daftarTarget.some(
+                  (t) => t.subject_id === bd.id && t.halaqah_id === h.id && berlakuSampai(t),
+                );
+                if (!ada) {
+                  totalTanpa += 1;
+                  tanpa.push({ halaqah: h.code, mapel: bd.name, jumlah: 1 });
+                }
+              }
+            }
+          }
+          targetRingkas = { menunggu, dummy, tanpa, totalTanpa };
+        }
+
         if (!aktif) return;
-        setData({ bulan: ringkas, santri, halaqah, musyrif: Object.fromEntries(musyrifPeta) });
+        setData({
+          bulan: ringkas,
+          santri,
+          halaqah,
+          musyrif: Object.fromEntries(musyrifPeta),
+          batasNama: batas.name,
+          target: targetRingkas,
+        });
       } catch (e) {
         if (aktif) setGalat(e instanceof Error ? e.message : String(e));
       } finally {
@@ -469,6 +591,101 @@ export default function KotakBelumLengkap({
                     begitu santri dimasukkan ke halaqah.
                   </p>
                 </>
+              )}
+            </div>
+          )}
+          {data?.target && (
+            <div className="mb-4 rounded-lg bg-sky-50 px-3 py-3 ring-1 ring-sky-200">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-sm font-bold text-gray-900">Target {DOMAIN_LABEL[domain]}</p>
+                <Link
+                  to={`/target/${domain}`}
+                  className="text-xs font-medium text-kusafa underline underline-offset-2"
+                >
+                  Buka halaman Target
+                </Link>
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                <span
+                  className={
+                    "rounded px-2 py-1 ring-1 " +
+                    (data.target.menunggu.length > 0
+                      ? "bg-amber-100 text-amber-900 ring-amber-300"
+                      : "bg-emerald-50 text-emerald-800 ring-emerald-200")
+                  }
+                >
+                  <strong className="font-semibold">{data.target.menunggu.length}</strong> menunggu
+                  persetujuan
+                </span>
+                <span
+                  className="rounded bg-white px-2 py-1 text-gray-700 ring-1 ring-gray-200"
+                  title="Target sementara, wajib diganti data asli di T8/T10"
+                >
+                  <strong className="font-semibold">{data.target.dummy}</strong> target DUMMY
+                </span>
+                <span
+                  className={
+                    "rounded px-2 py-1 ring-1 " +
+                    (data.target.totalTanpa > 0
+                      ? "bg-amber-50 text-amber-900 ring-amber-200"
+                      : "bg-emerald-50 text-emerald-800 ring-emerald-200")
+                  }
+                >
+                  <strong className="font-semibold">{data.target.totalTanpa}</strong> belum punya target
+                </span>
+              </div>
+
+              {data.target.menunggu.length > 0 && (
+                <div className="mt-2 rounded-lg bg-white px-3 py-2 ring-1 ring-black/5">
+                  <p className="text-xs font-medium text-gray-800">
+                    Menunggu persetujuan (Masul domain / Mudir / Admin):
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
+                    {data.target.menunggu.slice(0, 5).map((t) => (
+                      <li key={t.id}>
+                        {t.sasaran} · {t.mapel} · target {t.amount}{" "}
+                        {t.period === "harian" ? "per hari" : "per bulan"}
+                        {t.dummy && (
+                          <span className="ml-1 rounded bg-gray-100 px-1 text-[10px] font-medium text-gray-700">
+                            DUMMY
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {data.target.menunggu.length > 5 && (
+                    <p className="mt-1 text-xs text-gray-600">
+                      … dan {data.target.menunggu.length - 5} pengajuan lain.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {data.target.tanpa.length > 0 && (
+                <div className="mt-2 rounded-lg bg-white px-3 py-2 ring-1 ring-black/5">
+                  <p className="text-xs font-medium text-gray-800">
+                    Belum punya target (berlaku sampai {data.batasNama || "bulan ini"}):
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
+                    {data.target.tanpa.slice(0, 8).map((t, i) => (
+                      <li key={`${t.halaqah}|${t.mapel}|${i}`}>
+                        {domain === "alquran"
+                          ? `${t.mapel}: ${t.jumlah} santri`
+                          : `${t.halaqah} · ${t.mapel}`}
+                      </li>
+                    ))}
+                  </ul>
+                  {data.target.tanpa.length > 8 && (
+                    <p className="mt-1 text-xs text-gray-600">
+                      … dan {data.target.tanpa.length - 8} sasaran lain.
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-600">
+                    Target dibuat di halaman Target. Target DUMMY adalah target sementara dan wajib
+                    diganti data asli.
+                  </p>
+                </div>
               )}
             </div>
           )}

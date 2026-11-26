@@ -130,7 +130,12 @@ export default function TabelAlQuran({
                             </button>
                           )}
                           {r.target_monthly === null ? (
-                            <div className="text-amber-800">target belum ada</div>
+                            <div
+                              className="text-amber-800"
+                              title="Belum ada target disetujui untuk bulan ini (kosong, bukan 0)"
+                            >
+                              target: –
+                            </div>
                           ) : r.below_target ? (
                             <div className="rounded bg-pink-100 px-1.5 py-0.5 font-medium text-pink-900">
                               di bawah target
@@ -147,13 +152,17 @@ export default function TabelAlQuran({
 
                   <td className="border-l border-black/5 px-2 py-3 align-top text-xs">
                     {perBidang.every((r) => r?.target_monthly === null || r?.target_monthly === undefined) ? (
-                      <span className="text-gray-500">belum ada</span>
+                      <span className="text-gray-500" title="Belum ada target disetujui untuk bulan ini">
+                        –
+                      </span>
                     ) : (
                       <div className="space-y-0.5">
                         {perBidang.map((r, i) => (
                           <div key={i} className="text-gray-800">
                             <span className="text-gray-500">{bidang[i].name}: </span>
-                            {angka(r?.target_monthly)}
+                            {r?.target_monthly === null || r?.target_monthly === undefined
+                              ? "–"
+                              : angka(r.target_monthly)}
                           </div>
                         ))}
                       </div>
