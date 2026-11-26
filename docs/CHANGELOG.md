@@ -5,6 +5,25 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 26 November 2026 - T7c [1/3] (target Wasilah/Ghayah = TUJUAN AKHIR: database, RPC, DUMMY, uji)
+
+- **Migrasi `20261126000032_targets_tujuan_akhir`** (dicatat di `schema_migrations`): kolom `target_item_id`,
+  constraint `targets_bentuk_check` (Al Qur'an tetap per santri **atau** halaqah; Wasilah/Ghayah halaqah +
+  butir tanpa amount), unique index satu target menunggu per (halaqah, mapel, bulan), trigger butir
+  milik buku mapel & aktif, `REVOKE EXECUTE` dari PUBLIC + anon untuk 15 fungsi target, `setujui_target_halaqah`
+  (bulk "Setujui semua target halaqah ini"), `riwayat_target` menyertakan butir & buku.
+- **Panggilan lama tetap jalan**: parameter butir `DEFAULT NULL`, jadi frontend Al Qur'an (9 argumen) sukses;
+  pengajuan Wasilah/Ghayah dengan `amount` ditolak dengan pesan jelas.
+- **DUMMY**: 36 baris bentuk lama (`amount = 1`) dihapus, dibuat ulang bentuk butir (25 Wasilah + 11 Ghayah);
+  skrip lama T7b ditandai usang. 1 baris target Al Qur'an sisa uji **tidak dihapus** (DATA-NOTES 0b).
+- **Uji**: `test_t7c_target_tujuan.py` **48/48**, `test_targets_t7.py` **34/34** (disesuaikan bentuk baru),
+  `regression_execute.py` **8/8** (tambah cek EXECUTE PUBLIC), `rls_matrix.py` **94/97** (3 SKIP),
+  E2E target baca-saja **36/36**, E2E tulis **38/38**, sidik jari **SAMA** (16.505 baris, 19 tabel).
+  `typecheck` hijau; `build` berhasil.
+- **BELUM (T7c [2/3])**: UI `/target` untuk Wasilah/Ghayah (form butir, tampilan butir, bulk di UI).
+
+---
+
 ## 26 November 2026 - T7 [2/2] lanjutan (uji UI target yang menulis + E2E ulang)
 
 - **Uji tulis lewat UI/RPC** `scripts/qa/test_t7_target_tulis.py` **38/38 LULUS** (1280 & 360 px):

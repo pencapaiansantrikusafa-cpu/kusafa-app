@@ -1,6 +1,6 @@
 # HANDOVER - serah terima KUSAFA
 
-**Terakhir diperbarui**: 26 November 2026 (T7 [2/2] UI `/target` + uji UI yang menulis 38/38 + E2E ulang & smoke produksi hijau). Hash commit handover ini: lihat `git log -1`.
+**Terakhir diperbarui**: 26 November 2026 (T7c [1/3]: target Wasilah/Ghayah = tujuan akhir di database + RPC + bulk + DUMMY baru + uji 48/48). Hash commit handover ini: lihat `git log -1`.
 
 Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`. Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data santri asli di sini.
 
@@ -28,13 +28,14 @@ Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/
 | T6e | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `src/components/DialogHapusCapaian.tsx` |
 | **T7 [1b/2]** | **Fondasi target dinamis (database + RPC + uji)** | **SELESAI** | migrasi `20261126000021`-`000031`, `scripts/qa/test_targets_t7.py`, `scripts/qa/verify_t7_report_unchanged.sql`, `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` |
 | **T7 [2/2]** | **UI `/target` (daftar, ajukan, setujui/tolak, ubah, riwayat) + uji tulis** | **SELESAI** | `src/pages/TargetPage.tsx`, `TargetDomainPage.tsx`, `FormTarget.tsx`, `DialogAksiTarget.tsx`, `DialogRiwayatTarget.tsx`, `src/lib/target.ts`, `scripts/qa/test_t7_target_tulis.py` (38/38), E2E ulang + smoke produksi 42/42 |
+| **T7c [1/3]** | **Target Wasilah/Ghayah = TUJUAN AKHIR (database, RPC, bulk, DUMMY, uji)** | **SELESAI** (lihat §2) | migrasi `20261126000032`, `test_t7c_target_tujuan.py` 48/48, `regression_execute.py` 8/8 |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** | belum ada |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | ± 25 skrip `scripts/qa/`; belum ada proyek Supabase QA terpisah; 3 sel RLS SKIP |
 | T10 | Deploy akhir, hapus dummy, repo privat | **BELUM** | belum ada |
 
 ---
 
-## 2. Tahap yang sedang dikerjakan: T7 [2/2] UI Target (UI selesai; uji tulis dan peragaan ulang belum)
+## 2. Tahap yang sedang dikerjakan: T7c [1/3] database target tujuan akhir (SELESAI); UI [2/3] belum
 
 ### Catatan dua penomoran (jangan tertukar)
 
@@ -71,9 +72,20 @@ Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/
   sidik jari **SAMA**, `targets` kembali 363.
 - **E2E ulang (26 Nov):** T6a **14/14**, T6b **14/14**, T6d2 **14/14**, T6e **16/16**, dropdown **10/10**,
   smoke produksi Vercel **42/42** (baca saja). Sidik jari/data dipulihkan tiap rangkaian.
+- **T7c [1/3] (26 Nov):** migrasi `20261126000032_targets_tujuan_akhir` (kolom `target_item_id`,
+  constraint `targets_bentuk_check`, unique index satu target menunggu, trigger butir aktif milik mapel);
+  `setujui_target_halaqah` (bulk), alur "pengajuan baru menggantikan";
+  **REVOKE EXECUTE dari PUBLIC + anon** untuk 15 fungsi target (sempat terbuka untuk 2 fungsi);
+  DUMMY bentuk baru 25 Wasilah + 11 Ghayah. Uji `test_t7c_target_tujuan.py` **48/48**,
+  `test_targets_t7.py` **34/34**, `regression_execute.py` **8/8**, RLS **94/97** (3 SKIP),
+  E2E target baca-saja **36/36**, E2E tulis **38/38**, sidik jari **SAMA**. Rincian: STATUS 2q.
 
 ### Yang belum
 
+- **T7c [2/3] = UI** BELUM: form Wasilah/Ghayah di `/target` masih mengirim `amount`, sehingga **pengajuan
+  Wasilah/Ghayah dari UI ditolak database** (pesan jelas). Daftar/riwayat belum menampilkan butir tujuan
+  akhir; laporan belum punya kolom target butir untuk Wasilah/Ghayah (angkanya NULL).
+- **T7c [3/3]** (pembuktian akhir E2E + smoke) belum.
 - **T8 belum dimulai** (menunggu perintah Mudir). Isinya: kelola kurikulum, halaqah, santri, kalender,
   **Hari Efektif & kunci bulan**; ganti target DUMMY Wasilah/Ghayah dengan angka asli.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
@@ -85,15 +97,27 @@ Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/
 2. **3 sel matriks RLS SKIP:** profil `wali` belum ada dan tidak ada target `diajukan` di data dummy.
 3. **Uji dropdown a2 diperbaiki (data-dependent):** dulu memakai "Jumadal Akhir" yang bulan sebelumnya (Jumadal Ula, bulan 8) memang kosong di seed, sehingga "belum diisi" itu BENAR. Kini memakai "Jumadal Ula" (bulan sebelumnya Rabiul Akhir terisi) → 10/10. Logika aplikasi tidak diubah.
 4. **`change_log`** append-only; sekarang **305** baris (bertambah karena uji yang menulis), baris lama utuh (sidik jari memeriksa log terpisah).
-5. **Target DUMMY Wasilah/Ghayah** masih ada dan terbaca sebagai target nyata sampai diganti T8/T10.
+5. **Target DUMMY Wasilah/Ghayah** masih ada dan terbaca sebagai target nyata sampai diganti T8/T10
+   (kini berbentuk **butir kurikulum**, tanpa angka).
+6. **1 baris target Al Qur'an sisa uji T7 [2/2]** (Tahfidz, Santriwan fulan 26, Rabiul Akhir, amount 2,
+   26 Nov 09:27 UTC) **tidak dihapus** sesuai perintah; tercatat di DATA-NOTES 0b. Perlu keputusan
+   Mudir: dihapus atau dibiarkan sampai T10.
+7. **Skrip `2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` usang** (DUMMY bentuk lama); berkepala
+   peringatan "JANGAN dijalankan lagi". Database otomatis menolaknya.
 6. **Capaian Wasilah/Ghayah = 0 baris memang benar**: Excel tidak punya kolom capaian (lihat `docs/DATA-NOTES.md` bagian 12). Capaian asli diinput lewat aplikasi.
 7. **Baris target baru manual Mudir** (bila ada di `/target`) **tidak dihapus** oleh uji; skrip melaporkan jumlah & isinya. Pada run terakhir: 0 baris.
 
 ### Langkah berikutnya (berurutan)
 
-1. **T7 selesai** (butir 1-6 perintah kerja sudah dijalankan & terdokumentasi). Tunggu persetujuan Mudir.
-2. **Baru setelah disetujui:** mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan). Jangan mulai T8/T9 lebih awal.
-3. Saat T8: ganti target DUMMY Wasilah/Ghayah dengan angka asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
+1. **T7c [1/3] selesai** (database + RPC + bulk + DUMMY + uji + dokumen).
+2. **T7c [2/3] = UI `/target`** (menunggu perintah): form Wasilah/Ghayah memilih **butir tujuan akhir**
+   (tanpa angka), daftar/riwayat menampilkan butir, tombol **"Setujui semua target halaqah ini"** (bulk),
+   kewajiban target bulan depan saat input capaian, peringatan target di bawah capaian, tampilan
+   Level 6 "Tuntas, belum ada pelajaran lanjutan".
+3. **T7c [3/3]** pembuktian akhir (E2E + smoke produksi).
+4. **Baru setelah T7 disetujui:** mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci
+   bulan). Jangan mulai T8/T9 lebih awal. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari
+   Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
 
 ---
 
@@ -133,6 +157,13 @@ Berlaku di atas 3.2; menggantikan arti "bulanan = amount" untuk Wasilah/Ghayah.
 - **Persetujuan:** pengampu mengajukan; **Masul domain/Mudir/Admin** menyetujui; ada **"Setujui semua target halaqah ini"** (bulk per halaqah x bulan). Bulan lewat/terkunci tetap hanya Mudir/Admin + konfirmasi.
 - **Satu target menunggu** per (halaqah, mapel, bulan berlaku): pengajuan baru dari pengaju **menggantikan** yang masih `diajukan` (status lama menjadi `dibatalkan`); yang sudah `disetujui` diganti lewat `ubah_target` (baris baru).
 
+- **Penerapan T7c [1/3] (26 November 2026):** kolom `targets.target_item_id` (FK `curriculum_items`),
+  constraint `targets_bentuk_check` (Al Qur'an: `amount` + `harian`, per santri **atau** per halaqah;
+  Wasilah/Ghayah: halaqah + butir, `amount` kosong), unique index `targets_satu_diajukan_uk`, trigger
+  butir harus milik buku mapel itu & aktif. RPC: `ajukan_target`/`ubah_target` (parameter butir DEFAULT
+  NULL agar panggilan lama tetap jalan), `setujui_target_halaqah` (bulk), `riwayat_target` menyertakan
+  butir & buku. `REVOKE EXECUTE` dari PUBLIC + anon untuk seluruh keluarga fungsi target.
+
 ### 3.3 Struktur tabel dan view yang tidak boleh diubah sembarangan
 
 - `targets`: `id`, `domain`, `subject_id`, `student_id`, `halaqah_id`, `effective_month_id`, `amount`, `amount_period`, `status`, `proposed_by`, `approved_by`, `approved_at`, `note`, `created_at`, `alasan_tolak`, `rejected_by`, `rejected_at`, `entered_by`, `entered_at`, `updated_by`, `updated_at`.
@@ -160,11 +191,12 @@ Berlaku di atas 3.2; menggantikan arti "bulanan = amount" untuk Wasilah/Ghayah.
 
 - Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 - **Koneksi `DATABASE_URL`: pooler Supabase** (host `*.pooler.supabase.com`, port `5432`, user berawalan `postgres`), bukan koneksi langsung. Kata sandi hanya di `.env.local`, tidak dicatat di dokumen.
-- **31 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261126000031_targets_audit_semantics`**. Berikutnya wajib `20261126000032_...`.
-- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **47 fungsi** public; **4 view**.
+- **32 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261126000032_targets_tujuan_akhir`**. Berikutnya wajib `20261126000033_...`.
+- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **50 fungsi** public; **4 view**.
+- **Semua 15 fungsi target** tanpa EXECUTE untuk `anon` maupun `PUBLIC`; RPC target ber-EXECUTE untuk `authenticated`.
 - `targets` hanya punya policy SELECT; tulis lewat RPC. `change_log` hanya SELECT untuk Mudir/Admin, append-only.
 - **Seed dummy 1447 sudah dimuat** dan **destruktif** (TRUNCATE). Jangan jalankan ulang tanpa perintah Mudir.
-- Data sekarang: santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah), `change_log` **305** baris.
+- Data sekarang: santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **364** (328 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah, bentuk tujuan akhir), `change_log` **356** baris.
 - `month_domain_settings` hanya bulan 1-7; `is_locked` semua `false`; bulan 8-12 dan pengisian Hari Efektif adalah T8.
 - **Matriks RLS:** 94 OK / 3 SKIP / 0 GAGAL. SKIP: profil `wali`, target `diajukan`.
 
@@ -181,6 +213,8 @@ Berlaku di atas 3.2; menggantikan arti "bulanan = amount" untuk Wasilah/Ghayah.
 7. **Target DUMMY Wasilah/Ghayah** (25 + 11): kapan data asli dimasukkan? Rencana T8/T10; perlu angka target asli dari Mudir.
 8. **Proyek Supabase QA terpisah**: usulan belum dibuat; sekarang uji dan produksi memakai SATU database.
 9. **Retensi `change_log`**: belum ada pemangkasan; perlu keputusan bila log dianggap terlalu besar.
+10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): dihapus atau dibiarkan sampai T10?
+11. **Pemetaan mapel Excel benar** (keputusan Mudir 26 Nov 2026, 3.2a) - tidak ada perubahan data; layar penggantian mapel & kewajiban target bulan depan masuk T7c [2/3] / T8.
 
 ---
 
@@ -208,6 +242,7 @@ python scripts/check_repo_safety.py   # wajib lolos sebelum push
 Uji database (membaca `.env.local`, tidak mencetak rahasia; sebagian menulis + ROLLBACK):
 
 ```bash
+python scripts/qa/test_t7c_target_tujuan.py      # 48/48 (baru, T7c)
 python scripts/qa/test_targets_t7.py             # 34/34
 python scripts/qa/verify_t7_report_unchanged.sql # 2.036 baris, 0 beda
 python scripts/qa/test_t6e_hapus_capaian.py      # 35/35 (perlu baris bulan 8 sementara)

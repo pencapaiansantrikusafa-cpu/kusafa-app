@@ -1,22 +1,39 @@
 # DATA-NOTES - pemetaan data Excel dan temuan data terbuka
 
-Diperbarui: 26 November 2026 (T7 [1b/2] - target DUMMY Wasilah/Ghayah). Angka di sini diperiksa langsung di database pada tanggal itu.
+Diperbarui: 26 November 2026 (T7c [1/3] - target DUMMY Wasilah/Ghayah bentuk tujuan akhir). Angka di sini diperiksa langsung di database pada tanggal itu.
 Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data dummy.
 
 ---
 
-## 0. Target DUMMY Wasilah/Ghayah (T7, izin khusus Mudir 26 November 2026)
+## 0. Target DUMMY Wasilah/Ghayah (T7c, izin khusus Mudir 26 November 2026)
 
-- **25 target Wasilah + 11 target Ghayah** disisipkan sebagai **DUMMY** (bukan data asli) agar jalur
-  target dinamis dapat diuji untuk ketiga domain.
-- Bentuk: per halaqah per mata pelajaran, `amount = 1`, `amount_period = bulanan`, status `disetujui`,
-  `effective_month_id` = **Syawwal 1447**; catatan setiap baris dimulai `DUMMY - target sementara
-  Wasilah/Ghayah, diganti data asli T8/T10 (izin Mudir 26 Nov 2026)`.
-- Skrip idempoten: `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` (aman dijalankan
-  ulang; tidak menimpa target DUMMY yang sudah ada).
-- **Wajib diganti data asli di T8/T10.** Jangan menganggap angka ini capaian/target nyata.
+- **25 target Wasilah + 11 target Ghayah** adalah **DUMMY** (bukan data asli) agar jalur target dinamis
+  dapat diuji untuk ketiga domain.
+- Bentuk **SEKARANG = TUJUAN AKHIR** (keputusan Mudir, HANDOVER 3.2a): per halaqah per mata pelajaran,
+  `target_item_id` = **butir kurikulum** (item pertama buku mapel itu), `amount` **KOSONG**,
+  `amount_period = bulanan`, status `disetujui`, `effective_month_id` = **Syawwal 1447**.
+  Catatan: `DUMMY - target sementara Wasilah/Ghayah (tujuan akhir), diganti data asli T8/T10 ...`.
+- **Bentuk lama (36 baris `amount = 1`) SUDAH DIHAPUS** 26 Nov 2026 (tercatat di `change_log`, 25 Wasilah
+  + 11 Ghayah). Skrip: `scripts/db/fixes/2026-11-26_t7c_hapus_target_dummy_lama.sql` (hanya bentuk lama;
+  tidak menyentuh bentuk baru).
+- Skrip bentuk baru: `scripts/db/fixes/2026-11-26_t7c_target_dummy_tujuan.sql` (idempoten, satu per
+  halaqah x mapel). Skrip T7b lama **usang** dan tidak boleh dijalankan lagi (database menolaknya).
+- Karena Wasilah/Ghayah tidak punya angka target, `v_monthly_report.target_monthly` untuk target ini
+  **NULL** (bukan 0) sampai UI/report T7c [2/3] menampilkan butir sebagai posisi.
+- **Wajib diganti data asli di T8/T10.** Jangan menganggap butir ini target nyata.
 - 327 target Al Qur'an lama **tidak berubah**; semuanya tetap `effective_month_id` = Data Awal 1447
-  (`month_no=0`).
+  (`month_no=0`), bentuk `amount` + `harian`.
+
+## 0b. Satu baris target Al Qur'an sisa uji (26 November 2026) - TIDAK dihapus
+
+- Ditemukan **1 baris** `targets` Al Qur'an yang **dibuat hari ini** (26 Nov 2026 09:27 UTC):
+  Tahfidz, `Santriwan fulan 26`, bulan **Rabiul Akhir**, `amount = 2` (harian), status `disetujui`,
+  `proposed_by` = `approved_by` = **Ust. Fulan 1** (role `musyrif`), tanpa catatan.
+- **Bukan data asli**; bentuknya sama dengan target yang dibuat uji UI T7 [2/2] (Tahfidz 2). Karena
+  pengampu tidak boleh menyetujui sendiri, baris ini hanya bisa lahir dari koneksi admin (`is_full_access`)
+  atau dari sesi uji, bukan dari alur aplikasi pengampu.
+- **Perintah kerja: JANGAN dihapus.** Baris ini dipertahankan; keputusan di HANDOVER bagian 5 butir 10.
+- Dampak: laporan santri itu bulan Rabiul Akhir memakai target 2 x Hadir. Data dummy, tidak dipakai produksi.
 
 ---
 

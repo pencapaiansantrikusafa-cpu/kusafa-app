@@ -52,6 +52,18 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - **Pengampu hanya ditawari halaqah yang diampu**: Masul, Musyrif/ah, dan Mudarris/ah hanya melihat halaqahnya di halaman Input (`hanyaHalaqahDiampu` di `src/lib/roles.ts`). Hanya Mudir/Admin mengisi semua halaqah. Database (RLS) tetap penjaga terakhir.
 - **Jangan pernah mengambil daftar panjang dengan satu query tanpa batas**: Supabase mengembalikan maksimal 1.000 baris per permintaan. Pakai `ambilSemua` di `src/lib/ambil-semua.ts` atau `range` yang cukup besar.
 
+## Batas keluaran perintah (wajib, perintah Mudir 26 November 2026)
+
+- **Jangan pernah menampilkan berkas, tabel, atau JSON besar secara utuh di percakapan.**
+  Ini pernah menyebabkan sesi mati karena galat **413 (request terlalu besar)**.
+- Batasi keluaran: `head`, `tail`, `wc -l`, `grep -c`, atau ringkasan (jumlah per kelompok).
+  Untuk `npm run db:sql -- --query`, pilih kolom yang perlu saja dan tambahkan `limit`.
+- Keluaran besar (mis. sidik jari, hasil uji, dump) **simpan ke berkas** (`/tmp` atau
+  `docs/qa/*.json`) lalu tampilkan ringkasannya (jumlah baris, beberapa contoh, kesimpulan).
+- Jangan mencetak data santri, UUID panjang berderet, atau seluruh isi `change_log`.
+- Bila butuh memeriksa isi berkas panjang, pakai `read` dengan `offset`/`limit` atau `grep`
+  untuk bagian yang relevan, bukan seluruh berkas.
+
 ## Cara bekerja (aturan tetap)
 - **Satu sub-tugas, satu commit kecil.** Setelah sub-tugas selesai: jalankan `npm run typecheck` dan `npm run build`,
   perbarui `docs/STATUS.md` dan `docs/HANDOVER.md`, lalu commit dan **push** ke `main`. Jangan menumpuk banyak perubahan dalam satu commit besar.

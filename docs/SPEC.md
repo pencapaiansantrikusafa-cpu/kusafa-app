@@ -222,8 +222,24 @@ Memperbaiki §5d untuk domain Wasilah/Ghayah. Al Qur'an **tidak berubah** (jumla
   `diajukan` (lama menjadi `dibatalkan`); yang sudah `disetujui` diganti lewat `ubah_target` (baris baru).
 - **Bulk:** ada `setujui_target_halaqah` = "Setujui semua target halaqah ini" (per halaqah x bulan);
   Masul domain/Mudir/Admin; bulan lewat/terkunci tetap hanya Mudir/Admin + konfirmasi eksplisit.
-- **DUMMY:** DUMMY lama (36 baris `amount = 1`) dihapus; DUMMY baru bentuk tujuan akhir dibuat secukupnya
-  (satu per halaqah x mapel), ditandai `DUMMY` di catatan (`note`). Wajib diganti data asli T8/T10.
+- **DUMMY:** DUMMY lama (36 baris `amount = 1`) **sudah dihapus** 26 Nov 2026 (`change_log`); DUMMY baru
+  bentuk tujuan akhir dibuat (25 Wasilah + 11 Ghayah, satu per halaqah x mapel), ditandai `DUMMY` di
+  catatan (`note`). Wajib diganti data asli T8/T10. Skrip: `scripts/db/fixes/2026-11-26_t7c_*.sql`.
+- **Penerapan database (T7c [1/3]):**
+  - kolom `targets.target_item_id` -> `curriculum_items` (FK); `amount` boleh kosong hanya untuk
+    Wasilah/Ghayah;
+  - constraint `targets_bentuk_check`: Al Qur'an = `amount` + `harian` + per **santri ATAU halaqah**
+    (aturan (c): individu didahulukan dari halaqah) + butir kosong; Wasilah/Ghayah = halaqah + butir,
+    `amount` kosong, `bulanan`;
+  - trigger `target_validasi_butir`: butir wajib milik **buku mapel itu** dan **aktif**;
+  - unique index `targets_satu_diajukan_uk` pada (halaqah, mapel, bulan) untuk status `diajukan`;
+  - RPC: `ajukan_target`, `ubah_target` (parameter butir **DEFAULT NULL** sehingga panggilan lama Al Qur'an
+    tetap jalan), `setujui_target`, `tolak_target`, `batalkan_target`, `riwayat_target` (menyertakan butir
+    & buku), `setujui_target_halaqah` (bulk);
+  - `REVOKE EXECUTE` dari **PUBLIC + anon** untuk seluruh keluarga fungsi target; hanya `authenticated`
+    yang dapat menjalankan RPC (dijaga `regression_execute.py`).
+  - **Sementara sampai UI [2/3]:** `v_monthly_report.target_monthly` untuk target Wasilah/Ghayah = NULL
+    (tidak ada angka target); laporan tetap mengenali `target_id`. Bukan 0.
 
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.

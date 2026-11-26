@@ -1,6 +1,6 @@
 # FILE-MAP - peta kode KUSAFA
 
-Diperbarui 23 November 2026. Satu baris per berkas penting: apa fungsinya.
+Diperbarui 26 November 2026. Satu baris per berkas penting: apa fungsinya.
 Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah terima).
 
 ---
@@ -131,6 +131,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261126000029_targets_rpc_only_audit_cancel.sql` | T7a: hapus policy tulis + cabut privilege tulis; RPC `batalkan_target`. |
 | `migrations/20261126000030_targets_massal_xor_fix.sql` | T7a: massal Al Qur'an tetap per santri (bukan halaqah). |
 | `migrations/20261126000031_targets_audit_semantics.sql` | T7a: `catat_jejak_target` mencatat pengubah, pengaju asli tetap. |
+| `migrations/20261126000032_targets_tujuan_akhir.sql` | **T7c**: kolom `targets.target_item_id` (FK `curriculum_items`), `amount` boleh kosong untuk Wasilah/Ghayah, constraint `targets_bentuk_check`, unique index `targets_satu_diajukan_uk`, trigger `target_validasi_butir` (butir milik buku mapel & aktif), RPC `ajukan_target`/`ubah_target` versi butir (parameter baru DEFAULT NULL, tanpa overload), `setujui_target_halaqah` (bulk), `riwayat_target` + butir/buku, `REVOKE EXECUTE` PUBLIC+anon untuk seluruh keluarga fungsi target. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
@@ -157,7 +158,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/create_auth_users.py` | Membuat akun dummy di Supabase Auth (memakai kunci service role di `.env.local`, hanya lokal). |
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
-| `scripts/qa/db_fingerprint.py` | **T6d3**: sidik jari database (18 tabel, jumlah baris + checksum md5). `--simpan` sebelum uji, `--banding` sesudah; hasil wajib SAMA. Hanya membaca. |
+| `scripts/qa/db_fingerprint.py` | **T6d3**: sidik jari database (19 tabel, jumlah baris + checksum md5). `--simpan` sebelum uji, `--banding` sesudah; hasil wajib SAMA. Hanya membaca. |
 | `scripts/qa/pulihkan_data.py` | **T6d3**: simpan salinan penuh `progress_entries`/`attendance`/`monthly_notes`/`targets` lalu pulihkan persis (nilai + jejak). **T7 [2/2]**: parameter `urus` membatasi baris yang boleh disentuh uji, sehingga baris baru milik orang lain (mis. Mudir mencoba `/target`) tidak dihapus. Dipakai semua uji yang menulis. |
 | `scripts/qa/test_t6e_hapus_capaian.py` | T6e (35 uji, transaksi + ROLLBACK): role, pratinjau, hapus satu/massal, bulan terkunci, bulan sesudahnya, bulan 0, log DELETE/UPDATE tiga tabel, log tanpa JWT, log tidak bisa diubah/dihapus/ditulis. |
 | `scripts/qa/test_t6e_e2e_hapus.py` | T6e E2E (16 uji): Masul tanpa tombol hapus, dialog (santri/bulan/nilai), hapus satu & massal, bulan terkunci minta centang, data dipulihkan persis. |
@@ -172,17 +173,20 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_no_halaqah.py` | Santri tanpa halaqah di suatu domain: tidak tampil, RLS menolak penulisan. |
 | `scripts/qa/test_students_without_halaqah.py` | Notifikasi per role (Mudir/Admin semua domain, Masul domainnya, Musyrif/Mudarris 0). |
 | `scripts/qa/test_students_without_halaqah_p6.py` | Jalur "tampil semua" fungsi: authenticated tanpa profil/musyrif/mudarris 0 baris, koneksi admin melihat semua, anon ditolak. |
-| `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon (loop `pg_proc`); musyrif tak bisa mengubah data lewat fungsi admin. |
+| `scripts/qa/regression_execute.py` | Regresi: tiap fungsi public tanpa `EXECUTE` anon **dan tanpa `EXECUTE` PUBLIC** (loop `pg_proc` + `aclexplode`); musyrif tak bisa mengubah data lewat fungsi admin. |
 | `scripts/qa/test_auth_signup_closed.py` | `disable_signup=true`, signup ditolak `signup_disabled`, login 7 role berhasil. |
 | `scripts/qa/measure_input_perf.py` | Ukur waktu siap halaman Input, jumlah permintaan, byte item (Playwright; `VIEWPORT=360`, `ULANG=n`, `HASIL=...`). |
 | `scripts/qa/test_t6d_tab_capaian.py` | E2E tab domain: terlihat di 1280 & 360 px, tanpa geseran samping, sentuh >= 44 px, klik mengganti isi & URL, muat ulang & tombol kembali bekerja, tab per role, menu lama tidak ada. |
 | `scripts/qa/test_t6b_input_wasilah.py` | Uji tulis Wasilah/Ghayah (29 uji, transaksi + ROLLBACK): salinan ke anggota, luar halaqah aman, anggota keluar aman, bulan 0/terkunci, item salah, RLS per role, Masul per domain, anon. |
 | `scripts/qa/test_t6b_e2e.py` | E2E tampilan Wasilah/Ghayah: pilih -> label tampil, simpan -> database semua anggota, muat ulang -> label tetap; data uji dipulihkan. |
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
+| `scripts/qa/test_t7c_target_tujuan.py` | **T7c** (48 uji, transaksi + ROLLBACK): bentuk target (Al Qur'an panggilan lama tetap jalan; Wasilah/Ghayah wajib butir, amount ditolak jelas), constraint, satu target menunggu (penggantian + unique index), hak per role & lintas domain, bulk `setujui_target_halaqah` (termasuk bulan terkunci), ubah/batal, `v_monthly_report` Al Qur'an identik, DUMMY bentuk baru, dan tidak ada overload. |
 | `scripts/qa/test_targets_t7.py` | T7 (34 uji, transaksi + ROLLBACK): role pengaju/penyetuju, Masul lintas domain, Mudir/Admin, anon, status tidak dipakai laporan, tolak wajib alasan, ubah baris baru, massal, riwayat, bulan 0, lewat/terkunci, kasus (f), individu vs halaqah, tiebreak, bulanan tidak dikali Hadir, tulis langsung ditolak. |
 | `scripts/qa/verify_t7_report_unchanged.sql` | T7: bandingkan rumus laporan **sebelum** vs **sesudah** untuk seluruh 2.036 baris Al Qur'an; hasil 0 beda. |
 | `scripts/qa/test_t7_target_tulis.py` | T7 [2/2] E2E **menulis lewat UI/RPC** (38 uji): pengampu ajukan -> Masul setujui (laporan pakai target baru), tolak + alasan (dilihat pengampu), batalkan, Masul lintas domain, bulan lewat/terkunci butuh konfirmasi Mudir/Admin, tab & URL 1280/360 px; semua target uji bertanda `note`, dipulihkan persis, sidik jari SAMA. |
-| `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` | T7b: 25 target DUMMY Wasilah + 11 Ghayah (bulanan, Syawwal 1447), izin Mudir; wajib diganti T8/T10. |
+| `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` | T7b: DUMMY bentuk LAMA - **DIGANTIKAN T7c, jangan dijalankan** (database menolak bentuk amount). |
+| `scripts/db/fixes/2026-11-26_t7c_hapus_target_dummy_lama.sql` | **T7c**: hapus DUMMY bentuk lama (`amount = 1`, tanpa butir, catatan berpola koma). Idempoten; **tidak** menyentuh DUMMY bentuk baru. |
+| `scripts/db/fixes/2026-11-26_t7c_target_dummy_tujuan.sql` | **T7c**: buat DUMMY bentuk baru (satu per halaqah x mapel, butir pertama, Syawwal 1447). Idempoten; wajib diganti data asli T8/T10. |
 | `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. Langkah a2 memakai bulan Jumadal Ula (bulan sebelumnya Rabiul Akhir terisi). |
 | `scripts/qa/test_t7_target_ui.py` | T7 [2/2] E2E **baca-saja** (36 uji, 1280 & 360 px): tab & URL halaman Target, saringan, form, dialog aksi, riwayat, notifikasi target; konsol bersih. |
 | `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |
