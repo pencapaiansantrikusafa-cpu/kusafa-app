@@ -79,6 +79,8 @@ Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/
   DUMMY bentuk baru 25 Wasilah + 11 Ghayah. Uji `test_t7c_target_tujuan.py` **48/48**,
   `test_targets_t7.py` **34/34**, `regression_execute.py` **8/8**, RLS **94/97** (3 SKIP),
   E2E target baca-saja **36/36**, E2E tulis **38/38**, sidik jari **SAMA**. Rincian: STATUS 2q.
+  Uji lama hijau kembali: T6a 14/14, T6b 29/29, T6d2 68/68, no-halaqah 9/9 + 13/13, seed bersih 6/6,
+  banding Excel penuh 7/7 + 7/7, data awal tahun kedua 5/5.
 
 ### Yang belum
 

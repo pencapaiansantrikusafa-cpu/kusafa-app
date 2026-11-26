@@ -1046,3 +1046,20 @@ Cakupan uji baru (per butir perintah kerja):
 - Laporan (`v_monthly_report`) belum punya kolom target butir untuk Wasilah/Ghayah; angka targetnya NULL
   (jujur: tidak ada angka). Tampilan "target = posisi/butir" menyusul di [2/3].
 - Notifikasi "target DUMMY" masih mengenali catatan DUMMY (pola lama tetap cocok).
+
+### Uji lama yang dijalankan ulang setelah T7c [1/3]
+
+| Rangkaian | Hasil |
+|---|---|
+| `test_t6a_tabel.py` | **14/14** |
+| `test_t6b_input_wasilah.py` | **29/29** |
+| `test_t6d2_masul_input.py` | **68/68** |
+| `test_no_halaqah.py` / `test_students_without_halaqah.py` | **9/9** / **13/13** |
+| `test_seed_bersih.py` | **6/6** |
+| `compare_alquran_full_excel.py` (penuh) | **7/7** |
+| `compare_rabiul_awwal_excel.py` | **7/7** |
+| `test_data_awal_tahun_kedua.py` | **5/5** |
+
+Belum dijalankan ulang pada sesi ini (berkaitan dengan T7c, tapi butuh prasyarat/terpisah):
+`test_t6e_hapus_capaian.py` (perlu baris capaian bulan 8 sementara) - **BELUM DIVERIFIKASI**;
+smoke produksi setelah deploy Vercel - **BELUM DIVERIFIKASI** (kode frontend tidak berubah, hanya skema DB).
