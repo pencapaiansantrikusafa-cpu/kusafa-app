@@ -1,0 +1,229 @@
+{
+  "base": "http://localhost:4173",
+  "waktu": "2026-11-26T14:48:12",
+  "konteks": {
+    "halaqah": "HLQ-PA-1",
+    "musyrif": "Ust. Fulan 1",
+    "santri": "Santriwan fulan 7",
+    "hadir_bulan7": 18.0
+  },
+  "lulus": 38,
+  "gagal": [],
+  "ringkasan": "38 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "S1 halaman target pengampu: halaqah amanah tanpa 'Semua halaqah'",
+      "ok": true
+    },
+    {
+      "uji": "S1a bulan berlaku default = bulan berjalan (Rabiul Akhir)",
+      "ok": true,
+      "bulan": "Rabiul Akhir"
+    },
+    {
+      "uji": "S1b pesan 'diajukan' tampil setelah Simpan",
+      "ok": true
+    },
+    {
+      "uji": "S1c tiga target uji tampil berstatus Diajukan",
+      "ok": true,
+      "cuplikan": "Target Al Qur'an\n\nMengajukan dan menyetujui target santri.\n\nHalaqah\nHLQ-PA-1 - Ust. Fulan 1\n▾\n\nHanya halaqah yang Anda ampu.\n\nTahun Hijriyah\n1447 H\n▾\nBulan\n— pi"
+    },
+    {
+      "uji": "S1d database: 3 baris diajukan, approved_by kosong, pengaju = pengampu",
+      "ok": true,
+      "baris": 3
+    },
+    {
+      "uji": "S1e pengampu TIDAK melihat tombol Setujui/Tolak",
+      "ok": true
+    },
+    {
+      "uji": "S1f bulan lewat: pengampu diberi peringatan & Simpan dinonaktifkan",
+      "ok": true,
+      "peringatan": true,
+      "disabled": true
+    },
+    {
+      "uji": "S2a Masul Al Quran dialihkan dari /target/wasilah ke /target/alquran",
+      "ok": true
+    },
+    {
+      "uji": "S2b dialog setujui menyebut sasaran, mapel, nilai, bulan",
+      "ok": true,
+      "potongan": "Setujui target\n\nSantriwan fulan 7 (HLQ-PA-1) · Tilawah · target 3 per hari · mulai Rabiul Akhir 1447\n\nBatal\nSetujui target"
+    },
+    {
+      "uji": "S2c pesan 'target disetujui' tampil",
+      "ok": true
+    },
+    {
+      "uji": "S2d pesan 'target ditolak' tampil",
+      "ok": true
+    },
+    {
+      "uji": "S2e database: Tilawah disetujui oleh Masul Al Quran",
+      "ok": true,
+      "status": "disetujui"
+    },
+    {
+      "uji": "S2f database: Tahfidz ditolak + alasan tersimpan",
+      "ok": true,
+      "status": "ditolak",
+      "alasan": "Uji T7: target terlalu tinggi untuk santri ini."
+    },
+    {
+      "uji": "S2g laporan (v_monthly_report) memakai target baru 3/hari",
+      "ok": true,
+      "target_amount": 3.0,
+      "target_monthly": 54.0,
+      "harapan": 54.0,
+      "hadir": 18.0
+    },
+    {
+      "uji": "S3a Masul Wasilah dialihkan dari /target/alquran ke /target/wasilah",
+      "ok": true,
+      "url": "http://localhost:4173/target/wasilah"
+    },
+    {
+      "uji": "S3b target Al Qur'an uji tidak terlihat di domain Wasilah",
+      "ok": true
+    },
+    {
+      "uji": "S3c Masul lintas domain tidak menyetujui: target uji tetap 'diajukan'",
+      "ok": true,
+      "diajukan": 1
+    },
+    {
+      "uji": "S4a pengampu melihat status Ditolak dan alasannya",
+      "ok": true,
+      "cuplikan": "Target Al Qur'an\n\nMengajukan dan menyetujui target santri.\n\nHalaqah\nHLQ-PA-1 - Ust. Fulan 1\n▾\n\nHanya halaqah yang Anda ampu.\n\nTahun Hijriyah\n1447 H\n▾\nBulan\n— pilih —\n▾\n\nBulan kosong = semua bulan pada"
+    },
+    {
+      "uji": "S4b dialog batalkan menjelaskan 'bukan dihapus'",
+      "ok": true
+    },
+    {
+      "uji": "S4c pesan 'dibatalkan' tampil",
+      "ok": true
+    },
+    {
+      "uji": "S4d database: Kitabah berstatus dibatalkan",
+      "ok": true,
+      "status": "dibatalkan"
+    },
+    {
+      "uji": "S5a bulan lewat: Mudir/Admin melihat centang konfirmasi & Simpan terkunci",
+      "ok": true,
+      "checkbox": 1,
+      "disabled": true
+    },
+    {
+      "uji": "S5b setelah dicentang, Simpan aktif",
+      "ok": true
+    },
+    {
+      "uji": "S5c target bulan lewat tersimpan (pesan sukses)",
+      "ok": true
+    },
+    {
+      "uji": "S5d database: target bulan Rabiul Awwal disetujui, pengaju Mudir",
+      "ok": true,
+      "status": "disetujui"
+    },
+    {
+      "uji": "S5e bulan terkunci: Mudir/Admin melihat peringatan + centang konfirmasi",
+      "ok": true,
+      "cuplikan": "Ajukan target Al Qur'an\n\nTarget Al Qur'an per santri per bidang, dihitung harian (target bulanan = target harian × Hadir).\n\nHalaqah\nHLQ-PA-1 - Ust. Fulan 1\n▾\n\nPengampu: Ust. Fulan 1\n\nSantri\nSantriwan "
+    },
+    {
+      "uji": "S6a 1280 px: /target -> /target/alquran, 3 tab",
+      "ok": true
+    },
+    {
+      "uji": "S6b 1280 px: klik tab mengganti URL",
+      "ok": true
+    },
+    {
+      "uji": "S6c 360 px Al Qur'an: URL benar, 3 tab >=44 px, tidak bergeser",
+      "ok": true,
+      "url": "http://localhost:4173/target/alquran",
+      "ukur": {
+        "lebar": 360,
+        "layar": 360,
+        "tab": [
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "uji": "S6c 360 px Ilmu Wasilah: URL benar, 3 tab >=44 px, tidak bergeser",
+      "ok": true,
+      "url": "http://localhost:4173/target/wasilah",
+      "ukur": {
+        "lebar": 360,
+        "layar": 360,
+        "tab": [
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "uji": "S6c 360 px Ilmu Ghayah: URL benar, 3 tab >=44 px, tidak bergeser",
+      "ok": true,
+      "url": "http://localhost:4173/target/ghayah",
+      "ukur": {
+        "lebar": 360,
+        "layar": 360,
+        "tab": [
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "uji": "konsol browser bersih",
+      "ok": true,
+      "galat": []
+    },
+    {
+      "uji": "data uji dipulihkan: tidak ada baris target lama yang hilang",
+      "ok": true,
+      "hilang": 0
+    },
+    {
+      "uji": "data uji dipulihkan: nilai baris target lama tidak berubah",
+      "ok": true,
+      "beda": 0
+    },
+    {
+      "uji": "tidak ada baris target uji (bertanda) yang tertinggal",
+      "ok": true,
+      "tertinggal": 0
+    },
+    {
+      "uji": "baris target baru milik orang lain dibiarkan utuh (bukan kegagalan sidik jari)",
+      "ok": true,
+      "jumlah": 0,
+      "rincian": []
+    },
+    {
+      "uji": "sidik jari database SAMA (kecuali baris target orang lain yang dilaporkan)",
+      "ok": true,
+      "beda": [],
+      "baris_lain": 0,
+      "selisih_target": 0
+    },
+    {
+      "uji": "change_log bertambah (append-only, baris lama utuh)",
+      "ok": true,
+      "awal": 130,
+      "akhir": 137
+    }
+  ]
+}

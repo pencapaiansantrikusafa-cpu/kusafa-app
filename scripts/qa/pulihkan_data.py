@@ -52,9 +52,23 @@ def rekam(db) -> dict:
     return hasil
 
 
-def pulihkan(db, asli: dict) -> None:
+def pulihkan(db, asli: dict, urus: dict[str, set] | None = None) -> list[tuple[str, tuple]]:
+    """Kembalikan tabel uji ke salinan `asli`.
+
+    `urus` (opsional) membatasi tabel/kunci yang boleh disentuh uji ini. Bila diisi,
+    hanya baris dengan kunci di `urus[t]` yang dihapus/dipulihkan; baris lain
+    DIBIARKAN apa adanya. Ini melindungi pekerjaan orang lain yang masuk saat uji
+    berjalan (mis. Mudir mencoba halaman `/target` dan membuat baris target baru):
+    baris itu tidak boleh dihapus hanya karena tidak ada di salinan awal.
+
+    Tanpa `urus` perilaku lama dipertahankan (seluruh tabel dipulihkan persis).
+    Mengembalikan daftar baris baru yang SENGAJA dibiarkan (bukan milik uji).
+    """
+    tetap: list[tuple[str, tuple]] = []
     for t in TABEL:
         asli_t = asli.get(t, {})
+        dibatasi = urus is not None and t in urus
+        boleh = urus.get(t, set()) if dibatasi else None
         kol = _kolom(db, t)
         sekarang = {}
         for r in db.execute(f'select {", ".join(kol)} from public.{t}').fetchall():
@@ -62,8 +76,13 @@ def pulihkan(db, asli: dict) -> None:
         kondisi = " and ".join(f"{x}=%s" for x in KUNCI[t])
         for k in sekarang:
             if k not in asli_t:
+                if dibatasi and k not in boleh:
+                    tetap.append((t, k))  # baris baru milik orang lain: JANGAN dihapus
+                    continue
                 db.execute(f"delete from public.{t} where {kondisi}", tuple(k))
         for k, v in asli_t.items():
+            if dibatasi and k not in boleh:
+                continue  # baris lama bukan urusan uji ini: jangan ditimpa
             if sekarang.get(k) == v:
                 continue
             if k not in sekarang:
@@ -77,6 +96,7 @@ def pulihkan(db, asli: dict) -> None:
                 f"update public.{t} set {', '.join(f'{c}=%s' for c in kol)} where {kondisi}",
                 tuple(v[c] for c in kol) + tuple(k),
             )
+    return tetap
 
 
 def sama_dengan(db, asli: dict) -> tuple[bool, dict]:
