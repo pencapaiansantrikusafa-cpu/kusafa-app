@@ -1,0 +1,49 @@
+{
+  "ran_at": "2026-11-26T09:58:19.849734",
+  "tests": [
+    {
+      "name": "A_anon_tanpa_execute_loop_pg_proc",
+      "ok": true,
+      "detail": "47 fungsi public diperiksa; 0 terbuka ke anon.",
+      "evidence": {
+        "terbuka_ke_anon": []
+      }
+    },
+    {
+      "name": "A_sanity_authenticated_current_app_role()",
+      "ok": true,
+      "detail": "public.current_app_role(): authenticated EXECUTE=True",
+      "evidence": {}
+    },
+    {
+      "name": "A_sanity_authenticated_domain_kind)",
+      "ok": true,
+      "detail": "public.can_manage(public.domain_kind): authenticated EXECUTE=True",
+      "evidence": {}
+    },
+    {
+      "name": "A_sanity_authenticated_students_without_halaqah()",
+      "ok": true,
+      "detail": "public.students_without_halaqah(): authenticated EXECUTE=True",
+      "evidence": {}
+    },
+    {
+      "name": "B1_musyrif_create_academic_year_tidak_mengubah_data",
+      "ok": true,
+      "detail": "panggilan → ditolak(InsufficientPrivilege); jumlah baris tahun/bulan tidak berubah: True",
+      "evidence": {}
+    },
+    {
+      "name": "B_musyrif_tulis_item_ghayah_diblokir_rls",
+      "ok": true,
+      "detail": "musyrif UPDATE curriculum_items Ghayah mengubah 0 baris (harus 0; RLS menjaga)",
+      "evidence": {}
+    },
+    {
+      "name": "B_resequence_subject_tidak_mengubah_data_musyrif",
+      "ok": true,
+      "detail": "panggilan resequence_subject → berhasil; baris item yang benar-benar bisa diubah musyrif = 0 (harus 0)",
+      "evidence": {}
+    }
+  ]
+}

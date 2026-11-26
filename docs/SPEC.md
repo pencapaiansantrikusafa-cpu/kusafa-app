@@ -73,7 +73,7 @@ yang sudah ada.
 ### 3b-1. Log perubahan (satu mekanisme)
 
 - Tabel **`public.change_log`** mencatat **UPDATE dan DELETE** pada `progress_entries`, `attendance`,
-  dan `monthly_notes`: `nilai_lama` (JSON seluruh baris), `nilai_baru` (JSON untuk UPDATE), `aktor`,
+  `monthly_notes`, dan (sejak T7) `targets`: `nilai_lama` (JSON seluruh baris), `nilai_baru` (JSON untuk UPDATE), `aktor`,
   `aktor_role`, `terjadi_pada`, `sumber`, dan `kunci` baris.
 - **`sumber`**: `aplikasi` bila ada pengguna ber-JWT; `skrip:<user database>` bila tanpa JWT
   (seed/skrip lokal) — dengan `aktor = NULL`. Jadi perubahan tanpa jejak (seperti nilai Shafar yang
@@ -138,7 +138,12 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 3. **Putaran Tilawah** (Al Qur'an, 604 halaman). Form input punya pilihan "khatam, mulai putaran baru" yang menaikkan `putaran`. Tanpa pilihan itu, capaian yang lebih kecil dari bulan lalu adalah pengulangan (selisih negatif). Aplikasi tidak menebak.
 4. **Kehadiran**: Hadir = Hari Efektif - (izin + sakit + alpha). Hari Efektif sama untuk semua santri dalam satu domain dan bulan, bisa berbeda antar domain. Pengecualian: santri yang masuk terlambat punya Hari Efektif khusus (`attendance.effective_days_override`), hanya diisi Mudir/Admin (dijaga trigger); bila ada, angka itu dipakai. Di tabel tampil sebagai Hadir/HE santri itu.
    **Nilai Hari Efektif yang kecil adalah SAH** bila karena libur panjang; contoh yang sudah final: **Rabiul Awwal 1447 = 3 hari** (libur ~2 pekan lebih) dan **Syawwal 1447 = 4 hari** (bulan pembuka tahun ajaran). Jangan menandainya "janggal", jangan menaikkannya, dan jangan mengubahnya tanpa konfirmasi Mudir. Acuan angkanya adalah Excel sumber (`3-Al Quran (halaqah dan pencapaian).xlsx`, blok `HE` per bulan).
-5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan. Target individu didahulukan dari target halaqah. Status: diajukan, disetujui, ditolak. Hanya yang disetujui dipakai.
+5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan, **tidak** dikali Hadir. Target individu didahulukan dari target halaqah. Status: `diajukan`, `disetujui`, `ditolak`, `dibatalkan`; hanya `disetujui` yang dipakai laporan.
+   - **Bulan berlaku** (`effective_month_id`) dipilih saat mengajukan (default bulan berjalan); berlaku penuh sebulan, tidak dipecah, sampai diganti, lintas tahun ajaran. Bulan 0 boleh menjadi titik mulai target tetapi tidak menghasilkan `target_monthly`.
+   - **Ubah target** membuat baris baru; target lama tetap sebagai riwayat. Bulan lewat/terkunci hanya Mudir/Admin dengan konfirmasi eksplisit.
+   - **Penolakan wajib alasan**; target ditolak tidak dihapus. Pengaju dapat membatalkan target yang masih `diajukan`.
+   - **`target_monthly`**: NULL bila tidak ada target, Hari Efektif belum diatur, atau bulan 0; **0** hanya bila target harian ada dan Hadir benar-benar 0.
+   - **Semua tulis target lewat RPC** (lihat §5d); tidak ada INSERT/UPDATE/DELETE langsung dari API.
 6. **Tampilan halaqah Wasilah dan Ghayah**: per mata pelajaran tampil Capaian Bulan Lalu, Capaian Bulan Ini, Selisih; lalu tabel anggota: Nama Santri, Hadir/HE, Izin, Sakit, Alpha, Catatan.
    Dilaksanakan di `src/pages/TabelWasilah.tsx` (T6a). Yang ditampilkan hanya mata pelajaran yang **ditetapkan untuk halaqah itu** (`halaqah_subjects`), bukan seluruh bidang domain; halaqah tanpa penetapan (mis. Level 6 Wasilah) menampilkan pesan, bukan tabel kosong. Anggota hanya dari `halaqah_members` dengan `left_on is null`. Semua angka (posisi, selisih, Hadir, Hari Efektif, target) dibaca dari `v_monthly_report`/`v_attendance`. Bulan yang belum diinput tampil "belum diisi", bukan 0.
 
@@ -168,6 +173,26 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 - **Nilai tersimpan tampil kembali** saat halaman dibuka; label item disimpan beserta objeknya seperti perbaikan T5c-3.
 - **Hanya mata pelajaran yang ditetapkan halaqah** (`halaqah_subjects`) yang tampil. Halaqah tanpa penetapan (mis. Level 6 Wasilah) menampilkan pesan, bukan form kosong.
 
+## 5d. Target dinamis (T7, 26 November 2026)
+
+- **Siapa:** pengampu mengajukan untuk santri/halaqah yang diampu; **Masul Al Quran / Masul Wasilah /
+  Masul Ghayah** menyetujui hanya domainnya; **Mudir/Admin** semua domain. Pengampu tidak menyetujui.
+  Target yang dibuat langsung oleh Masul/Mudir/Admin otomatis `disetujui`.
+- **Bentuk:** Al Qur'an per santri per bidang, harian; massal per halaqah lalu sesuaikan per santri;
+  individu didahulukan dari halaqah. Wasilah/Ghayah per halaqah per mata pelajaran, bulanan, tidak
+  dikali Hadir.
+- **Bulan:** default bulan berjalan; boleh dipilih. Bulan lewat atau `is_locked`: hanya Mudir/Admin
+  dengan konfirmasi eksplisit. Bulan 0 tidak boleh menjadi bulan berlaku.
+- **Status:** `diajukan` / `disetujui` / `ditolak` / `dibatalkan`. Hanya `disetujui` dipakai laporan.
+  Tolak wajib alasan; target tidak dihapus. Pengaju dapat membatalkan yang masih `diajukan`.
+- **Ubah:** baris baru dengan `effective_month_id` baru; baris lama utuh. Riwayat: `riwayat_target`.
+- **Tulis hanya RPC:** `ajukan_target`, `setujui_target`, `tolak_target`, `ubah_target`,
+  `ajukan_target_massal_alquran`, `batalkan_target`. Policy tulis langsung `targets` dihapus dan
+  privilege tulis dicabut dari `anon`/`authenticated`; anon tanpa `EXECUTE`.
+- **Audit:** `entered_by/at` (pengisi), `updated_by/at` (pengubah); `change_log` mencatat UPDATE/DELETE
+  `targets` (nilai lama + baru).
+- **DUMMY:** 25 target Wasilah + 11 target Ghayah adalah DUMMY (izin Mudir), diganti data asli T8/T10.
+
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.
 - Target: pengampu mengajukan > Masul Al Quran / Masul Wasilah / Masul Ghayah (sesuai domain), Mudir, atau Admin menyetujui.
@@ -191,7 +216,9 @@ Login sebagai: Mudir, Admin, Masul Al Quran, Masul Wasilah, Masul Ghayah, Musyri
   terisi: ditolak tanpa konfirmasi lanjutan. Bulan 0: selalu ditolak.
 - **Log perubahan:** Mudir/Admin bisa membaca; Masul/pengampu tidak; anon tidak. Tidak ada peran yang
   bisa INSERT/UPDATE/DELETE log.
-- Pengampu tidak bisa menyetujui target; Masul sesuai domain bisa, Masul domain lain tidak.
+- Pengampu tidak bisa menyetujui target; Masul sesuai domain bisa, Masul domain lain tidak. Target
+  `diajukan`/`ditolak`/`dibatalkan` tidak dipakai laporan. **Tulis langsung `targets` ditolak untuk
+  semua role (termasuk Mudir/Admin); semua perubahan lewat RPC.** Anon tanpa `EXECUTE` fungsi target.
 - Hari Efektif hanya bisa diubah Admin/Mudir.
 
 ## 9. Notifikasi "santri belum punya halaqah" (keputusan final 24 November 2026)

@@ -1,0 +1,131 @@
+{
+  "ran_at": "2026-11-26T10:05:37.465619",
+  "tests": [
+    {
+      "name": "B2_musyrif_override_ditolak",
+      "ok": true,
+      "detail": "Trigger menolak override musyrif: RaiseException",
+      "evidence": {
+        "sqlstate": "P0001"
+      }
+    },
+    {
+      "name": "B2_admin_override_diterima",
+      "ok": true,
+      "detail": "INSERT effective_days_override oleh admin diterima (akan di-ROLLBACK).",
+      "evidence": {}
+    },
+    {
+      "name": "B3_tulis_bulan_terkunci_ditolak",
+      "ok": true,
+      "detail": "Ditolak: InsufficientPrivilege",
+      "evidence": {
+        "sqlstate": "42501"
+      }
+    },
+    {
+      "name": "B3_admin_tulis_bulan_terkunci_diterima",
+      "ok": true,
+      "detail": "Admin dapat menulis di bulan terkunci (ROLLBACK).",
+      "evidence": {}
+    },
+    {
+      "name": "B4_item_position_basic",
+      "ok": true,
+      "detail": "item_position(item,1) = 1",
+      "evidence": {
+        "value": "1"
+      }
+    },
+    {
+      "name": "B4_item_position_function_exists",
+      "ok": true,
+      "detail": "Fungsi item_position dapat dipanggil.",
+      "evidence": {}
+    },
+    {
+      "name": "B5_musyrif_luar_halaqah_ditolak",
+      "ok": true,
+      "detail": "Ditolak: InsufficientPrivilege",
+      "evidence": {
+        "sqlstate": "42501"
+      }
+    },
+    {
+      "name": "B6_masul_alquran_can_manage_alquran",
+      "ok": true,
+      "detail": "can_manage(alquran)=True, expected True",
+      "evidence": {}
+    },
+    {
+      "name": "B6_masul_alquran_can_manage_wasilah",
+      "ok": true,
+      "detail": "can_manage(wasilah)=False, expected False",
+      "evidence": {}
+    },
+    {
+      "name": "B6_masul_alquran_can_manage_ghayah",
+      "ok": true,
+      "detail": "can_manage(ghayah)=False, expected False",
+      "evidence": {}
+    },
+    {
+      "name": "B6_mudir_can_manage_alquran",
+      "ok": true,
+      "detail": "can_manage(alquran)=True",
+      "evidence": {}
+    },
+    {
+      "name": "B6_mudir_can_manage_wasilah",
+      "ok": true,
+      "detail": "can_manage(wasilah)=True",
+      "evidence": {}
+    },
+    {
+      "name": "B6_mudir_can_manage_ghayah",
+      "ok": true,
+      "detail": "can_manage(ghayah)=True",
+      "evidence": {}
+    },
+    {
+      "name": "E_hari_efektif_rabiul_awwal_3",
+      "ok": true,
+      "detail": "Rabiul Awwal alquran effective_days=3 (harus 3; libur ~2 pekan lebih).",
+      "evidence": {
+        "month_id": "9f8ecb75-7480-51b9-910c-3eab4df70237",
+        "effective_days": 3
+      }
+    },
+    {
+      "name": "E_tidak_ada_hari_efektif_janggal",
+      "ok": true,
+      "detail": "0 baris Hari Efektif di luar 1..31",
+      "evidence": {
+        "baris": []
+      }
+    },
+    {
+      "name": "B8_month_is_open_callable",
+      "ok": true,
+      "detail": "month_is_open(Syawwal)=True",
+      "evidence": {}
+    }
+  ],
+  "context": {
+    "mudir": "mudir",
+    "admin": "admin",
+    "masul_q": "masul_alquran",
+    "musyrif": {
+      "role": "musyrif",
+      "halaqah_id": "983730ec-b26e-5f2f-9e0a-d50668616702"
+    },
+    "student_in_h": "5a25ab5f-3fc6-5516-b65c-be5ec0fd10be",
+    "student_out": "30d62cbd-1d4f-5443-8ac8-1c4ddd650fba",
+    "subject": "c7982d7b-4aa7-5fdb-9996-842e5fe5cee6",
+    "month": "d27a9288-05c8-54b8-9e43-476be8ae7dec",
+    "item": "4642c9fb-5035-5aa4-aeba-710296929b48",
+    "locked": null,
+    "unlocked": "89bc8fea-55e9-51b9-8a24-d2209cc02a25",
+    "ra_effective_days": 3
+  }
+}

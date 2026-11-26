@@ -1,0 +1,165 @@
+{
+  "ran_at": "2026-11-26T09:58:17.761048",
+  "tests": [
+    {
+      "name": "1_kelengkapan_kehadiran",
+      "ok": true,
+      "detail": "599 pasangan santri-bulan di Excel; tidak ada di DB: 0",
+      "evidence": {}
+    },
+    {
+      "name": "2_hari_efektif_semua_bulan",
+      "ok": true,
+      "detail": "santri-bulan: 599; berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "3a_hadir_rumus_db",
+      "ok": true,
+      "detail": "santri-bulan: 599; Hadir DB != HE-(izin+sakit+alpha): 0",
+      "evidence": {}
+    },
+    {
+      "name": "3b_hadir_kolom_excel_dicatat",
+      "ok": true,
+      "detail": "sel Hadir terisi di Excel: 559; berbeda dari Hadir aplikasi: 10 (kolom H Excel diabaikan sesuai keputusan; dicatat saja): [('1442.dummy-nis.026', 4, 7, 18), ('1442.dummy-nis.029', 4, 7, 18), ('1442.dummy-nis.030', 4, 7, 18), ('1442.dummy-nis.033', 4, 7, 18), ('1443.dummy-nis.020', 4, 8, 19), ('1444.dummy-nis.015', 4, 7, 18)]",
+      "evidence": {
+        "berbeda": 10
+      }
+    },
+    {
+      "name": "4_izin_sakit_alpha_semua_bulan",
+      "ok": true,
+      "detail": "santri-bulan: 599; berbeda 0",
+      "evidence": {}
+    },
+    {
+      "name": "5_capaian_semua_bulan",
+      "ok": true,
+      "detail": "sel capaian Excel: 1673; label/posisi berbeda 0, tidak ada di DB 0; angka manual Excel berbeda dari posisi kumulatif pada 1482 sel (dicatat, bukan galat); buku dengan nilai file dropdown != posisi DB (sah, memakai value_offset): 3",
+      "evidence": {
+        "beda": [],
+        "tanpa_db": [],
+        "angka_manual_berbeda": 1482,
+        "santri_excel": 109,
+        "buku_beda_nilai": [
+          [
+            "Iqro' 6",
+            159.0,
+            91.0
+          ],
+          [
+            "Iqro' 6",
+            169.0,
+            101.0
+          ],
+          [
+            "Iqro' 6",
+            182.0,
+            114.0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "6_ringkasan_per_bulan",
+      "ok": true,
+      "detail": "Data Awal: 0 santri, 0 capaian, 0 dengan absen; Syawwal: 58 santri, 165 capaian, 5 dengan absen; Dzul Qa'dah: 85 santri, 244 capaian, 47 dengan absen; Dzul Hijjah: 85 santri, 229 capaian, 34 dengan absen; Muharram: 77 santri, 192 capaian, 29 dengan absen; Shafar: 93 santri, 271 capaian, 37 dengan absen; Rabiul Awwal: 109 santri, 314 capaian, 12 dengan absen; Rabiul Akhir: 92 santri, 258 capaian, 60 dengan absen; Jumadal Ula: 0 santri, 0 capaian, 0 dengan absen; Jumadal Akhir: 0 santri, 0 capaian, 0 dengan absen; Rajab: 0 santri, 0 capaian, 0 dengan absen; Sya'ban: 0 santri, 0 capaian, 0 dengan absen; Ramadhan: 0 santri, 0 capaian, 0 dengan absen",
+      "evidence": {
+        "bulan": [
+          {
+            "bulan": "Data Awal",
+            "month_no": 0,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          },
+          {
+            "bulan": "Syawwal",
+            "month_no": 1,
+            "santri_he": 58,
+            "sel_capaian": 165,
+            "santri_absen": 5
+          },
+          {
+            "bulan": "Dzul Qa'dah",
+            "month_no": 2,
+            "santri_he": 85,
+            "sel_capaian": 244,
+            "santri_absen": 47
+          },
+          {
+            "bulan": "Dzul Hijjah",
+            "month_no": 3,
+            "santri_he": 85,
+            "sel_capaian": 229,
+            "santri_absen": 34
+          },
+          {
+            "bulan": "Muharram",
+            "month_no": 4,
+            "santri_he": 77,
+            "sel_capaian": 192,
+            "santri_absen": 29
+          },
+          {
+            "bulan": "Shafar",
+            "month_no": 5,
+            "santri_he": 93,
+            "sel_capaian": 271,
+            "santri_absen": 37
+          },
+          {
+            "bulan": "Rabiul Awwal",
+            "month_no": 6,
+            "santri_he": 109,
+            "sel_capaian": 314,
+            "santri_absen": 12
+          },
+          {
+            "bulan": "Rabiul Akhir",
+            "month_no": 7,
+            "santri_he": 92,
+            "sel_capaian": 258,
+            "santri_absen": 60
+          },
+          {
+            "bulan": "Jumadal Ula",
+            "month_no": 8,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          },
+          {
+            "bulan": "Jumadal Akhir",
+            "month_no": 9,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          },
+          {
+            "bulan": "Rajab",
+            "month_no": 10,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          },
+          {
+            "bulan": "Sya'ban",
+            "month_no": 11,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          },
+          {
+            "bulan": "Ramadhan",
+            "month_no": 12,
+            "santri_he": 0,
+            "sel_capaian": 0,
+            "santri_absen": 0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -114,6 +114,17 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261125000019_hapus_capaian_log.sql` | T6e: RPC `hapus_capaian_info`/`hapus_capaian`/`hapus_capaian_massal_info`/`hapus_capaian_massal` (cek `is_full_access()` di dalam fungsi) + tabel `change_log` + trigger `catat_perubahan` (UPDATE/DELETE tiga tabel). |
 | `migrations/20261125000020_log_abaikan_update_kosong.sql` | T6e: `catat_perubahan` mengabaikan UPDATE yang tidak mengubah nilai (cegah log palsu dari pemulihan data). |
 | `migrations/20261125000018_catat_jejak_tanpa_jwt.sql` | T6d2: trigger `catat_jejak` tidak menyentuh baris lama bila `auth.uid()` NULL (seed/skrip), supaya jejak seed tidak tertimpa. |
+| `migrations/20261126000021_targets_dinamis.sql` | T7a: helper `target_*`, view target bulan 0/kasus (f) + target individu/halaqah. |
+| `migrations/20261126000022_targets_rpc.sql` | T7a: RPC `ajukan_target`, `setujui_target`, `tolak_target`. |
+| `migrations/20261126000023_targets_rpc2.sql` | T7a: RPC `ubah_target`, `ajukan_target_massal_alquran`, `riwayat_target`. |
+| `migrations/20261126000024_targets_grants.sql` | T7a: `EXECUTE` RPC target hanya `authenticated`; anon dicabut. |
+| `migrations/20261126000025_targets_rpc_fix_volatile.sql` | T7a: RPC tulis `VOLATILE`; perbaikan validasi massal. |
+| `migrations/20261126000026_targets_view_f_fix.sql` | T7a: `target_monthly` NULL bila Hari Efektif kosong; bulan 0 NULL. |
+| `migrations/20261126000027_targets_view_tiebreak.sql` | T7a: tiebreak `created_at desc, id desc` saat beberapa target seord. |
+| `migrations/20261126000028_targets_status_cancel.sql` | T7a: enum `target_status` + `dibatalkan`. |
+| `migrations/20261126000029_targets_rpc_only_audit_cancel.sql` | T7a: hapus policy tulis + cabut privilege tulis; RPC `batalkan_target`. |
+| `migrations/20261126000030_targets_massal_xor_fix.sql` | T7a: massal Al Qur'an tetap per santri (bukan halaqah). |
+| `migrations/20261126000031_targets_audit_semantics.sql` | T7a: `catat_jejak_target` mencatat pengubah, pengaju asli tetap. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
 
@@ -148,7 +159,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_t6e_langkah0_pengampu.py` | T6e langkah 0 (12 uji): E2E Simpan Mudarris/ah, Musyrif/ah, halaqah Level 6; data dipulihkan persis. |
 | `scripts/qa/test_seed_bersih.py` | **T6d3**: uji penjaga sesudah seed (capaian 2.039, Ramadhan tanpa capaian 0, kehadiran 606/756/749, Wasilah/Ghayah 0, catatan 0). Hanya membaca. |
 | `scripts/qa/compare_alquran_full_excel.py` | **T6d3**: banding Excel **PENUH** (109 santri, semua bulan 1-7, kehadiran + capaian). Hanya membaca. |
-| `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi (67 OK / 8 SKIP); tiap probe transaksi sendiri + ROLLBACK — termasuk baris sasaran uji hapus yang dibuat **di dalam** transaksi agar tidak tertinggal. |
+| `scripts/qa/rls_matrix.py` | Matriks RLS role × tabel × operasi (94 OK / 3 SKIP); tiap probe transaksi sendiri + ROLLBACK — termasuk baris sasaran uji hapus yang dibuat **di dalam** transaksi agar tidak tertinggal. |
 | `scripts/qa/test_t6d2_masul_input.py` | T6d2 (68 uji, transaksi + ROLLBACK): ketiga Masul boleh insert/update capaian+kehadiran+catatan di semua halaqah domainnya, ditolak di domain lain/bulan terkunci/bulan 0, tidak boleh hapus; jejak `entered_by`/`updated_by`; hitungan baris per domain tidak berubah. |
 | `scripts/qa/test_t6d2_e2e_masul.py` | T6d2 E2E (14 uji): ketiga Masul melihat semua halaqah domainnya, domain lain dialihkan, Simpan menulis capaian dengan `entered_by`, Musyrif tetap satu halaqah, data & jejak dipulihkan. |
 | `scripts/qa/run_pre_t6_db_tests.py` | Uji DB pra-T6 (16 uji): trigger Hari Efektif, bulan terkunci, RLS lintas halaqah, `can_manage`, Hari Efektif Rabiul Awwal = **3** (libur). |
@@ -162,6 +173,9 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_t6b_input_wasilah.py` | Uji tulis Wasilah/Ghayah (29 uji, transaksi + ROLLBACK): salinan ke anggota, luar halaqah aman, anggota keluar aman, bulan 0/terkunci, item salah, RLS per role, Masul per domain, anon. |
 | `scripts/qa/test_t6b_e2e.py` | E2E tampilan Wasilah/Ghayah: pilih -> label tampil, simpan -> database semua anggota, muat ulang -> label tetap; data uji dipulihkan. |
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
+| `scripts/qa/test_targets_t7.py` | T7 (33 uji, transaksi + ROLLBACK): role pengaju/penyetuju, Masul lintas domain, Mudir/Admin, anon, status tidak dipakai laporan, tolak wajib alasan, ubah baris baru, massal, riwayat, bulan 0, lewat/terkunci, kasus (f), individu vs halaqah, tiebreak, bulanan tidak dikali Hadir, tulis langsung ditolak. |
+| `scripts/qa/verify_t7_report_unchanged.sql` | T7: bandingkan rumus laporan **sebelum** vs **sesudah** untuk seluruh 2.036 baris Al Qur'an; hasil 0 beda. |
+| `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` | T7b: 25 target DUMMY Wasilah + 11 Ghayah (bulanan, Syawwal 1447), izin Mudir; wajib diganti T8/T10. |
 | `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. |
 | `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |
 | `scripts/qa/serve_dist.py` | Server statis `dist/` (SPA) untuk mengukur hasil build tanpa `serve`. |
@@ -196,7 +210,7 @@ Semua 18 tabel ber-RLS aktif. Kolom yang ditulis di sini hanya yang penting.
 | `progress_entries` | `id`, `student_id`, `halaqah_id`, `subject_id`, `month_id`, `item_id`, `putaran`, `entered_by`, `entered_at` | ke `students`, `halaqahs`, `subjects`, `hijri_months`, `curriculum_items` |
 | `attendance` | `student_id`, `month_id`, `domain`, `izin`, `sakit`, `alpha`, `effective_days_override` | ke `students`, `hijri_months` |
 | `monthly_notes` | `student_id`, `month_id`, `domain`, `note` | ke `students`, `hijri_months` |
-| `targets` | `id`, `domain`, `subject_id`, `student_id`, `halaqah_id`, `effective_month_id`, `amount`, `amount_period`, `status`, `proposed_by`, `approved_by`, `approved_at` | ke `subjects`, `students`, `halaqahs`, `hijri_months`, `profiles` |
+| `targets` | `id`, `domain`, `subject_id`, `student_id`, `halaqah_id`, `effective_month_id`, `amount`, `amount_period`, `status`, `proposed_by`, `approved_by`, `approved_at`, `alasan_tolak`, `rejected_by/at`, `entered_by/at`, `updated_by/at` | ke `subjects`, `students`, `halaqahs`, `hijri_months`, `profiles` |
 
 Kunci unik penting: `progress_entries (student_id, subject_id, month_id)`, `attendance (student_id, month_id, domain)`, `monthly_notes (student_id, month_id, domain)`.
 
@@ -224,3 +238,13 @@ Kunci unik penting: `progress_entries (student_id, subject_id, month_id)`, `atte
 | `v_monthly_report_base` | view | Dasar perhitungan laporan (posisi, posisi bulan lalu, kehadiran, target). |
 | `v_monthly_report` | view | Laporan bulanan siap pakai: `pos`, `selisih`, `hadir`, `effective_days`, `target_monthly`, `below_target`, `attendance_short`, `item_label`, `prev_item_label`. |
 | `v_attendance` | view | Kehadiran per santri/bulan/domain (Hadir dihitung database). |
+| `target_bulan_berjalan(domain)` | fungsi | Bulan berjalan per domain (bulan non-0 dengan setting terbaru). |
+| `target_info_konfirmasi` / `target_cek_konfirmasi` | fungsi | Deteksi bulan lewat/terkunci dan wajib konfirmasi. |
+| `target_boleh_ajukan` / `target_validasi_bentuk` | fungsi | Cek hak pengaju dan bentuk target per domain. |
+| `ajukan_target` / `setujui_target` / `tolak_target` | fungsi | RPC target (tolak wajib alasan). |
+| `ubah_target` | fungsi | Membuat baris target baru; baris lama tetap. |
+| `ajukan_target_massal_alquran` | fungsi | Membuat target Al Qur'an per santri dalam satu halaqah. |
+| `riwayat_target` | fungsi | Riwayat target satu sasaran (santri/halaqah + mapel). |
+| `batalkan_target` | fungsi | Pengaju membatalkan target `diajukan` (tidak menghapus). |
+| `catat_jejak_target` | trigger | Mengisi `entered_*`/`updated_*` target. |
+| `catat_perubahan` | trigger | Menulis `change_log` untuk UPDATE/DELETE `progress_entries`, `attendance`, `monthly_notes`, `targets`. |

@@ -1,36 +1,35 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **25 November 2026** (T6e selesai — hapus capaian + log perubahan).
+**Sumber kebenaran status.** Diperbarui: **26 November 2026** (T7 [1b/2] — fondasi target dinamis selesai, UI belum).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `c34118a` - T6e hasil smoke produksi 42/42 |
-| Keadaan Git saat pembaruan | bersih, sinkron `origin/main` |
+| Commit terakhir | `502f06b` - T7a jejak target (menyusul commit dokumentasi T7 [1b/2]) |
+| Keadaan Git saat pembaruan | bersih, sinkron `origin/main` setelah commit dokumentasi |
 | Situs produksi | `https://kusafa-app.vercel.app` |
-| Migrasi terakhir | `20261125000020_log_abaikan_update_kosong.sql` (berikutnya `20261125000021_...`) |
+| Migrasi terakhir | `20261126000031_targets_audit_semantics.sql` (berikutnya `20261126000032_...`) |
 
-### Hasil uji terakhir (T6e, 25 November 2026)
+### Hasil uji terakhir (T7 [1b/2], 26 November 2026)
 
 | Rangkaian | Hasil |
 |---|---|
-| `test_t6e_hapus_capaian.py` (DB) | **35/35** |
-| `test_t6e_e2e_hapus.py` (UI) | **16/16** |
-| `test_t6e_uji_penerimaan.py` (permanen, perintah Mudir) | **15/15** |
-| `test_t6e_langkah0_pengampu.py` (Langkah 0 UI) | **12/12** |
-| `npm test` / `tsc` / `build` | 14/14 · hijau · berhasil |
+| `test_targets_t7.py` (DB, 33 uji, semua rollback) | **33/33 LULUS** |
+| `verify_t7_report_unchanged.sql` (rumus lama vs sekarang, Al Qur'an) | **2.036 baris; 0 beda di kedua arah** |
+| `test_t6e_hapus_capaian.py` (DB) | **35/35** (prasyarat bulan 8 disiapkan sementara lalu dipulihkan) |
+| `rls_matrix.py` | **94/97 OK, 3 SKIP, 0 GAGAL**; targets: semua tulis langsung ditolak, SELECT staf diterima |
 | DB lama, regresi, Excel penuh, Rabiul Awwal, data awal, no-halaqah, signup | 16/16, 7/7, 7/7, 7/7, 5/5, 9/9, 13/13 (+6/7 1 SKIP), 9/9 |
-| T6a / T6b (+E2E) / T6d2 (+E2E) / dropdown | 14/14 / 29/29 + 14/14 / 68/68 + 14/14 / 10/10 |
-| Matriks RLS / seed bersih | 67/75 (8 SKIP) / **6/6** |
-| Sidik jari database | **SAMA** (16.468 baris, 19 tabel), kecuali perubahan yang diperintahkan |
-| Smoke produksi (baca saja) | **42/42**, sidik jari SAMA |
+| T6a / T6b / T6d2 / `npm test` | 14/14 / 29/29 / 68/68 / 14/14 |
+| `npm run typecheck` / `npm run build` | hijau / berhasil |
+| Sidik jari database sebelum/sesudah uji | **SAMA** (16.504 baris, 19 tabel) |
+| Smoke produksi | **BELUM DIVERIFIKASI** (belum dijalankan ulang pada sesi ini) |
 
 **Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
-`change_log` **96** baris (append-only).
+`change_log` **96** baris (append-only), `targets` **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah).
 
-Semua angka di bawah diperiksa langsung pada 23-24 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
+Semua angka di bawah diperiksa langsung pada 23-26 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
 Sesuatu yang belum dijalankan atau belum diuji ditulis **BELUM DIVERIFIKASI**, bukan SELESAI.
 
 ---
@@ -60,14 +59,14 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6d2** | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** (lihat 2k) | migrasi `000017`-`000018`; uji DB 68/68, E2E 14/14, RLS 67/75 | Menggantikan keputusan T6b soal cakupan Masul |
 | **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
 | **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
-| **T7** | Target dinamis (ajukan/setujui) | **BELUM** — langkah berikutnya, wajib LANGKAH 0 | Rute `/target` memakai `PlaceholderPage` | Tidak ada kode sebelum Mudir menjawab |
+| **T7** | Target dinamis (ajukan/setujui) | **SEBAGIAN: [1b/2] SELESAI, UI belum** (lihat 2n) | migrasi `000021`-`000031`, RPC `ajukan/setujui/tolak/ubah/batalkan/riwayat`, `test_targets_t7.py` 33/33 | Rute `/target` masih placeholder; UI T7 [2/2] belum dikerjakan |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
 
 Catatan kejujuran status:
 - T5 ditutup atas permintaan Mudir pada 22-23 November 2026. Yang **belum** di T5 bukan cacat tersembunyi, melainkan bagian yang memang milik T8 (layar Hari Efektif).
-- T9 baru **SEBAGIAN**: uji otomatis sudah banyak dan hijau (termasuk sidik jari database dan banding Excel penuh), tetapi belum ada proyek Supabase QA terpisah dan 8 sel matriks RLS masih SKIP (menunggu profil wali + target `diajukan`).
+- T9 baru **SEBAGIAN**: uji otomatis sudah banyak dan hijau (termasuk sidik jari database dan banding Excel penuh), tetapi belum ada proyek Supabase QA terpisah dan 3 sel matriks RLS masih SKIP (menunggu profil wali + target `diajukan`).
 
 ---
 
@@ -651,6 +650,70 @@ tabel. Bulan terkunci boleh dengan konfirmasi eksplisit. Cakupan satu capaian + 
 
 ---
 
+## 2n. T7 [1b/2] - fondasi target dinamis (26 November 2026)
+
+**Cakupan sesi ini:** database + RPC + uji + dokumen. **UI `/target` belum dikerjakan** (T7 [2/2]).
+
+### effective_month_id 327 target lama: SEBELUM vs SESUDAH (tidak berubah)
+
+| Waktu | Nilai | Jumlah |
+|---|---|---|
+| SEBELUM T7 (seed `20261121000004` + `supabase/seed/02_school_data.sql`) | `52c4961d-6f33-5abc-bcc8-89b3e94c8cf7` = Data Awal 1447, `month_no=0` | **327** |
+| SESUDAH migrasi `000021`-`000031` (query langsung 26 Nov 2026) | `52c4961d-...` = Data Awal 1447, `month_no=0` | **327** |
+
+**Tidak ada perubahan.** Berkas migrasi final `000021` **tidak** memuat backfill `effective_month_id`;
+kolom itu sudah ada sejak `20261121000004` dan tidak pernah diubah oleh T7. Karena data lama tidak
+berubah, tidak ada persetujuan Mudir yang diperlukan untuk butir ini. Bulan 0 tetap sah sebagai titik
+mulai target ("berlaku dari Data Awal") dan tidak menghasilkan `target_monthly` di bulan 0.
+
+### Yang ditambahkan
+- **Kolom `targets`:** `alasan_tolak`, `rejected_by`, `rejected_at`, `entered_by`, `entered_at`,
+  `updated_by`, `updated_at`; enum `target_status` + `dibatalkan`.
+- **RPC:** `ajukan_target`, `setujui_target`, `tolak_target` (alasan wajib), `ubah_target` (baris baru),
+  `ajukan_target_massal_alquran` (per santri), `riwayat_target`, `batalkan_target` (hanya pengaju,
+  hanya status `diajukan`), plus helper `target_*`.
+- **Kunci tulis:** policy INSERT/UPDATE/DELETE `targets` **dihapus**; privilege tulis dicabut dari
+  `anon`/`authenticated`; `SELECT` tetap untuk staf. Seluruh perubahan hanya lewat RPC.
+- **Audit:** trigger `catat_jejak_targets` (BEFORE INSERT/UPDATE) mengisi `entered_*`/`updated_*`;
+  trigger `catat_perubahan_targets` (AFTER UPDATE/DELETE) menulis `change_log` nilai lama + baru.
+- **View:** `target_monthly` = NULL bila tidak ada target / Hari Efektif belum diatur / bulan 0;
+  = 0 hanya bila target harian ada dan Hadir = 0; target bulanan (Wasilah/Ghayah) = `amount` tanpa
+  dikali Hadir. Individu didahulukan dari halaqah; tiebreak `created_at desc, id desc`.
+
+### Bukti uji
+- `scripts/qa/test_targets_t7.py`: **33/33 LULUS**, semua tulis di transaksi `ROLLBACK`, sidik jari SAMA.
+  Mencakup: pengampu ajukan/tidak setujui; Masul domain sendiri vs lintas domain; Mudir/Admin; anon;
+  target `diajukan`/`ditolak` tidak dipakai laporan; tolak wajib alasan; `ubah_target` baris baru;
+  massal Al Qur'an; riwayat; bulan 0; bulan lewat/terkunci hanya Mudir/Admin + konfirmasi; kasus (f)
+  kosong vs 0 vs bulan 0 NULL; individu vs halaqah; tiebreak; Wasilah/Ghayah bulanan tidak dikali
+  Hadir; tulis langsung ditolak; anon tanpa EXECUTE untuk 13 fungsi target.
+- `scripts/qa/verify_t7_report_unchanged.sql`: rumus laporan **sebelum** vs **sesudah** pada seluruh
+  **2.036 baris Al Qur'an** → `beda_lama_baru = 0`, `beda_baru_lama = 0` untuk pos, selisih, hadir,
+  effective_days, target_amount, target_period, target_monthly, below_target, attendance_short.
+- `rls_matrix.py`: **94/97 OK, 3 SKIP, 0 GAGAL**. Semua tulis langsung `targets` ditolak untuk semua
+  role (termasuk Mudir/Admin); SELECT staf diterima, anon ditolak. 3 SKIP tetap wali/target `diajukan`.
+- Uji lama dijalankan ulang: `run_pre_t6_db_tests.py` 16/16, `regression_execute.py` 7/7,
+  `compare_alquran_full_excel.py` 7/7, `compare_rabiul_awwal_excel.py` 7/7, `test_t6e_hapus_capaian.py`
+  35/35 (dengan prasyarat bulan 8 sementara, dipulihkan + sidik jari SAMA), `test_t6a_tabel.py` 14/14,
+  `test_t6b_input_wasilah.py` 29/29, `test_t6d2_masul_input.py` 68/68, `test_seed_bersih.py` 6/6,
+  `test_data_awal_tahun_kedua.py` 5/5, `test_no_halaqah.py` 9/9, `test_students_without_halaqah.py`
+  13/13, `test_students_without_halaqah_p6.py` 6/7 (1 SKIP wali), `test_auth_signup_closed.py` 9/9,
+  `npm test` 14/14. `typecheck` hijau; `build` berhasil.
+- **Sidik jari:** 16.504 baris, 19 tabel, **SAMA** sebelum/sesudah rangkaian uji T7. Perubahan skema
+  (`+36` target DUMMY dan kolom baru) sudah terjadi **sebelum** sidik jari pembanding di sesi ini;
+  kolom baru tidak mengubah baris lama.
+
+### DUMMY yang harus diganti
+- **25 target Wasilah + 11 target Ghayah** = DUMMY, `amount=1`, `bulanan`, berlaku Syawwal 1447,
+  catatan `DUMMY - target sementara Wasilah/Ghayah...`. Skrip: `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`.
+  Wajib diganti data asli di T8/T10. Sudah dicatat di `docs/DATA-NOTES.md`.
+
+### Belum selesai (T7 [2/2])
+- Halaman `/target`: daftar target, form ajukan/ubah, persetujuan Masul, penolakan dengan alasan,
+  pembatalan, riwayat, dan konfirmasi bulan lewat/terkunci.
+- Uji E2E UI T7.
+- Verifikasi produksi/smoke setelah UI selesai.
+
 ---
 
 ## 3. Status Supabase
@@ -658,7 +721,7 @@ tabel. Bulan terkunci boleh dengan konfirmasi eksplisit. Cakupan satu capaian + 
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 
 ### Migrasi
-20 berkas migrasi, **keduapuluhnya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
+31 berkas migrasi, **ketigapuluh satunya tercatat sudah dijalankan** di `supabase_migrations.schema_migrations`:
 
 | Versi | Nama |
 |---|---|
@@ -682,19 +745,34 @@ Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore
 | 20261125000018 | catat_jejak_tanpa_jwt (T6d2 - koreksi trigger tanpa JWT) |
 | 20261125000019 | hapus_capaian_log (T6e - RPC hapus capaian + tabel change_log) |
 | 20261125000020 | log_abaikan_update_kosong (T6e - jangan catat UPDATE tanpa perubahan) |
+| 20261126000021 | targets_dinamis (T7a - view target bulan 0/kasus f, helper) |
+| 20261126000022 | targets_rpc (T7a - ajukan/setujui/tolak) |
+| 20261126000023 | targets_rpc2 (T7a - ubah/massal/riwayat) |
+| 20261126000024 | targets_grants (T7a - EXECUTE hanya authenticated) |
+| 20261126000025 | targets_rpc_fix_volatile (T7a) |
+| 20261126000026 | targets_view_f_fix (T7a - kasus f) |
+| 20261126000027 | targets_view_tiebreak (T7a - deterministik) |
+| 20261126000028 | targets_status_cancel (T7a - enum dibatalkan) |
+| 20261126000029 | targets_rpc_only_audit_cancel (T7a - kunci tulis + RPC batalkan) |
+| 20261126000030 | targets_massal_xor_fix (T7a - massal per santri) |
+| 20261126000031 | targets_audit_semantics (T7a - jejak pengubah) |
 
-Migrasi berikutnya wajib memakai nomor `20261125000021_...` dan **tidak boleh** mengubah berkas lama.
+Migrasi berikutnya wajib memakai nomor `20261126000032_...` dan **tidak boleh** mengubah berkas lama.
 
 ### RLS (Row Level Security)
-- **19 dari 19 tabel** memiliki `relrowsecurity = true` (termasuk `change_log` baru, hanya SELECT).
-- **45 kebijakan** tersebar di **19 tabel** (diperiksa langsung 25 Nov 2026): `attendance`, `monthly_notes`,
-  `progress_entries`, `targets` masing-masing 4; `change_log` 1 (hanya SELECT); sisanya 2.
-- Sejak T6d2 `progress_entries`, `attendance`, dan `monthly_notes` masing-masing **4 kebijakan**
-  (insert/update seragam untuk ketiga domain, read, delete khusus Mudir/Admin). Rincian nama kebijakan sengaja tidak disalin ke dokumen ini; dibaca langsung dari `pg_policies` bila perlu.
+- **19 dari 19 tabel** memiliki `relrowsecurity = true` (termasuk `change_log`, hanya SELECT).
+- **42 kebijakan** tersebar di **19 tabel** (diperiksa langsung 26 Nov 2026): `attendance`, `monthly_notes`,
+  `progress_entries` masing-masing 4; `targets` **hanya 1 (SELECT)**; `change_log` 1 (hanya SELECT); sisanya 2.
+- `targets` sejak T7 **tidak punya policy INSERT/UPDATE/DELETE** dan privilege tulis dicabut dari
+  `anon`/`authenticated`; seluruh perubahan target lewat RPC (`SECURITY DEFINER`, cek hak di dalam).
+- `targets_read` tetap `is_staff()`: semua staf membaca, anon tidak.
 
 ### Fungsi dan view
-- **34 fungsi** di skema `public` (`+ hapus_capaian(_info)`, `hapus_capaian_massal(_info)`, `catat_perubahan`) - 18 awal + `students_without_halaqah`(_count) + `curriculum_items_search`/`_by_ids` + `input_alquran_data` + `input_alquran_boot` + `wasilah_input_boot`/`_form`/`_save` + `wasilah_can_write` + `catat_jejak` (T6d2). Daftar lengkap di `docs/FILE-MAP.md`.
-- **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`. (View percobaan `v_students_without_halaqah` DROPPED di migrasi 000009; diganti fungsi.)
+- **47 fungsi** di skema `public` (diperiksa langsung 26 Nov 2026). Tambahan T7: `target_bulan_berjalan`,
+  `target_info_konfirmasi`, `target_cek_konfirmasi`, `target_boleh_ajukan`, `target_validasi_bentuk`,
+  `ajukan_target`, `setujui_target`, `tolak_target`, `ubah_target`, `ajukan_target_massal_alquran`,
+  `riwayat_target`, `batalkan_target`, `catat_jejak_target`.
+- **4 view**: `v_monthly_report`, `v_monthly_report_base`, `v_attendance`, `v_months_ordered`.
 
 ### Isi seed (data dummy, hasil hitung langsung)
 
@@ -712,7 +790,7 @@ Migrasi berikutnya wajib memakai nomor `20261125000021_...` dan **tidak boleh** 
 | `halaqah_members` | 324 |
 | `halaqah_teachers` | 55 |
 | `halaqah_subjects` | 78 |
-| `targets` | 327 |
+| `targets` | **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah) |
 | `progress_entries` | 2.036 |
 | `attendance` | 599 (berkas seed; DB produksi 613 - lihat 2k) |
 | `monthly_notes` | **0** |

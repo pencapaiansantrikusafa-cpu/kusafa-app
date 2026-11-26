@@ -5,6 +5,28 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 26 November 2026 - T7 [1b/2] (fondasi target dinamis, UI belum)
+
+- **Migrasi `20261126000021`-`20261126000031`:**
+  - `targets` + kolom `alasan_tolak`, `rejected_by/at`, `entered_by/at`, `updated_by/at`; enum status `dibatalkan`.
+  - RPC `ajukan_target`, `setujui_target`, `tolak_target`, `ubah_target`, `ajukan_target_massal_alquran`,
+    `riwayat_target`, `batalkan_target`; helper `target_*`. Semua `SECURITY DEFINER`, cek hak internal,
+    `EXECUTE` hanya `authenticated`.
+  - Policy INSERT/UPDATE/DELETE `targets` dihapus; privilege tulis dicabut dari `anon`/`authenticated`.
+    `SELECT` tetap untuk staf. Seluruh perubahan target lewat RPC.
+  - Trigger `catat_jejak_targets` (pengisi/pengubah) dan `catat_perubahan_targets` (`change_log` UPDATE/DELETE).
+  - View `v_monthly_report`: `target_monthly` NULL untuk tanpa target/Hari Efektif kosong/bulan 0; 0 hanya
+    target harian dengan Hadir 0; bulanan = `amount`; individu didahulukan; tiebreak deterministik.
+- **Target DUMMY (izin Mudir):** 25 Wasilah + 11 Ghayah, `amount=1`, bulanan, berlaku Syawwal 1447;
+  skrip `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`. Wajib diganti T8/T10.
+- **effective_month_id 327 target lama:** sebelum dan sesudah tetap **Data Awal 1447 (`month_no=0`)**;
+  tidak ada backfill, tidak ada perubahan data lama.
+- **Uji:** `test_targets_t7.py` 33/33; `verify_t7_report_unchanged.sql` 2.036 baris, 0 beda; RLS 94/97
+  (3 SKIP); semua uji lama hijau; sidik jari SAMA (16.504 baris). `typecheck`/`build` hijau.
+- **Belum:** UI `/target` dan E2E UI (T7 [2/2]).
+
+---
+
 ## 25 November 2026 - T6e (hapus capaian + log perubahan)
 
 - **Langkah 0:** E2E Simpan lewat UI untuk Mudarris/ah, Musyrif/ah, dan halaqah Level 6 (`test_t6e_langkah0_pengampu.py` 12/12); data dipulihkan persis, sidik jari sama.

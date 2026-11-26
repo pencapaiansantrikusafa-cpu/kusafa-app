@@ -1,0 +1,61 @@
+{
+  "ran_at": "2026-11-26T10:06:10.260636",
+  "tests": [
+    {
+      "name": "A_disable_signup_true",
+      "ok": true,
+      "detail": "GET settings status=200, disable_signup=True",
+      "evidence": {}
+    },
+    {
+      "name": "B_signup_ditolak",
+      "ok": true,
+      "detail": "POST signup status=422, error_code=signup_disabled",
+      "evidence": {
+        "status": 422
+      }
+    },
+    {
+      "name": "C_login_mudir",
+      "ok": true,
+      "detail": "login OK; profil role=mudir aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_admin",
+      "ok": true,
+      "detail": "login OK; profil role=admin aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_masul_alquran",
+      "ok": true,
+      "detail": "login OK; profil role=masul_alquran aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_masul_wasilah",
+      "ok": true,
+      "detail": "login OK; profil role=masul_wasilah aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_masul_ghayah",
+      "ok": true,
+      "detail": "login OK; profil role=masul_ghayah aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_musyrif",
+      "ok": true,
+      "detail": "login OK; profil role=musyrif aktif=True",
+      "evidence": {}
+    },
+    {
+      "name": "C_login_mudarris",
+      "ok": true,
+      "detail": "login OK; profil role=mudarris aktif=True",
+      "evidence": {}
+    }
+  ]
+}

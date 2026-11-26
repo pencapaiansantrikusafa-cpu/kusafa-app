@@ -1,6 +1,6 @@
 # HANDOVER - serah terima untuk sesi berikutnya
 
-**Terakhir diperbarui**: 25 November 2026, **T6e selesai** (hapus capaian + log perubahan).
+**Terakhir diperbarui**: 26 November 2026, **T7 [1b/2] selesai** (fondasi database + RPC + uji; UI belum).
 Baca berurutan: `AGENTS.md` → `docs/SPEC.md` → `docs/STATUS.md` → berkas ini.
 `docs/STATUS.md` = sumber kebenaran kondisi nyata (angka, hasil uji, migrasi). Berkas ini =
 posisi sekarang, keputusan final, pertanyaan terbuka, risiko, dan langkah berikutnya.
@@ -28,7 +28,7 @@ Jangan menulis rahasia (kata sandi, kunci, token, `DATABASE_URL`) atau data sant
 | T6d2 | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** |
 | T6d3 | Pembersihan data + disiplin uji (sidik jari, uji seed, banding Excel penuh) | **SELESAI** |
 | T6e | **Hapus capaian (Mudir/Admin) + log perubahan (`change_log`)** | **SELESAI** |
-| **T7** | **Target dinamis (ajukan/setujui)** | **BELUM** — langkah berikutnya |
+| **T7** | **Target dinamis (ajukan/setujui)** | **SEBAGIAN: [1b/2] SELESAI; UI [2/2] belum** |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | **BELUM** |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** (banyak uji otomatis sudah ada dan hijau) |
 | T10 | Deploy akhir (hapus dummy, **repo privat**) | **BELUM** |
@@ -40,13 +40,16 @@ Ringkasan rincian tiap tahap: `docs/STATUS.md` bagian 1 dan 2a-2m. Riwayat perub
 ## 2. Posisi sekarang
 
 - **Semua pekerjaan T6 (a, b, c, d, d2, d3, e) selesai**, di-commit, di-push, dan terverifikasi di produksi.
-- **Tidak ada pekerjaan setengah jalan.** Git bersih dan sinkron `origin/main`.
-- Migrasi terakhir: **`20261125000020_log_abaikan_update_kosong.sql`**. Migrasi berikutnya wajib
-  bernomor **`20261125000021_...`** dan **tidak boleh** mengubah berkas migrasi lama.
-- Produksi: `https://kusafa-app.vercel.app`, HTTP 200, bundel sama dengan build lokal, smoke produksi
-  **42/42 (baca saja)** dan sidik jari database SAMA sebelum/sesudah.
-- Data (setelah T6e, sesuai keputusan Mudir): capaian **2.036** (jumlah seed), kehadiran **599 / 756 /
-  749**, catatan 0, log perubahan 96 baris (append-only).
+- **T7 [1b/2] selesai**: fondasi database target dinamis (migrasi `000021`-`000031`), RPC, penguncian
+  tulis langsung, audit, target DUMMY Wasilah/Ghayah, dan uji `test_targets_t7.py` 33/33.
+- **T7 [2/2] belum**: halaman `/target` masih `PlaceholderPage`; belum ada form/UI/E2E target.
+- Git bersih dan sinkron `origin/main` setelah commit dokumentasi.
+- Migrasi terakhir: **`20261126000031_targets_audit_semantics.sql`**. Migrasi berikutnya wajib
+  bernomor **`20261126000032_...`** dan **tidak boleh** mengubah berkas migrasi lama.
+- Produksi: `https://kusafa-app.vercel.app`, HTTP 200, smoke produksi **BELUM DIVERIFIKASI** ulang
+  pada sesi ini (UI belum berubah).
+- Data: capaian **2.036**, kehadiran **599 / 756 / 749**, catatan 0, log perubahan 96 baris (append-only),
+  target **363** = 327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah.
 
 ---
 
@@ -109,16 +112,38 @@ Ringkasan rincian tiap tahap: `docs/STATUS.md` bagian 1 dan 2a-2m. Riwayat perub
 - Halaman Capaian dan Input memakai **tab** Al Qur'an / Ilmu Wasilah / Ilmu Ghayah; submenu Capaian di
   menu samping/bilah bawah **dihapus**. Semua staf melihat ketiga domain (hak lihat tidak berubah).
 
+### 3.6 Target dinamis T7 (keputusan Mudir 26 November 2026)
+
+- **(a) Pengaju & penyetuju:** pengampu (Musyrif/ah, Mudarris/ah) mengajukan untuk santri/halaqah yang
+  diampu; **Masul** menyetujui **hanya domainnya**; **Mudir/Admin** semua domain. Pengampu tidak
+  menyetujui. Target yang dibuat langsung oleh Masul/Mudir/Admin otomatis `disetujui`.
+- **(b) Ubah target:** membuat **baris baru** dengan `effective_month_id`; target lama tetap utuh.
+  Bulan lewat/terkunci: **hanya Mudir/Admin** dan wajib `p_konfirmasi = true`. Riwayat dapat dibaca.
+- **(c) Bentuk:** Al Qur'an per **santri** per bidang, **harian**; massal per halaqah lalu sesuaikan
+  per santri, individu didahulukan dari halaqah. Wasilah/Ghayah per **halaqah** per mata pelajaran,
+  **bulanan langsung**, **tidak** dikali Hadir.
+- **(d) Bulan berlaku:** dipilih saat mengajukan (default bulan berjalan); berlaku penuh sebulan,
+  tidak dipecah, sampai diganti; lintas tahun ajaran. Bulan 0 tidak boleh menjadi bulan berlaku target.
+- **(e) Penolakan:** alasan **wajib**; target tidak dihapus, tetap riwayat; pengaju dapat mengajukan ulang.
+  Pengaju dapat **membatalkan** targetnya yang masih `diajukan` lewat RPC `batalkan_target`.
+- **(f) `target_monthly`:** NULL bila tidak ada target, Hari Efektif belum diatur, atau bulan 0;
+  **0** hanya bila target harian ada dan Hadir benar-benar 0; bulanan = `amount`.
+- **(g) Ketiga domain** memakai mekanisme yang sama.
+- **Tulis langsung ditutup:** policy INSERT/UPDATE/DELETE `targets` dihapus; privilege tulis dicabut
+  dari `anon`/`authenticated`; hanya RPC (SECURITY DEFINER + cek hak internal) yang boleh menulis.
+- **DUMMY:** 25 target Wasilah + 11 target Ghayah adalah DUMMY (izin Mudir), diganti data asli T8/T10;
+  skrip `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`.
+
 ---
 
 ## 4. Status Supabase (ringkas; rinci di STATUS bagian 3)
 
 Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1`. Kredensial hanya di `.env.local`.
 
-- **20 migrasi** tercatat dijalankan (`000001`-`000009`, `000010`-`000012` T5c, `000013`-`000016` T6b,
-  `000017`-`000018` T6d2, `000019`-`000020` T6e). Berikutnya: `20261125000021_...`.
-- **19 tabel RLS aktif** (termasuk `change_log`), **45 kebijakan**, **34 fungsi** public, 4 view.
-- **Matriks RLS otomatis: 67 OK / 8 SKIP / 0 GAGAL** (SKIP menunggu profil wali / target `diajukan`).
+- **31 migrasi** tercatat dijalankan (`000001`-`000009`, `000010`-`000012` T5c, `000013`-`000016` T6b,
+  `000017`-`000018` T6d2, `000019`-`000020` T6e, `000021`-`000031` T7a). Berikutnya: `20261126000032_...`.
+- **19 tabel RLS aktif** (termasuk `change_log`), **42 kebijakan**, **47 fungsi** public, 4 view.
+- **Matriks RLS otomatis: 94 OK / 3 SKIP / 0 GAGAL** (SKIP menunggu profil wali / target `diajukan`).
 - **Auth:** `disable_signup=true`, provider email aktif, `mailer_autoconfirm=false`.
 - **Ekstensi** `pg_trgm` di skema `extensions` (bukan `public`).
 - **Seed dummy 1447** sudah dimuat; **destruktif** (TRUNCATE) — jangan diulang tanpa perintah Mudir.
@@ -187,7 +212,7 @@ python scripts/qa/db_fingerprint.py --banding /tmp/fp_sebelum.json   # harus "SA
 ```bash
 python scripts/qa/run_pre_t6_db_tests.py            # 16/16
 python scripts/qa/regression_execute.py             # 7/7
-python scripts/qa/rls_matrix.py                     # 67/75 (8 SKIP)
+python scripts/qa/rls_matrix.py                     # 94/97 (3 SKIP)
 python scripts/qa/test_t6a_tabel.py                 # 14/14
 python scripts/qa/test_t6b_input_wasilah.py         # 29/29
 python scripts/qa/test_t6d2_masul_input.py          # 68/68
@@ -222,48 +247,22 @@ Hosting bisa dipindah ke cPanel; environment Vercel hanya `VITE_SUPABASE_URL` + 
 
 ---
 
-## 8. Langkah berikutnya — **T7 Target dinamis**
+## 8. Langkah berikutnya — **T7 [2/2] UI Target**
 
-> **Perintah kerja sesi baru: WAJIB mengerjakan LANGKAH 0 dulu. JANGAN menulis kode sebelum Mudir
-> menjawab pertanyaan di bawah.**
+**Fondasi database/RPC sudah selesai dan diuji 33/33.** Yang belum: antarmuka `/target`.
 
-**LANGKAH 0 (wajib, sebelum kode apa pun):**
-1. Baca `docs/SPEC.md` bagian target: bagian 3 (hak "Mengajukan/Menyetujui target"), bagian 4 (tabel
-   `targets`), bagian 5 butir "Target", bagian 6 alur kerja.
-2. Baca `docs/STATUS.md` (kondisi nyata: 2.036 capaian, 20 migrasi, RLS 67/75, sidik jari) dan
-   `docs/DATA-NOTES.md` bagian target.
-3. Baca `docs/CATATAN-TAHAPAN.md` bagian **T7** (batasan yang sudah ditetapkan).
-4. Periksa data target yang ada di database (jangan menebak): **327 baris `targets`, semuanya
-   `status = disetujui`, semuanya domain `alquran`, semuanya `amount_period = harian`**. Artinya
-   **belum ada satu pun target Ilmu Wasilah / Ilmu Ghayah** dan belum ada baris `diajukan` — jadi
-   `target_monthly` untuk Wasilah/Ghayah di laporan saat ini memang kosong (bukan 0).
-5. Tulis **ringkasan rencana maksimal 15 baris** + **daftar pertanyaan untuk Mudir** ke chat.
-6. **BERHENTI.** Tunggu jawaban Mudir. Tidak ada migrasi, kode, atau uji sebelum itu.
+1. **Halaman daftar target** (`/target`): filter tahun/bulan, domain, halaqah, status; tampilkan
+   target berlaku, status, pengaju/penyetuju, alasan tolak, dan tombol aksi sesuai role.
+   Baca `targets` lewat `SELECT` (RLS staf) atau RPC riwayat; **jangan** menulis langsung.
+2. **Form ajukan/ubah** memakai RPC `ajukan_target` / `ubah_target`; pilih bulan berlaku dengan
+   `PemilihTahunBulan` (dua dropdown terpisah). Bulan 0 tidak ditawarkan. Tampilkan pesan galat
+   database apa adanya; bila RPC meminta konfirmasi bulan lewat/terkunci, tampilkan dialog centang
+   lalu panggil ulang dengan `p_konfirmasi = true`.
+3. **Layar persetujuan Masul/Mudir/Admin:** `setujui_target`, `tolak_target` (alasan wajib),
+   `batalkan_target` untuk pengaju. Target `diajukan`/`ditolak` tidak boleh masuk laporan.
+4. **Riwayat** lewat `riwayat_target` (berlaku mulai, nilai, status, pengaju, penyetuju, alasan).
+5. **Uji E2E UI** dan sidik jari sebelum/sesudah; perbarui `docs/STATUS.md`, berkas ini,
+   `CHANGELOG`, `FILE-MAP`; `typecheck`, `build`, `check_repo_safety.py`, commit + push.
+6. **Jangan mulai T8/T9** sebelum UI T7 selesai dan disetujui Mudir.
 
-**Cakupan T7 yang sudah tertulis (bahan rencana, bukan izin mulai):**
-- Target Al Qur'an **harian** → **bulanan = target harian × Hadir** (dihitung database, boleh pecahan).
-- Status: `diajukan` / `disetujui` / `ditolak`; **hanya `disetujui`** yang dipakai laporan.
-- Pengampu mengajukan; **Masul hanya menyetujui domainnya** (Masul Al Quran tidak boleh menyetujui
-  Wasilah/Ghayah, dan sebaliknya); Mudir/Admin semua domain. Pengampu **tidak** menyetujui.
-- Tombol "Ubah target" memakai `effective_month_id`; target lama tetap berlaku untuk bulan sebelumnya.
-- Daftar target menunggu persetujuan **dibatasi halaqah menurut amanah** untuk pengampu.
-- Target individu didahulukan dari target halaqah (Wasilah/Ghayah target halaqah, bulanan).
-- Semua hak tulis lewat RPC + migrasi baru bernomor **`20261125000021_...`**; anon tanpa `EXECUTE`.
-- Uji wajib: role (termasuk Masul lintas domain), `diajukan` tidak dipakai laporan, riwayat
-  `effective_month_id`, target harian × Hadir, bulan 0, bulan terkunci, sidik jari SAMA, uji lama hijau.
-
-**Pertanyaan untuk Mudir (susun ulang saat LANGKAH 0; minimal mencakup):**
-(a) siapa **mengajukan** dan siapa **menyetujui** per domain (pengampu vs Masul vs Admin/Mudir);
-(b) bolehkah target diubah untuk bulan yang **sudah lewat**, dan bagaimana riwayatnya ditampilkan;
-(c) apakah target Al Qur'an boleh berbeda per **bidang** (Tilawah/Tahfidz/Kitabah) dan per **santri**;
-(d) kapan target baru berlaku bila disetujui **di tengah bulan**;
-(e) apakah penolakan wajib menyertakan **alasan**;
-(f) perilaku bila **Hadir = 0** (target bulanan kosong atau 0);
-(g) **target Wasilah/Ghayah**: sekarang belum ada sama sekali — apakah T7 harus menyediakan
-    pengajuan/persetujuan untuk keduanya (bulanan, per halaqah), atau hanya menyiapkan jalurnya?
-
-**Sesudah Mudir menjawab:** kerjakan T7 satu sub-tugas per commit kecil (ajukan → setujui/tolak →
-"Ubah target" + riwayat → tampilan daftar menunggu → uji). Tiap selesai: `typecheck`, `build`,
-sidik jari sebelum/sesudah, perbarui `docs/STATUS.md` + berkas ini + `CHANGELOG` + `FILE-MAP`,
-`check_repo_safety.py`, commit + push.
-**T8 dan T9 tidak dimulai sebelum T7 selesai dan disetujui Mudir.**
+Catatan: target DUMMY Wasilah/Ghayah (25 + 11) wajib diganti data asli di T8/T10.

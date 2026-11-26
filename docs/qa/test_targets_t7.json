@@ -1,0 +1,171 @@
+{
+  "lulus": 33,
+  "gagal": 0,
+  "hasil": [
+    {
+      "uji": "Musyrif/ah mengajukan; tidak dapat menyetujui",
+      "ok": true,
+      "detail": "ajukan=diajukan; persetujuan ditolak"
+    },
+    {
+      "uji": "Masul Al Quran menyetujui target domainnya",
+      "ok": true,
+      "detail": "Masul Al Quran domain sendiri menyetujui"
+    },
+    {
+      "uji": "Masul Al Quran ditolak menyetujui Wasilah",
+      "ok": true,
+      "detail": "Hanya Masul domain terkait, Mudir, atau Admin yang dapat menyetujui target."
+    },
+    {
+      "uji": "mudir menyetujui target",
+      "ok": true,
+      "detail": "disetujui"
+    },
+    {
+      "uji": "admin menyetujui target",
+      "ok": true,
+      "detail": "disetujui"
+    },
+    {
+      "uji": "anon tidak dapat menjalankan RPC target",
+      "ok": true,
+      "detail": "permission denied for function ajukan_target"
+    },
+    {
+      "uji": "anon direct INSERT targets ditolak",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "authenticated direct INSERT targets ditolak",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "Target diajukan tidak dipakai laporan",
+      "ok": true,
+      "detail": "pending tidak mengganti target laporan"
+    },
+    {
+      "uji": "Tolak wajib alasan; target tidak dihapus",
+      "ok": true,
+      "detail": "ditolak tersimpan sebagai riwayat"
+    },
+    {
+      "uji": "ubah_target membuat baris baru, target lama tetap",
+      "ok": true,
+      "detail": "baris baru; lama utuh"
+    },
+    {
+      "uji": "Massal Al Qur'an membuat target per santri",
+      "ok": true,
+      "detail": "{\"status\": \"diajukan\", \"jumlah_santri\": 7, \"effective_month_id\": \"<id>\"}"
+    },
+    {
+      "uji": "Riwayat target terbaca",
+      "ok": true,
+      "detail": "riwayat terbaca"
+    },
+    {
+      "uji": "Bulan 0 ditolak sebagai bulan berlaku target",
+      "ok": true,
+      "detail": "Bulan Data Awal tidak dapat menjadi bulan berlaku target."
+    },
+    {
+      "uji": "Bulan lewat: masul_alquran tanpa konfirmasi ditolak",
+      "ok": true,
+      "detail": "Bulan target sudah lewat. Hanya Mudir/Admin yang dapat mengubahnya dengan konfirmasi eksplisit."
+    },
+    {
+      "uji": "Bulan lewat: mudir tanpa konfirmasi ditolak",
+      "ok": true,
+      "detail": "Bulan target sudah lewat. Konfirmasi eksplisit diperlukan."
+    },
+    {
+      "uji": "Bulan lewat: admin tanpa konfirmasi ditolak",
+      "ok": true,
+      "detail": "Bulan target sudah lewat. Konfirmasi eksplisit diperlukan."
+    },
+    {
+      "uji": "Bulan lewat: mudir dengan konfirmasi diterima",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "Bulan lewat: admin dengan konfirmasi diterima",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "Pengaju dapat membatalkan status diajukan",
+      "ok": true,
+      "detail": "dibatalkan"
+    },
+    {
+      "uji": "Bulan terkunci hanya Mudir/Admin (musyrif)",
+      "ok": true,
+      "detail": "Bulan target terkunci. Hanya Mudir/Admin yang dapat mengubahnya dengan konfirmasi eksplisit."
+    },
+    {
+      "uji": "Bulan terkunci hanya Mudir/Admin (masul_alquran)",
+      "ok": true,
+      "detail": "Bulan target terkunci. Hanya Mudir/Admin yang dapat mengubahnya dengan konfirmasi eksplisit."
+    },
+    {
+      "uji": "Bulan terkunci mudir tanpa konfirmasi ditolak",
+      "ok": true,
+      "detail": "Bulan target terkunci. Konfirmasi eksplisit diperlukan."
+    },
+    {
+      "uji": "Bulan terkunci mudir dengan konfirmasi diterima",
+      "ok": true,
+      "detail": "RPC diterima"
+    },
+    {
+      "uji": "Bulan terkunci admin tanpa konfirmasi ditolak",
+      "ok": true,
+      "detail": "Bulan target terkunci. Konfirmasi eksplisit diperlukan."
+    },
+    {
+      "uji": "Bulan terkunci admin dengan konfirmasi diterima",
+      "ok": true,
+      "detail": "RPC diterima"
+    },
+    {
+      "uji": "Kasus (f): kosong vs 0 vs bulan 0 NULL",
+      "ok": true,
+      "detail": "null=None, hadir0=0, bulan0=None"
+    },
+    {
+      "uji": "Individu diutamakan, tiebreak deterministik, bulanan tidak dikali Hadir",
+      "ok": true,
+      "detail": "individu=(UUID('<id>'), Decimal('56')), tie=(UUID('<id>'), Decimal('72')), bulanan=4"
+    },
+    {
+      "uji": "Diajukan dan ditolak tidak mengubah laporan",
+      "ok": true,
+      "detail": "base=18, pending=18, ditolak=18"
+    },
+    {
+      "uji": "Tulis langsung targets UPDATE ditolak",
+      "ok": true,
+      "detail": "permission denied for table targets"
+    },
+    {
+      "uji": "Tulis langsung targets DELETE ditolak",
+      "ok": true,
+      "detail": "permission denied for table targets"
+    },
+    {
+      "uji": "SELECT targets tetap tersedia bagi staf",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "Semua fungsi bernama target tidak dapat di-EXECUTE anon",
+      "ok": true,
+      "detail": "13 fungsi"
+    }
+  ]
+}

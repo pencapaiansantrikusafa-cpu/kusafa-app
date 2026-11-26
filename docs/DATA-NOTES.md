@@ -1,7 +1,22 @@
 # DATA-NOTES - pemetaan data Excel dan temuan data terbuka
 
-Diperbarui: 24 November 2026 (perbaikan data pra-T6 langkah [3/5]). Angka di sini diperiksa langsung di database pada tanggal itu.
+Diperbarui: 26 November 2026 (T7 [1b/2] - target DUMMY Wasilah/Ghayah). Angka di sini diperiksa langsung di database pada tanggal itu.
 Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data dummy.
+
+---
+
+## 0. Target DUMMY Wasilah/Ghayah (T7, izin khusus Mudir 26 November 2026)
+
+- **25 target Wasilah + 11 target Ghayah** disisipkan sebagai **DUMMY** (bukan data asli) agar jalur
+  target dinamis dapat diuji untuk ketiga domain.
+- Bentuk: per halaqah per mata pelajaran, `amount = 1`, `amount_period = bulanan`, status `disetujui`,
+  `effective_month_id` = **Syawwal 1447**; catatan setiap baris dimulai `DUMMY - target sementara
+  Wasilah/Ghayah, diganti data asli T8/T10 (izin Mudir 26 Nov 2026)`.
+- Skrip idempoten: `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` (aman dijalankan
+  ulang; tidak menimpa target DUMMY yang sudah ada).
+- **Wajib diganti data asli di T8/T10.** Jangan menganggap angka ini capaian/target nyata.
+- 327 target Al Qur'an lama **tidak berubah**; semuanya tetap `effective_month_id` = Data Awal 1447
+  (`month_no=0`).
 
 ---
 

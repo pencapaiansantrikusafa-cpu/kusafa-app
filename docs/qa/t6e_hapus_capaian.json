@@ -143,14 +143,10 @@
         ],
         "halaqah": "HLQ-PA-1",
         "terkunci": false,
-        "bulan_sesudah": [
-          {
-            "bulan": "Jumadal Ula"
-          }
-        ],
+        "bulan_sesudah": [],
         "variasi_nilai": 6,
-        "jumlah_sesudah": 1,
-        "perlu_setuju_lanjutan": true
+        "jumlah_sesudah": 0,
+        "perlu_setuju_lanjutan": false
       }
     },
     {
@@ -179,18 +175,18 @@
       "ok": true,
       "info": {
         "ada": true,
-        "pos": 270,
+        "pos": 412,
         "bulan": "Rabiul Akhir",
-        "label": "Al Qur'an - 136",
-        "mapel": "Tilawah",
-        "santri": "Santriwan fulan 16",
+        "label": "Menyalin - 83",
+        "mapel": "Kitabah",
+        "santri": "Santriwati fulanah 1",
         "putaran": 1,
         "terkunci": false,
         "putaran_lalu": 1,
         "bulan_sesudah": [
           {
             "bulan": "Jumadal Ula",
-            "label": "Karima - 1"
+            "label": "Menyalin - 83"
           }
         ],
         "jumlah_sesudah": 1,
@@ -201,7 +197,7 @@
     {
       "uji": "bulan sesudahnya terisi: ditolak tanpa konfirmasi",
       "ok": true,
-      "pesan": "Bulan sesudahnya sudah terisi ([{\"bulan\": \"Jumadal Ula\", \"label\": \"Karima - 1\"}]). Menghapus bulan ini akan membuat selisih bulan sesudahnya tidak konsisten. Hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit."
+      "pesan": "Bulan sesudahnya sudah terisi ([{\"bulan\": \"Jumadal Ula\", \"label\": \"Menyalin - 83\"}]). Menghapus bulan ini akan membuat selisih bulan sesudahnya tidak konsisten. Hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit."
     },
     {
       "uji": "bulan sesudahnya terisi: diterima dengan konfirmasi",
@@ -217,8 +213,8 @@
       "uji": "pratinjau melaporkan 'mulai putaran baru' bila putaran > putaran lalu",
       "ok": true,
       "info": {
-        "mulai_putaran_baru": true,
-        "putaran": 2,
+        "mulai_putaran_baru": false,
+        "putaran": 1,
         "putaran_lalu": 1
       }
     },
@@ -277,7 +273,10 @@
     {
       "uji": "LOG tidak mencatat UPDATE tanpa perubahan nilai",
       "ok": true,
-      "log": 0
+      "log": {
+        "sebelum": 102,
+        "sesudah": 102
+      }
     },
     {
       "uji": "LOG koneksi tanpa JWT: aktor NULL, sumber skrip:<user>",
@@ -315,7 +314,7 @@
       "uji": "log: Mudir/Admin bisa membaca log",
       "ok": true,
       "hasil": [
-        0
+        102
       ],
       "pesan": ""
     },
