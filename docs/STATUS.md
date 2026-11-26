@@ -7,7 +7,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 |---|---|
 | Repo | `https://github.com/pencapaiansantrikusafa-cpu/kusafa-app` (PUBLIK) |
 | Branch | `main` — branch `chore/react-router-fix` **sudah di-merge** 24 Nov 2026 (react-router 7.18.6) |
-| Commit terakhir | `502f06b` - T7a jejak target (menyusul commit dokumentasi T7 [1b/2]) |
+| Commit terakhir | lihat `git log -1` (dokumen ini ikut di-commit) |
 | Keadaan Git saat pembaruan | bersih, sinkron `origin/main` setelah commit dokumentasi |
 | Situs produksi | `https://kusafa-app.vercel.app` |
 | Migrasi terakhir | `20261126000031_targets_audit_semantics.sql` (berikutnya `20261126000032_...`) |
