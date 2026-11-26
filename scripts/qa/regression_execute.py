@@ -98,6 +98,31 @@ try:
 except Exception as e:  # noqa: BLE001
     rec("A_anon_tanpa_execute_loop_pg_proc", False, f"Error: {type(e).__name__}: {e}")
 
+# ------------------------------------------------------------------ A2. PUBLIC EXECUTE = false (loop pg_proc)
+# EXECUTE untuk PUBLIC otomatis diwarisi SEMUA role (termasuk anon), jadi bila tersisa
+# satu saja berarti hardening migrasi 000007/000024/000032 diregresi. Dicek dengan aclexplode.
+try:
+    publik_open: list[str] = []
+    for oid, name, args, lang in rows:
+        terbuka = satu(
+            """select exists (
+                 select 1 from aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) x
+                 where x.grantee = 0 and x.privilege_type = 'EXECUTE')
+               from pg_proc p where p.oid = %s""",
+            (oid,),
+        )
+        if terbuka:
+            publik_open.append(f"public.{name}({args})")
+    rec(
+        "A2_tidak_ada_fungsi_public_ber_execute_public",
+        publik_open == [],
+        f"{checked} fungsi public diperiksa; {len(publik_open)} masih ber-EXECUTE untuk PUBLIC.",
+        {"terbuka_ke_public": publik_open},
+    )
+except Exception as e:  # noqa: BLE001
+    rec("A2_tidak_ada_fungsi_public_ber_execute_public", False, f"Error: {type(e).__name__}: {e}")
+
+
 # Pastikan beberapa fungsi inti tetap punya EXECUTE untuk authenticated (sanity, bukan regresi):
 for f in ("public.current_app_role()", "public.can_manage(public.domain_kind)",
           "public.students_without_halaqah()"):

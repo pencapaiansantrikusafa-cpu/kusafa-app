@@ -138,9 +138,9 @@
       "detail": "null=None, hadir0=0, bulan0=None"
     },
     {
-      "uji": "Individu diutamakan, tiebreak deterministik, bulanan tidak dikali Hadir",
+      "uji": "Individu diutamakan, tiebreak deterministik, tujuan akhir tanpa angka di laporan",
       "ok": true,
-      "detail": "individu=(UUID('<id>'), Decimal('56')), tie=(UUID('<id>'), Decimal('72')), bulanan=4"
+      "detail": "individu=(UUID('<id>'), Decimal('56')), tie=(UUID('<id>'), Decimal('72')), wasilah=(UUID('<id>'), None, None)"
     },
     {
       "uji": "Log targets: UPDATE dan DELETE tercatat",
@@ -170,7 +170,7 @@
     {
       "uji": "Semua fungsi bernama target tidak dapat di-EXECUTE anon",
       "ok": true,
-      "detail": "13 fungsi"
+      "detail": "16 fungsi"
     }
   ]
 }

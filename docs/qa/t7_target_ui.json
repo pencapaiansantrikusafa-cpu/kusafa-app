@@ -25,7 +25,7 @@
     {
       "uji": "4. daftar target punya baris data",
       "ok": true,
-      "baris": 327
+      "baris": 328
     },
     {
       "uji": "5. kepala kolom 'sasaran' ada",
@@ -58,7 +58,7 @@
     {
       "uji": "6b. halaman target siap < 1,5 detik",
       "ok": true,
-      "ms": 847
+      "ms": 836
     },
     {
       "uji": "6c. kotak notifikasi memuat bagian Target Al Qur'an",
@@ -85,7 +85,7 @@
     {
       "uji": "10. dialog riwayat tampil berisi target",
       "ok": true,
-      "cuplikan": "Riwayat target\n\nLevel Dasar A · Baca\n\nTutup\n\nBerlaku mulai Syawwal 1447 H · targ"
+      "cuplikan": "Riwayat target\n\nLevel 5 · Sirah\n\nTutup\n\nBerlaku mulai Syawwal 1447 H · target pe"
     },
     {
       "uji": "11. form ajukan target memuat label wajib",

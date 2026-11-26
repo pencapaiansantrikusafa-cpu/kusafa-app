@@ -1,0 +1,246 @@
+{
+  "lulus": 48,
+  "gagal": 0,
+  "hasil": [
+    {
+      "uji": "A1 panggilan LAMA Al Qur'an (9 argumen, tanpa butir) tetap berhasil",
+      "ok": true,
+      "detail": "status=diajukan"
+    },
+    {
+      "uji": "A2 Al Qur'an dengan butir kurikulum ditolak",
+      "ok": true,
+      "detail": "Target Al Qur'an memakai jumlah, bukan butir kurikulum."
+    },
+    {
+      "uji": "A3 Al Qur'an tanpa jumlah ditolak",
+      "ok": true,
+      "detail": "Nilai target Al Qur'an wajib diisi dan tidak boleh negatif."
+    },
+    {
+      "uji": "A4 Wasilah bentuk LAMA (amount, tanpa butir) ditolak dengan pesan jelas",
+      "ok": true,
+      "detail": "Target Wasilah/Ghayah wajib memilih butir kurikulum (tujuan akhir)."
+    },
+    {
+      "uji": "A5 Wasilah dengan amount DAN butir ditolak",
+      "ok": true,
+      "detail": "Target Wasilah/Ghayah memakai butir kurikulum (posisi), bukan jumlah."
+    },
+    {
+      "uji": "A6 Butir milik mapel LAIN ditolak",
+      "ok": true,
+      "detail": "Butir target harus milik buku mata pelajaran ini dan aktif."
+    },
+    {
+      "uji": "A7 Butir NONAKTIF ditolak",
+      "ok": true,
+      "detail": "Butir target harus milik buku mata pelajaran ini dan aktif."
+    },
+    {
+      "uji": "A8 Wasilah per SANTRI ditolak",
+      "ok": true,
+      "detail": "Target Wasilah/Ghayah per halaqah, bukan per santri."
+    },
+    {
+      "uji": "A9 Mapel yang tidak ditetapkan halaqah ditolak",
+      "ok": true,
+      "detail": "Mata pelajaran itu tidak ditetapkan untuk halaqah ini."
+    },
+    {
+      "uji": "A10 Wasilah bentuk baru (butir, tanpa amount) diterima & otomatis disetujui",
+      "ok": true,
+      "detail": "status=disetujui"
+    },
+    {
+      "uji": "A11 Baris Wasilah tersimpan: amount KOSONG, butir terisi",
+      "ok": true,
+      "detail": "(None, True)"
+    },
+    {
+      "uji": "A12 Ghayah bentuk baru diterima",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "A13 Constraint menolak INSERT langsung bentuk lama (amount=1)",
+      "ok": true,
+      "detail": "targets_bentuk_check"
+    },
+    {
+      "uji": "A14 Constraint menolak amount DAN butir sekaligus",
+      "ok": true,
+      "detail": "targets_bentuk_check"
+    },
+    {
+      "uji": "B1 Pengajuan baru MENGGANTIKAN yang masih diajukan (lama dibatalkan)",
+      "ok": true,
+      "detail": "digantikan=1, lama=dibatalkan, diajukan=1"
+    },
+    {
+      "uji": "B2 Unique index: dua target diajukan untuk kunci sama ditolak",
+      "ok": true,
+      "detail": "targets_satu_diajukan_uk"
+    },
+    {
+      "uji": "C1 Pengampu mengajukan (diajukan) dan TIDAK dapat menyetujui",
+      "ok": true,
+      "detail": "status=diajukan"
+    },
+    {
+      "uji": "C2 masul_wasilah menyetujui target Wasilah",
+      "ok": true,
+      "detail": "diterima"
+    },
+    {
+      "uji": "C2 masul_ghayah menyetujui target Wasilah",
+      "ok": true,
+      "detail": "ditolak"
+    },
+    {
+      "uji": "C2 masul_alquran menyetujui target Wasilah",
+      "ok": true,
+      "detail": "ditolak"
+    },
+    {
+      "uji": "C3 Masul Wasilah mengajukan sendiri -> otomatis disetujui",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "C4 Masul Ghayah ditolak mengajukan target Wasilah",
+      "ok": true,
+      "detail": "Anda tidak berhak mengajukan target untuk santri/halaqah ini."
+    },
+    {
+      "uji": "C5 mudir mengajukan Wasilah -> otomatis disetujui",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "C5 admin mengajukan Wasilah -> otomatis disetujui",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "C6 Masul Wasilah ditolak mengajukan target Ghayah",
+      "ok": true,
+      "detail": "Anda tidak berhak mengajukan target untuk santri/halaqah ini."
+    },
+    {
+      "uji": "C7 Pengampu ditolak mengajukan untuk halaqah BUKAN ampuannya",
+      "ok": true,
+      "detail": "Anda tidak berhak mengajukan target untuk santri/halaqah ini.\nCONTEXT:  PL/pgSQL function ajukan_target(domain_kind,uuid,uuid,uuid,uuid,numeric,target_period,text,boolean,uuid) lin"
+    },
+    {
+      "uji": "C8 Anon TIDAK dapat memanggil RPC target",
+      "ok": true,
+      "detail": "permission denied for function ajukan_target"
+    },
+    {
+      "uji": "C9 Semua fungsi target tanpa EXECUTE untuk anon",
+      "ok": true,
+      "detail": "15 fungsi; terbuka=0"
+    },
+    {
+      "uji": "C10 Semua fungsi target tanpa EXECUTE untuk PUBLIC",
+      "ok": true,
+      "detail": "terbuka ke PUBLIC=0"
+    },
+    {
+      "uji": "D1 Setujui SEMUA target halaqah ini (bulk) menyetujui kedua pengajuan",
+      "ok": true,
+      "detail": "jumlah=2"
+    },
+    {
+      "uji": "D2 Masul domain LAIN ditolak bulk",
+      "ok": true,
+      "detail": "Hanya Masul domain terkait, Mudir, atau Admin yang dapat menyetujui target halaqah ini.\nCONTEXT:  PL/pgSQL function setujui_target_halaqah(uuid,uuid,b"
+    },
+    {
+      "uji": "D3 Bulk per halaqah x BULAN: bulan lain tidak ikut disetujui",
+      "ok": true,
+      "detail": "jumlah=2, sisa_bulan8=1"
+    },
+    {
+      "uji": "D4 Bulan TERKUNCI: Masul ditolak tanpa konfirmasi",
+      "ok": true,
+      "detail": "Bulan target terkunci. Hanya Mudir/Admin yang dapat mengubahnya dengan konfirmasi eksplisit."
+    },
+    {
+      "uji": "D5 Bulan TERKUNCI: Mudir dengan konfirmasi diterima",
+      "ok": true,
+      "detail": "jumlah=1"
+    },
+    {
+      "uji": "D6 Pengampu ditolak memakai bulk",
+      "ok": true,
+      "detail": "Hanya Masul domain terkait, Mudir, atau Admin yang dapat menyetujui target halaqah ini.\nCONTEXT:  PL/pgSQL function setujui_target_halaqah(uuid,uuid,b"
+    },
+    {
+      "uji": "E1 ubah_target Wasilah TANPA butir ditolak",
+      "ok": true,
+      "detail": "Target Wasilah/Ghayah wajib memilih butir kurikulum (tujuan akhir).\nCONTEXT:  PL/pgSQL function target_validasi_tujuan(domain_kind,uuid,uuid,uuid,nume"
+    },
+    {
+      "uji": "E2 ubah_target Wasilah membuat baris BARU (butir baru, amount kosong), lama utuh",
+      "ok": true,
+      "detail": "baru=(UUID('<id>'), None, 'disetujui', UUID('<id>'))"
+    },
+    {
+      "uji": "E3 Panggilan LAMA ubah_target Al Qur'an (5 argumen) tetap berhasil",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "uji": "E4 Hanya pengaju yang dapat membatalkan",
+      "ok": true,
+      "detail": "Hanya pengaju target ini yang dapat membatalkannya."
+    },
+    {
+      "uji": "E5 Pengaju membatalkan pengajuannya sendiri",
+      "ok": true,
+      "detail": "dibatalkan"
+    },
+    {
+      "uji": "F1 v_monthly_report Al Qur'an IDENTIK sebelum/sesudah perubahan Wasilah",
+      "ok": true,
+      "detail": "checksum sama"
+    },
+    {
+      "uji": "F2 Al Qur'an: target_amount = jumlah, target_monthly = jumlah x Hadir",
+      "ok": true,
+      "detail": "amount=2.5, monthly=45.0, hadir=18"
+    },
+    {
+      "uji": "F3 Wasilah: laporan melihat target tujuan akhir (target_id ada) tanpa angka (NULL, bukan 0)",
+      "ok": true,
+      "detail": "baris=(UUID('<id>'), None, None)"
+    },
+    {
+      "uji": "G1 DUMMY bentuk baru: 25 Wasilah + 11 Ghayah",
+      "ok": true,
+      "detail": "{'wasilah': 25, 'ghayah': 11}"
+    },
+    {
+      "uji": "G2 DUMMY bentuk LAMA (amount terisi) tidak ada lagi",
+      "ok": true,
+      "detail": "baris amount terisi=0"
+    },
+    {
+      "uji": "G3 Semua butir target Wasilah/Ghayah milik buku mapelnya & aktif",
+      "ok": true,
+      "detail": "baris salah=0"
+    },
+    {
+      "uji": "H1 Satu signature per RPC target (tidak ada overload)",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "uji": "H2 riwayat_target menyertakan butir tujuan akhir",
+      "ok": true,
+      "detail": "butir ada"
+    }
+  ]
+}

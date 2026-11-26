@@ -122,7 +122,7 @@ ok, detail = test_masul_domain(); record("Masul Al Quran menyetujui target domai
 def test_lintas_domain():
     c.execute("begin")
     try:
-        tid = c.execute("insert into public.targets(domain,subject_id,halaqah_id,effective_month_id,amount,amount_period,status,proposed_by) values ('wasilah',%s,%s,%s,1,'bulanan','diajukan',%s) returning id", (subject_w, one("select id from public.halaqahs where domain='wasilah' order by code limit 1"), month7, P["mudarris"])).fetchone()[0]
+        tid = c.execute("insert into public.targets(domain,subject_id,halaqah_id,effective_month_id,amount,amount_period,status,proposed_by,target_item_id) values ('wasilah',%s,%s,%s,null,'bulanan','diajukan',%s,(select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id where b.subject_id=%s and ci.is_active order by ci.seq limit 1)) returning id", (subject_w, one("select id from public.halaqahs where domain='wasilah' order by code limit 1"), month7, P["mudarris"], subject_w)).fetchone()[0]
         c.execute("set local role authenticated")
         c.execute("select set_config('request.jwt.claim.sub',%s,true)", (P["masul_alquran"],))
         c.execute("select set_config('request.jwt.claim.role','authenticated',true)")
@@ -319,19 +319,20 @@ def test_prioritas_dan_bulanan():
         tj = c.execute("insert into public.targets(domain,subject_id,student_id,effective_month_id,amount,amount_period,status,created_at) values ('alquran',%s,%s,%s,9,'harian','disetujui',now()+interval '1 second') returning id",(sub,sid,mid)).fetchone()[0]
         got2 = c.execute("select target_id,target_monthly from public.v_monthly_report where student_id=%s and subject_id=%s and month_id=%s",(sid,sub,mid)).fetchone()
         tie = got2[0] == tj and float(got2[1]) == 72
-        # Wasilah/Ghayah bulanan: amount tetap, tidak dikali Hadir.
+        # Wasilah/Ghayah: bentuk TUJUAN AKHIR (butir, tanpa amount) -> laporan mengenal
+        # targetnya tetapi tidak punya angka (NULL, bukan 0) dan tidak dikali Hadir.
         hw = c.execute("select h.id, s.id from public.halaqahs h join public.halaqah_subjects hs on hs.halaqah_id=h.id join public.subjects s on s.id=hs.subject_id where s.domain='wasilah' order by h.code limit 1").fetchone()
         sidw = c.execute("select student_id from public.halaqah_members where halaqah_id=%s and left_on is null limit 1",(hw[0],)).fetchone()[0]
         itemw = c.execute("select ci.id from curriculum_items ci join books b on b.id=ci.book_id where b.subject_id=%s and ci.is_active order by ci.seq limit 1",(hw[1],)).fetchone()[0]
         c.execute("insert into public.month_domain_settings(month_id,domain,effective_days,is_locked) values (%s,'wasilah',10,false) on conflict(month_id,domain) do update set effective_days=10",(mid,))
         c.execute("insert into public.attendance(student_id,month_id,domain,izin,sakit,alpha) values (%s,%s,'wasilah',9,0,0) on conflict(student_id,month_id,domain) do update set izin=9,sakit=0,alpha=0",(sidw,mid))
         c.execute("insert into public.progress_entries(student_id,halaqah_id,subject_id,month_id,item_id,putaran) values (%s,%s,%s,%s,%s,1)",(sidw,hw[0],hw[1],mid,itemw))
-        c.execute("insert into public.targets(domain,subject_id,halaqah_id,effective_month_id,amount,amount_period,status) values ('wasilah',%s,%s,%s,4,'bulanan','disetujui')",(hw[1],hw[0],mid))
-        bulanan = c.execute("select target_monthly from public.v_monthly_report where student_id=%s and subject_id=%s and month_id=%s",(sidw,hw[1],mid)).fetchone()[0]
-        return prioritas and tie and float(bulanan) == 4, f"individu={got}, tie={got2}, bulanan={bulanan}"
+        tw = c.execute("insert into public.targets(domain,subject_id,halaqah_id,effective_month_id,amount,amount_period,status,target_item_id) values ('wasilah',%s,%s,%s,null,'bulanan','disetujui',%s) returning id",(hw[1],hw[0],mid,itemw)).fetchone()[0]
+        bw = c.execute("select target_id,target_amount,target_monthly from public.v_monthly_report where student_id=%s and subject_id=%s and month_id=%s",(sidw,hw[1],mid)).fetchone()
+        return prioritas and tie and bw[0] == tw and bw[1] is None and bw[2] is None, f"individu={got}, tie={got2}, wasilah={bw}"
     finally:
         rollback()
-ok, detail = test_prioritas_dan_bulanan(); record("Individu diutamakan, tiebreak deterministik, bulanan tidak dikali Hadir", ok, detail)
+ok, detail = test_prioritas_dan_bulanan(); record("Individu diutamakan, tiebreak deterministik, tujuan akhir tanpa angka di laporan", ok, detail)
 
 # 14c) Log perubahan targets: UPDATE dan DELETE tercatat (nilai lama + baru, aktor).
 def test_log_target():

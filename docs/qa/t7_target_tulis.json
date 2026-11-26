@@ -1,6 +1,6 @@
 {
   "base": "http://localhost:4173",
-  "waktu": "2026-11-26T14:48:12",
+  "waktu": "2026-11-26T22:06:59",
   "konteks": {
     "halaqah": "HLQ-PA-1",
     "musyrif": "Ust. Fulan 1",
@@ -222,8 +222,8 @@
     {
       "uji": "change_log bertambah (append-only, baris lama utuh)",
       "ok": true,
-      "awal": 130,
-      "akhir": 137
+      "awal": 349,
+      "akhir": 356
     }
   ]
 }
