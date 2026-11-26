@@ -19,30 +19,30 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 25 November 2026, commit `30ceb8c` (T6a-T6d: tabel & input Ilmu Wasilah dan Ilmu Ghayah, tab domain). Rincian dan bukti tiap baris ada di **`docs/STATUS.md`**.
+Diperbarui 26 November 2026, HEAD sebelum dokumen ini `417a7ec`. Rincian lengkap, keputusan final, pertanyaan terbuka, dan langkah berikutnya ada di **`docs/HANDOVER.md`**. Angka dan bukti uji ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|
 | A-G | Alat, proyek, Git, Supabase, seed, uji lokal, Vercel | SELESAI |
-| T0 | Orientasi dan sambungan | SELESAI |
-| T1 | Database dan seed | SELESAI |
+| T0 | Orientasi dan pemetaan Excel | SELESAI |
+| T1 | Database dan seed dummy | SELESAI |
 | T2 | Login, kerangka, menu per role | SELESAI |
 | T3 | Tabel capaian halaqah Al Qur'an | SELESAI |
 | T4 | Halaman satu santri | SELESAI |
-| T5 | Input capaian Al Qur'an (+ T5b) | SELESAI |
-| Pra-T6 | Audit & perbaikan data (langkah 1-5) + jawaban Mudir [6] | **SELESAI** |
-| T5c | Percepat input (pencarian item di server) | BELUM — **berikutnya** |
-| T6 | Tabel dan input Wasilah & Ghayah | BELUM |
-| T7 | Target dinamis (ajukan/setujui) | BELUM |
-| T8 | Kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan** | BELUM |
-| T9 | Pengujian & QA (RLS otomatis, tampilan HP) | BELUM |
-| T10 | Deploy akhir (hapus data dummy, repo privat) | BELUM |
+| T5 / T5b / T5c | Input capaian Al Qur'an, percepat input, pencarian server | SELESAI |
+| Pra-T6 | Audit, hardening, data, notifikasi, verifikasi | SELESAI |
+| T6a-T6e | Tabel/input Wasilah & Ghayah, tab domain, Masul, hapus capaian + log | SELESAI |
+| **T7 [1b/2]** | **Fondasi target dinamis (database, RPC, uji)** | **SELESAI** |
+| **T7 [2/2]** | **UI `/target`** | **BELUM, berikutnya** |
+| T8 | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | BELUM |
+| T9 | Pengujian & QA penuh | SEBAGIAN |
+| T10 | Deploy akhir, hapus dummy, repo privat | BELUM |
 
-Pemeriksaan terakhir (24 Nov 2026): `npx tsc --noEmit` **lulus**, `npm run build` **berhasil**, `npm run test` **14/14 lulus**, `python scripts/check_repo_safety.py` **lolos**, matriks RLS otomatis **38/46 OK, 8 SKIP, 0 GAGAL**, uji DB pra-T6 **[6] 16/16 lulus**, kecocokan Rabiul Awwal vs Excel **109/109 santri (7/7 uji)**, smoke E2E browser **29/29 (lokal) & 28/28 (produksi)**. Tidak ada perintah `lint` di proyek ini (ESLint ditunda ke T9). `npm audit` sisa **2** (`vite`/`esbuild`, hanya dev server); react-router **bersih** (sudah 7.18.6).
+Pemeriksaan terakhir (26 Nov 2026): `npm run typecheck` **hijau**, `npm run build` **berhasil**, `npm run test` **14/14**, `test_targets_t7.py` **34/34**, matriks RLS **94/97 (3 SKIP, 0 GAGAL)**, banding rumus laporan lama vs baru **2.036 baris, 0 beda**, sidik jari database **SAMA**, `check_repo_safety.py` **lolos**. E2E browser dan smoke produksi **BELUM DIVERIFIKASI** ulang setelah perubahan database T7.
 
-**Serah terima**: keputusan final, tahap yang sedang dikerjakan, status Supabase, pertanyaan terbuka untuk Mudir, dan cara menjalankan/menguji/deploy ada di **`docs/HANDOVER.md`**. Sumber kebenaran kondisi nyata: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
+**Serah terima**: `docs/HANDOVER.md`. **Status nyata**: `docs/STATUS.md`. **Aturan bisnis**: `docs/SPEC.md`.
 
-Situs produksi `https://kusafa-app.vercel.app` **HTTP 200**; login/data Supabase diverifikasi 23 Nov 2026.
+Situs produksi `https://kusafa-app.vercel.app` **HTTP 200**. Repo masih **PUBLIK**; wajib dijadikan privat sebelum data santri asli dimuat.
 
 ---
 

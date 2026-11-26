@@ -27,7 +27,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 | Smoke produksi | **BELUM DIVERIFIKASI** (belum dijalankan ulang pada sesi ini) |
 
 **Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
-`change_log` **96** baris (append-only), `targets` **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah).
+`change_log` **103** baris (append-only; bertambah karena uji yang menulis), `targets` **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah).
 
 Semua angka di bawah diperiksa langsung pada 23-26 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
 Sesuatu yang belum dijalankan atau belum diuji ditulis **BELUM DIVERIFIKASI**, bukan SELESAI.
