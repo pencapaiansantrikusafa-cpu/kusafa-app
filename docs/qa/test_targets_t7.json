@@ -1,5 +1,5 @@
 {
-  "lulus": 33,
+  "lulus": 34,
   "gagal": 0,
   "hasil": [
     {
@@ -141,6 +141,11 @@
       "uji": "Individu diutamakan, tiebreak deterministik, bulanan tidak dikali Hadir",
       "ok": true,
       "detail": "individu=(UUID('<id>'), Decimal('56')), tie=(UUID('<id>'), Decimal('72')), bulanan=4"
+    },
+    {
+      "uji": "Log targets: UPDATE dan DELETE tercatat",
+      "ok": true,
+      "detail": "update=('update', '1', '2', UUID('<id>')), delete=('delete', '2', None, UUID('<id>')), audit=(True, False)"
     },
     {
       "uji": "Diajukan dan ditolak tidak mengubah laporan",

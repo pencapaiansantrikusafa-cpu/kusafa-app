@@ -21,7 +21,7 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
   skrip `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`. Wajib diganti T8/T10.
 - **effective_month_id 327 target lama:** sebelum dan sesudah tetap **Data Awal 1447 (`month_no=0`)**;
   tidak ada backfill, tidak ada perubahan data lama.
-- **Uji:** `test_targets_t7.py` 33/33; `verify_t7_report_unchanged.sql` 2.036 baris, 0 beda; RLS 94/97
+- **Uji:** `test_targets_t7.py` 34/34; `verify_t7_report_unchanged.sql` 2.036 baris, 0 beda; RLS 94/97
   (3 SKIP); semua uji lama hijau; sidik jari SAMA (16.504 baris). `typecheck`/`build` hijau.
 - **Belum:** UI `/target` dan E2E UI (T7 [2/2]).
 

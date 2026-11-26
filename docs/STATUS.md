@@ -16,7 +16,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 
 | Rangkaian | Hasil |
 |---|---|
-| `test_targets_t7.py` (DB, 33 uji, semua rollback) | **33/33 LULUS** |
+| `test_targets_t7.py` (DB, 34 uji, semua rollback) | **34/34 LULUS** |
 | `verify_t7_report_unchanged.sql` (rumus lama vs sekarang, Al Qur'an) | **2.036 baris; 0 beda di kedua arah** |
 | `test_t6e_hapus_capaian.py` (DB) | **35/35** (prasyarat bulan 8 disiapkan sementara lalu dipulihkan) |
 | `rls_matrix.py` | **94/97 OK, 3 SKIP, 0 GAGAL**; targets: semua tulis langsung ditolak, SELECT staf diterima |
@@ -59,7 +59,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6d2** | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** (lihat 2k) | migrasi `000017`-`000018`; uji DB 68/68, E2E 14/14, RLS 67/75 | Menggantikan keputusan T6b soal cakupan Masul |
 | **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
 | **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
-| **T7** | Target dinamis (ajukan/setujui) | **SEBAGIAN: [1b/2] SELESAI, UI belum** (lihat 2n) | migrasi `000021`-`000031`, RPC `ajukan/setujui/tolak/ubah/batalkan/riwayat`, `test_targets_t7.py` 33/33 | Rute `/target` masih placeholder; UI T7 [2/2] belum dikerjakan |
+| **T7** | Target dinamis (ajukan/setujui) | **SEBAGIAN: [1b/2] SELESAI, UI belum** (lihat 2n) | migrasi `000021`-`000031`, RPC `ajukan/setujui/tolak/ubah/batalkan/riwayat`, `test_targets_t7.py` 34/34 | Rute `/target` masih placeholder; UI T7 [2/2] belum dikerjakan |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
@@ -681,7 +681,7 @@ mulai target ("berlaku dari Data Awal") dan tidak menghasilkan `target_monthly` 
   dikali Hadir. Individu didahulukan dari halaqah; tiebreak `created_at desc, id desc`.
 
 ### Bukti uji
-- `scripts/qa/test_targets_t7.py`: **33/33 LULUS**, semua tulis di transaksi `ROLLBACK`, sidik jari SAMA.
+- `scripts/qa/test_targets_t7.py`: **34/34 LULUS**, semua tulis di transaksi `ROLLBACK`, sidik jari SAMA.
   Mencakup: pengampu ajukan/tidak setujui; Masul domain sendiri vs lintas domain; Mudir/Admin; anon;
   target `diajukan`/`ditolak` tidak dipakai laporan; tolak wajib alasan; `ubah_target` baris baru;
   massal Al Qur'an; riwayat; bulan 0; bulan lewat/terkunci hanya Mudir/Admin + konfirmasi; kasus (f)

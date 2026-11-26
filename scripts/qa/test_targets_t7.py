@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import re
+import uuid
 from pathlib import Path
 import sys
 
@@ -331,6 +332,26 @@ def test_prioritas_dan_bulanan():
     finally:
         rollback()
 ok, detail = test_prioritas_dan_bulanan(); record("Individu diutamakan, tiebreak deterministik, bulanan tidak dikali Hadir", ok, detail)
+
+# 14c) Log perubahan targets: UPDATE dan DELETE tercatat (nilai lama + baru, aktor).
+def test_log_target():
+    c.execute("begin")
+    try:
+        c.execute("reset role")
+        c.execute("select set_config('request.jwt.claim.sub',%s,true)", (P["mudir"],))
+        sid, mid, sub = c.execute("""select pe.student_id,pe.month_id,pe.subject_id from public.progress_entries pe
+            join public.subjects s on s.id=pe.subject_id join public.hijri_months m on m.id=pe.month_id
+            where s.domain='alquran' and m.month_no=7 limit 1""").fetchone()
+        tid = c.execute("insert into public.targets(domain,subject_id,student_id,effective_month_id,amount,amount_period,status,note) values ('alquran',%s,%s,%s,1,'harian','disetujui','uji log T7') returning id",(sub,sid,mid)).fetchone()[0]
+        c.execute("update public.targets set amount=2 where id=%s",(tid,))
+        upd = c.execute("select aksi,nilai_lama->>'amount',nilai_baru->>'amount',aktor from public.change_log where tabel='targets' order by id desc limit 1").fetchone()
+        audit = c.execute("select updated_by is not null, entered_by is null from public.targets where id=%s",(tid,)).fetchone()
+        c.execute("delete from public.targets where id=%s",(tid,))
+        dele = c.execute("select aksi,nilai_lama->>'amount',nilai_baru,aktor from public.change_log where tabel='targets' order by id desc limit 1").fetchone()
+        return upd == ("update","1","2",uuid.UUID(P["mudir"])) and dele == ("delete","2",None,uuid.UUID(P["mudir"])) and audit == (True,False), f"update={upd}, delete={dele}, audit={audit}"
+    finally:
+        rollback()
+ok, detail = test_log_target(); record("Log targets: UPDATE dan DELETE tercatat", ok, detail)
 
 # 15) Pending dan ditolak tidak dipakai laporan.
 def test_status_laporan():

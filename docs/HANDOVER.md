@@ -41,7 +41,7 @@ Ringkasan rincian tiap tahap: `docs/STATUS.md` bagian 1 dan 2a-2m. Riwayat perub
 
 - **Semua pekerjaan T6 (a, b, c, d, d2, d3, e) selesai**, di-commit, di-push, dan terverifikasi di produksi.
 - **T7 [1b/2] selesai**: fondasi database target dinamis (migrasi `000021`-`000031`), RPC, penguncian
-  tulis langsung, audit, target DUMMY Wasilah/Ghayah, dan uji `test_targets_t7.py` 33/33.
+  tulis langsung, audit, target DUMMY Wasilah/Ghayah, dan uji `test_targets_t7.py` 34/34.
 - **T7 [2/2] belum**: halaman `/target` masih `PlaceholderPage`; belum ada form/UI/E2E target.
 - Git bersih dan sinkron `origin/main` setelah commit dokumentasi.
 - Migrasi terakhir: **`20261126000031_targets_audit_semantics.sql`**. Migrasi berikutnya wajib
@@ -249,7 +249,7 @@ Hosting bisa dipindah ke cPanel; environment Vercel hanya `VITE_SUPABASE_URL` + 
 
 ## 8. Langkah berikutnya — **T7 [2/2] UI Target**
 
-**Fondasi database/RPC sudah selesai dan diuji 33/33.** Yang belum: antarmuka `/target`.
+**Fondasi database/RPC sudah selesai dan diuji 34/34.** Yang belum: antarmuka `/target`.
 
 1. **Halaman daftar target** (`/target`): filter tahun/bulan, domain, halaqah, status; tampilkan
    target berlaku, status, pengaju/penyetuju, alasan tolak, dan tombol aksi sesuai role.
