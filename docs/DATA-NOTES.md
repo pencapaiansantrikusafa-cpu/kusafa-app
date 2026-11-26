@@ -159,3 +159,21 @@ Catatan implementasi: memakai dua fungsi `security definer` (`students_without_h
 `security definer`, `current_user` di dalam fungsi selalu = pemilik, jadi pengecualian "tampil semua untuk
 skrip lokal" memakai `session_user` yang digabung `current_app_role() is null`. Aturan detail di
 `docs/SPEC.md` bagian 9.
+
+## 12. Capaian Ilmu Wasilah dan Ilmu Ghayah: 0 baris itu BENAR (konfirmasi Mudir, 26 November 2026)
+
+- **Tidak ada Excel capaian lain.** Dari lima file di `data/source/`, hanya
+  `3-Al Quran (halaqah dan pencapaian).xlsx` yang memuat capaian dan presensi.
+- `4-Ilmu Wasilah.xlsx` hanya berisi sheet **Halaqah Ilmu Wasilah** dan **Jadwal Ilmu Wasilah**
+  (anggota, level, jadwal, pengampu). `5-Ilmu Ghayah.xlsx` hanya berisi sheet **Halaqah Ilmu Ghayah**
+  (kelompok, kategori, muallim, pendamping, anggota). Keduanya **tidak punya kolom capaian,
+  Hari Efektif, atau izin/sakit/alpha**.
+- Karena itu `progress_entries` untuk `wasilah` dan `ghayah` = **0 baris**, dan itu bukan cacat seed.
+  Capaian asli kedua domain **diinput lewat aplikasi** (halaman Input Ilmu Wasilah / Ilmu Ghayah).
+- Yang berstatus DUMMY di kedua domain, dan **wajib diganti data asli di T8/T10**:
+  - Hari Efektif Wasilah/Ghayah bulan 1-7 disamakan dengan Al Qur'an + baris kehadiran 0/0/0
+    (`scripts/db/fixes/2026-11-25_he_wasilah_ghayah_dummy.sql`);
+  - 25 target Wasilah + 11 target Ghayah (`scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`,
+    ditandai catatan `DUMMY - ...` di tabel `targets`).
+- Capaian Al Qur'an berhenti di **Rabiul Akhir** (bulan 7): Data Awal 252, Syawwal 165, Dzul Qa'dah 244,
+  Dzul Hijjah 229, Muharram 285, Shafar 289, Rabiul Awwal 314, Rabiul Akhir 258; bulan 8-12 kosong di Excel.

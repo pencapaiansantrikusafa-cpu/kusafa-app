@@ -5,6 +5,30 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 26 November 2026 - T7 [2/2] (UI `/target`, notifikasi target, tampilan target di laporan)
+
+- **Halaman `/target`** (rute `target` + `target/:domain`, tab 3 domain): daftar target dengan saringan
+  Tahun + Bulan berlaku (dua dropdown terpisah), halaqah, mata pelajaran, status; pengampu hanya halaqah
+  yang diampu. Berkas: `TargetPage.tsx`, `TargetDomainPage.tsx`, `FormTarget.tsx`, `DialogAksiTarget.tsx`,
+  `DialogRiwayatTarget.tsx`, `src/lib/target.ts`.
+- **Form ajukan/ubah**: Al Qur'an per santri harian (termasuk massal per halaqah), Wasilah/Ghayah per halaqah
+  bulanan; bulan berlaku default bulan berjalan; bulan 0 tidak ditawarkan; bulan lewat/terkunci butuh
+  centang konfirmasi (hanya Mudir/Admin). Semua tulis lewat RPC; galat database ditampilkan apa adanya.
+- **Aksi**: Setujui, Tolak (alasan wajib), Batalkan (hanya pengaju, hanya status `diajukan`), Ubah (baris
+  baru; target lama utuh), Riwayat dari `riwayat_target`.
+- **Notifikasi target** di kotak "Data belum lengkap" (Masul domainnya/Mudir/Admin): menunggu persetujuan,
+  jumlah target DUMMY, dan sasaran belum punya target (santri×mapel Al Qur'an, halaqah×mapel Wasilah/Ghayah).
+- **Kolom target di laporan**: NULL tampil `–`, angka 0 tetap `0`; angka dari `v_monthly_report` (aturan f).
+- **Performa**: nama sasaran/mapel/bulan/pelaku satu query embed PostgREST (tanpa mengunduh seluruh
+  santri/profil). Siap halaman **847 ms** (< 1,5 detik). Kartu ringkas di HP 360 px.
+- **Uji**: `npm run typecheck` hijau, `npm run build` berhasil, `npm run test` 14/14,
+  `scripts/qa/test_t7_target_ui.py` **36/36 LULUS** (baca saja, 1280 px + 360 px, konsol bersih).
+  `pulihkan_data.py` diperluas menangani tabel `targets` (untuk uji tulis berikutnya).
+- **Dokumen**: `docs/DATA-NOTES.md` bagian 12 (capaian Wasilah/Ghayah 0 baris itu benar; tidak ada Excel
+  capaian lain), `docs/HANDOVER.md` catatan dua penomoran (setup A-G vs tahap kerja T0-T10; T10 belum dimulai).
+
+---
+
 ## 26 November 2026 - T7 [1b/2] (fondasi target dinamis, UI belum)
 
 - **Migrasi `20261126000021`-`20261126000031`:**

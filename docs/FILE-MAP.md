@@ -54,7 +54,10 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `DropdownCari.tsx` | **Satu-satunya dropdown** yang boleh dipakai. Punya kotak cari (cocok teks + nomor), panel dilayangkan ke `<body>` dengan `LAPISAN_DROPDOWN = 60`, dan menulis "Menampilkan 60 dari N". Menyimpan objek pilihan (label & `siklik`) di state agar label tetap tampil walau item tidak ada di daftar/hasil pencarian terakhir; `onChange` meneruskan objek pilihan. |
 | `PemilihTahunBulan.tsx` | Dua dropdown terpisah: Tahun Hijriyah dan Bulan. Tidak pernah digabung. |
 | `PemilihHalaqah.tsx` | Dropdown halaqah berlabel "HLQ-PA-1 - Ust. Fulan 1" + fungsi `ambilGuru()`, `ambilPengampu()`, `halaqahDiampu()` untuk menyaring sesuai amanah. |
-| `KotakBelumLengkap.tsx` | Kotak "Data belum lengkap" (awal tahun s.d. bulan berjalan): ringkasan x/y per bulan, tabel santri belum lengkap dengan kepala kolom beku dua arah, saringan halaqah. |
+| `KotakBelumLengkap.tsx` | Kotak "Data belum lengkap" (awal tahun s.d. bulan berjalan): ringkasan x/y per bulan, tabel santri belum lengkap dengan kepala kolom beku dua arah, saringan halaqah. **T7**: bagian Target (menunggu persetujuan, target DUMMY, sasaran belum punya target) untuk Masul domainnya/Mudir/Admin. |
+| `FormTarget.tsx` | **T7**: form ajukan/ubah target (alquran per santri harian; wasilah/ghayah per halaqah bulanan), pilihan target massal Al Qur'an, bulan berlaku default bulan berjalan, peringatan + centang konfirmasi bulan lewat/terkunci (hanya Mudir/Admin), catatan. Semua tulis lewat RPC. |
+| `DialogAksiTarget.tsx` | **T7**: dialog Setujui / Tolak (alasan **wajib**) / Batalkan, dengan centang konfirmasi bila bulan berlaku lewat atau terkunci. |
+| `DialogRiwayatTarget.tsx` | **T7**: riwayat target satu sasaran dari RPC `riwayat_target` (nilai, periode, status, pengaju/penyetuju/penolak, alasan, catatan). |
 | `KonfirmasiPutaran.tsx` | Dialog "Capaian lebih kecil dari bulan lalu. Pengulangan atau khatam?" - memakai teks dropdown, bukan angka posisi. |
 | `GrafikGaris.tsx` | Grafik garis SVG sederhana; bulan kosong ditampilkan kosong (bukan 0). |
 | `GrafikGabungan.tsx` | Beberapa garis dalam satu kotak; garis putus-putus untuk kehadiran. |
@@ -70,6 +73,7 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `putaran.ts` | Aturan putaran Tilawah: `bolehKhatam()`, `putaranUntukSimpan()`. Diuji di `tests/putaran.test.mjs`. |
 | `posisi.ts` | Pemanggil RPC `item_position` dengan cache, dipakai form input saat memeriksa capaian lebih kecil dari bulan lalu. |
 | `ambil-semua.ts` | Pengambil bertahap: Supabase membatasi 1.000 baris per permintaan, jadi daftar panjang wajib memakai ini. |
+| `target.ts` | **T7**: pembungkus RPC target (`ajukan_target`, `ubah_target`, `setujui_target`, `tolak_target`, `batalkan_target`, `ajukan_target_massal_alquran`, `riwayat_target`, `target_info_konfirmasi`), tipe `BarisTarget`, dan `STATUS_LABEL`/`STATUS_GAYA`. Tidak ada aturan target dihitung di sini. |
 
 ### 2.4 `src/pages/`
 
@@ -79,13 +83,15 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `CapaianPage.tsx` | Halaman Capaian per domain; memilih halaqah, tahun, bulan. |
 | `TabelCapaian.tsx` | Tabel capaian halaqah + nama pengampu; **T6e**: tombol "Hapus capaian" per santri & "Hapus semua <mapel>" (massal) hanya untuk Mudir/Admin, memanggil RPC hapus. |
 | `DialogHapusCapaian.tsx` | **T6e**: dialog konfirmasi hapus (menyebut santri/jumlah, bidang, bulan, nilai), peringatan putaran, centang konfirmasi bulan terkunci/bulan sesudahnya. |
-| `TabDomain.tsx` | Komponen **bersama** tab domain (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) untuk halaman Capaian dan Input. Memakai `<Link>` ke `${dasar}/${domain}` sehingga tab aktif tercermin di URL; HP 360 tiga tab dibagi rata, tinggi sentuh 44 px. |
+| `TabDomain.tsx` | Komponen **bersama** tab domain (Al Qur'an / Ilmu Wasilah / Ilmu Ghayah) untuk halaman Capaian, Input, dan **Target** (`dasar` = `/capaian`, `/input`, `/target`). Memakai `<Link>` ke `${dasar}/${domain}` sehingga tab aktif tercermin di URL; HP 360 tiga tab dibagi rata, tinggi sentuh 44 px. |
 | `InputPage.tsx` | Pemilih domain halaman Input; rute `/input`, `/input/alquran`, `/input/wasilah`, `/input/ghayah`. Domain mengikuti role (`domainInputUntuk`). |
 | `InputAlQuranPage.tsx` | Halaman Input Al Qur'an (T5/T5c-2); isi tidak berubah, hanya berkas dipisah dari pemilih domain. |
 | `InputWasilahPage.tsx` | Halaman Input Ilmu Wasilah/Ghayah: `wasilah_input_boot` + `wasilah_input_form`, pencarian item server, batas halaqah sesuai amanah. |
 | `FormInputWasilah.tsx` | Form input Wasilah/Ghayah: satu dropdown per **mata pelajaran** (bukan per santri), label pilihan disimpan beserta objeknya, tabel anggota dengan Hadir/HE dari database. |
 | `TabelWasilah.tsx` | Tabel capaian Ilmu Wasilah & Ilmu Ghayah (T6a): ringkasan Lalu/Kini/Selisih/target per mata pelajaran + tabel anggota (Hadir/HE, Izin, Sakit, Alpha, Catatan). Angka dari view; mata pelajaran dari `halaqah_subjects`. |
-| `TabelAlQuran.tsx` | Tabel Al Qur'an: kolom per bidang berisi Lalu / Kini / Selisih, target, Hadir/HE, sorotan di bawah target. |
+| `TabelAlQuran.tsx` | Tabel Al Qur'an: kolom per bidang berisi Lalu / Kini / Selisih, target, Hadir/HE, sorotan di bawah target. Target kosong ditampilkan `–` (0 tetap `0`). |
+| `TargetPage.tsx` | **T7**: tab 3 domain rute `/target`, `/target/alquran`, `/target/wasilah`, `/target/ghayah` (domain mengikuti role). |
+| `TargetDomainPage.tsx` | **T7**: daftar target satu domain; saringan Tahun+Bulan terpisah, halaqah (batas amanah untuk pengampu), mata pelajaran, status; tombol Ajukan/Ubah/Setujui/Tolak/Batalkan/Riwayat; tabel desktop + kartu ringkas HP 360 px. Nama sasaran/mapel/bulan/pelaku lewat embed PostgREST. Baca `targets` langsung; tulis hanya lewat RPC. |
 | `SantriPage.tsx` | Halaman satu santri: pilih domain + rentang (Semester 1/2/satu tahun), grafik dan riwayat. |
 | `InputPage.tsx` | Halaman Input: pilih halaqah + tahun + bulan, daftar santri, Hari Efektif domain, kotak belum lengkap. Memuat item per buku (label diberi nama mata pelajaran). |
 | `FormInputAlQuran.tsx` | Formulir input per santri: Tilawah/Tahfidz/Kitabah, izin/sakit/alpha, Hari Efektif khusus, catatan; konfirmasi hanya untuk bidang yang diubah; penanda ⚠ untuk yang sudah mundur. |

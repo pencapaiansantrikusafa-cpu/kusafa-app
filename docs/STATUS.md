@@ -59,7 +59,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6d2** | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** (lihat 2k) | migrasi `000017`-`000018`; uji DB 68/68, E2E 14/14, RLS 67/75 | Menggantikan keputusan T6b soal cakupan Masul |
 | **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
 | **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
-| **T7** | Target dinamis (ajukan/setujui) | **SEBAGIAN: [1b/2] SELESAI, UI belum** (lihat 2n) | migrasi `000021`-`000031`, RPC `ajukan/setujui/tolak/ubah/batalkan/riwayat`, `test_targets_t7.py` 34/34 | Rute `/target` masih placeholder; UI T7 [2/2] belum dikerjakan |
+| **T7** | Target dinamis (ajukan/setujui) | **UI SELESAI** (lihat 2n dan 2o); uji tulis & peragaan ulang belum | migrasi `000021`-`000031`, RPC lengkap, `src/pages/Target*` + `FormTarget` dkk, `test_targets_t7.py` 34/34, `test_t7_target_ui.py` 36/36 (baca saja) | Uji UI yang menulis (item 4) dan E2E lama (item 5) **BELUM DIVERIFIKASI** |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
@@ -852,3 +852,43 @@ Dari `src/App.tsx`:
 9. ~~Pendaftaran (signup) publik masih aktif~~ **SELESAI (24 Nov 2026)**: `disable_signup = true` lewat Management API; signup ditolak `422 signup_disabled` (diuji `test_auth_signup_closed.py` 9/9). Akun baru hanya dibuat Admin.
 10. **Log `change_log` tumbuh terus (append-only)**: 96 baris saat penutupan sesi T6e. Belum ada pemangkasan/retensi; bila perlu, keputusan Mudir (T9/T10).
 11. **8 sel matriks RLS masih SKIP**: menunggu profil `wali` dan contoh target berstatus `diajukan` (T9).
+
+## 2o. T7 [2/2] - UI `/target` + notifikasi target (26 November 2026)
+
+**Cakupan sesi ini:** UI target, notifikasi target, tampilan kolom target, dan uji baca-saja.
+Uji UI yang **menulis** dan peragaan ulang E2E lama **BELUM DIVERIFIKASI**.
+
+### Berkas baru/diubah
+
+- `src/pages/TargetPage.tsx` (tab 3 domain), `src/pages/TargetDomainPage.tsx` (daftar, saringan, aksi,
+  kartu HP), `src/components/FormTarget.tsx` (ajukan/ubah + massal Al Qur'an + konfirmasi bulan),
+  `src/components/DialogAksiTarget.tsx` (setujui/tolak wajib alasan/batalkan),
+  `src/components/DialogRiwayatTarget.tsx`, `src/lib/target.ts` (pembungkus RPC + label status).
+- `src/components/KotakBelumLengkap.tsx`: bagian **Target** (menunggu persetujuan, DUMMY, belum punya target).
+- `src/pages/TabelAlQuran.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `SantriPage.tsx`: target kosong
+  ditampilkan `–`, angka 0 tetap `0`; semua angka dari `v_monthly_report`.
+- `src/components/PemilihHalaqah.tsx`: dukungan `opsiKosong` untuk saringan "Semua halaqah".
+- `scripts/qa/pulihkan_data.py`: `targets` ikut disimpan/dipulihkan PERSIS (seluruh kolom).
+- `scripts/qa/test_t7_target_ui.py`: uji E2E **baca-saja** 36/36.
+
+### Hasil yang sudah dijalankan
+
+| Pemeriksaan | Hasil |
+|---|---|
+| `npm run typecheck` | **HIJAU** |
+| `npm run build` | **BERHASIL** |
+| `npm run test` | **14/14** |
+| `test_t7_target_ui.py` (E2E baca-saja, 1280 px + 360 px) | **36/36 LULUS** |
+| Waktu siap halaman `/target` (buka rute -> baris target tampil) | **847 ms** (< 1,5 detik) |
+| Console browser | bersih (0 error) |
+| `check_repo_safety.py` | **LOLOS** |
+
+### Catatan teknis
+
+- Nama sasaran, mata pelajaran, bulan, dan pengaju/penyetuju diambil **satu query dengan embed PostgREST**
+  (`students`, `halaqahs`, `subjects`, `hijri_months`, `profiles!targets_*_fkey`), bukan mengunduh seluruh
+  daftar santri/profil. Saringan halaqah Al Qur'an memakai `halaqah_members` karena target Al Qur'an
+  menyimpan `student_id` (bukan `halaqah_id`).
+- Semua tulis `targets` tetap lewat RPC; tidak ada INSERT/UPDATE/DELETE langsung dari UI.
+- Target DUMMY dikenali dari `note like 'DUMMY - target sementara Wasilah/Ghayah%'`.
+- Capaian Wasilah/Ghayah 0 baris adalah BENAR (Excel tidak punya kolom capaian); lihat `docs/DATA-NOTES.md` bagian 12.

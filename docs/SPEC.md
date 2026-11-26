@@ -191,7 +191,14 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
   privilege tulis dicabut dari `anon`/`authenticated`; anon tanpa `EXECUTE`.
 - **Audit:** `entered_by/at` (pengisi), `updated_by/at` (pengubah); `change_log` mencatat UPDATE/DELETE
   `targets` (nilai lama + baru).
-- **DUMMY:** 25 target Wasilah + 11 target Ghayah adalah DUMMY (izin Mudir), diganti data asli T8/T10.
+- **DUMMY:** 25 target Wasilah + 11 target Ghayah adalah DUMMY (izin Mudir), diganti data asli T8/T10;
+  dikenali dari `note like 'DUMMY - target sementara Wasilah/Ghayah%'`.
+- **Tampilan (UI):** target kosong (NULL) ditampilkan `–` dan **berbeda dari 0**; angka target yang tampil
+  selalu dari `v_monthly_report`, tidak ada hitungan target di React. Halaman `/target` menawarkan domain
+  sesuai role (Mudir/Admin 3 domain; Masul 1 domain; pengampu 1 domain, halaqah sesuai amanah).
+- **Notifikasi target** ada di kotak "Data belum lengkap" (bukan sistem paralel) untuk Masul domainnya,
+  Mudir, Admin: jumlah menunggu persetujuan, jumlah target DUMMY, dan sasaran yang belum punya target
+  (santri×mapel Al Qur'an; halaqah×mapel Wasilah/Ghayah, target `disetujui` berlaku sampai bulan berjalan).
 
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.
