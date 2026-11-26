@@ -138,7 +138,7 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 3. **Putaran Tilawah** (Al Qur'an, 604 halaman). Form input punya pilihan "khatam, mulai putaran baru" yang menaikkan `putaran`. Tanpa pilihan itu, capaian yang lebih kecil dari bulan lalu adalah pengulangan (selisih negatif). Aplikasi tidak menebak.
 4. **Kehadiran**: Hadir = Hari Efektif - (izin + sakit + alpha). Hari Efektif sama untuk semua santri dalam satu domain dan bulan, bisa berbeda antar domain. Pengecualian: santri yang masuk terlambat punya Hari Efektif khusus (`attendance.effective_days_override`), hanya diisi Mudir/Admin (dijaga trigger); bila ada, angka itu dipakai. Di tabel tampil sebagai Hadir/HE santri itu.
    **Nilai Hari Efektif yang kecil adalah SAH** bila karena libur panjang; contoh yang sudah final: **Rabiul Awwal 1447 = 3 hari** (libur ~2 pekan lebih) dan **Syawwal 1447 = 4 hari** (bulan pembuka tahun ajaran). Jangan menandainya "janggal", jangan menaikkannya, dan jangan mengubahnya tanpa konfirmasi Mudir. Acuan angkanya adalah Excel sumber (`3-Al Quran (halaqah dan pencapaian).xlsx`, blok `HE` per bulan).
-5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan, **tidak** dikali Hadir. Target individu didahulukan dari target halaqah. Status: `diajukan`, `disetujui`, `ditolak`, `dibatalkan`; hanya `disetujui` yang dipakai laporan.
+5. **Target**: Al Qur'an individual dan harian; target bulanan = target harian x Hadir. Wasilah/Ghayah target untuk halaqah dan bulanan, **tidak** dikali Hadir. Target individu didahulukan dari target halaqah. Status: `diajukan`, `disetujui`, `ditolak`, `dibatalkan`; hanya `disetujui` yang dipakai laporan. **Sejak T7c (§5e): target Wasilah/Ghayah adalah TUJUAN AKHIR (butir kurikulum), bukan jumlah.**
    - **Bulan berlaku** (`effective_month_id`) dipilih saat mengajukan (default bulan berjalan); berlaku penuh sebulan, tidak dipecah, sampai diganti, lintas tahun ajaran. Bulan 0 boleh menjadi titik mulai target tetapi tidak menghasilkan `target_monthly`.
    - **Ubah target** membuat baris baru; target lama tetap sebagai riwayat. Bulan lewat/terkunci hanya Mudir/Admin dengan konfirmasi eksplisit.
    - **Penolakan wajib alasan**; target ditolak tidak dihapus. Pengaju dapat membatalkan target yang masih `diajukan`.
@@ -199,6 +199,31 @@ Layar kelola kurikulum (tugas T8) harus bisa menambah, mengubah, mengurutkan ula
 - **Notifikasi target** ada di kotak "Data belum lengkap" (bukan sistem paralel) untuk Masul domainnya,
   Mudir, Admin: jumlah menunggu persetujuan, jumlah target DUMMY, dan sasaran yang belum punya target
   (santri×mapel Al Qur'an; halaqah×mapel Wasilah/Ghayah, target `disetujui` berlaku sampai bulan berjalan).
+
+## 5e. Target Wasilah/Ghayah = TUJUAN AKHIR (T7c, keputusan Mudir 26 November 2026)
+
+Memperbaiki §5d untuk domain Wasilah/Ghayah. Al Qur'an **tidak berubah** (jumlah harian × Hadir).
+
+- **Bentuk:** target Wasilah/Ghayah adalah **satu butir kurikulum** (`target_item_id` -> `curriculum_items`)
+  yang berarti **posisi akhir bulan depan**, **bukan jumlah**. Wajib: `halaqah_id` + `subject_id` +
+  `target_item_id`, `amount` KOSONG, `amount_period = 'bulanan'`. Butir wajib milik **buku mata pelajaran
+  itu** dan **aktif**. Al Qur'an tetap `amount` + `harian` per **santri**, `target_item_id` kosong.
+- **Pemetaan mapel dari Excel BENAR** (kondisi saat ini); tidak ada perubahan data/seed. Level Dasar B
+  **sudah tuntas Baca dan Tulis**.
+- **Pergantian mapel halaqah** = wewenang Masul domainnya atas usulan pengampu, "berlaku mulai bulan X",
+  bukan otomatis (layar di **T8**); satu halaqah pindah mapel serentak.
+- **Level 6 = tuntas semua mapel WASILAH**: tampil "Tuntas, belum ada pelajaran lanjutan", tidak dihitung
+  dalam notifikasi kekurangan; kurikulum lanjutan mungkin ditambah kelak.
+- **Wajib bersamaan input capaian:** target bulan depan diisi bersamaan input capaian bulan ini untuk tiap
+  mapel aktif; pengampu tidak boleh mengosongkan. Pengecualian: halaqah sudah di butir terakhir mapel
+  (tuntas) -> target tidak wajib, status "Tuntas, menunggu keputusan Masul".
+- **Target di bawah capaian boleh** dengan peringatan (pengulangan).
+- **Satu target menunggu** per (halaqah, mapel, bulan berlaku): pengajuan baru menggantikan yang masih
+  `diajukan` (lama menjadi `dibatalkan`); yang sudah `disetujui` diganti lewat `ubah_target` (baris baru).
+- **Bulk:** ada `setujui_target_halaqah` = "Setujui semua target halaqah ini" (per halaqah x bulan);
+  Masul domain/Mudir/Admin; bulan lewat/terkunci tetap hanya Mudir/Admin + konfirmasi eksplisit.
+- **DUMMY:** DUMMY lama (36 baris `amount = 1`) dihapus; DUMMY baru bentuk tujuan akhir dibuat secukupnya
+  (satu per halaqah x mapel), ditandai `DUMMY` di catatan (`note`). Wajib diganti data asli T8/T10.
 
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.

@@ -120,6 +120,19 @@ Dokumen ini adalah serah terima tetap. Sumber kebenaran status dan angka: `docs/
 - **Tulis langsung ditutup:** policy INSERT/UPDATE/DELETE `targets` dihapus; privilege tulis dicabut dari `anon`/`authenticated`; semua perubahan lewat RPC (SECURITY DEFINER + cek hak internal). Anon tanpa `EXECUTE`.
 - **DUMMY:** 25 target Wasilah + 11 Ghayah adalah DUMMY (izin Mudir), skrip idempoten di `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql`; wajib diganti data asli T8/T10.
 
+### 3.2a Keputusan T7c - target Wasilah/Ghayah = TUJUAN AKHIR (Mudir, 26 November 2026)
+
+Berlaku di atas 3.2; menggantikan arti "bulanan = amount" untuk Wasilah/Ghayah.
+
+- **Pemetaan mapel dari Excel BENAR sebagai kondisi saat ini** (`4-Ilmu Wasilah` sheet jadwal; `5-Ilmu Ghayah`). **Tidak ada perubahan data/seed.** Level Dasar B memang **sudah tuntas Baca dan Tulis**.
+- **Pergantian mapel halaqah** = wewenang **Masul domainnya** atas usulan pengampu, **"berlaku mulai bulan X"**, **bukan otomatis**. Satu halaqah pindah mapel **serentak**. Layar/pengaturannya menyusul di **T8**.
+- **Level 6 = tuntas semua mapel WASILAH**: tampil **"Tuntas, belum ada pelajaran lanjutan"**, **tidak** dihitung dalam notifikasi kekurangan. Kurikulum lanjutan mungkin ditambah kelak.
+- **Target Wasilah/Ghayah = TUJUAN AKHIR**: satu butir kurikulum = **posisi akhir bulan depan**, **bukan jumlah**. Jumlah/angka hanya untuk **Al Qur'an** (tidak berubah).
+- **Target bulan depan WAJIB diisi bersamaan input capaian bulan ini** untuk tiap mapel aktif; pengampu **tidak boleh mengosongkan**. Pengecualian: halaqah sudah di **butir terakhir** mapel (tuntas) -> target tidak wajib, status **"Tuntas, menunggu keputusan Masul"**.
+- **Target di bawah capaian boleh** dengan **peringatan** (pengulangan).
+- **Persetujuan:** pengampu mengajukan; **Masul domain/Mudir/Admin** menyetujui; ada **"Setujui semua target halaqah ini"** (bulk per halaqah x bulan). Bulan lewat/terkunci tetap hanya Mudir/Admin + konfirmasi.
+- **Satu target menunggu** per (halaqah, mapel, bulan berlaku): pengajuan baru dari pengaju **menggantikan** yang masih `diajukan` (status lama menjadi `dibatalkan`); yang sudah `disetujui` diganti lewat `ubah_target` (baris baru).
+
 ### 3.3 Struktur tabel dan view yang tidak boleh diubah sembarangan
 
 - `targets`: `id`, `domain`, `subject_id`, `student_id`, `halaqah_id`, `effective_month_id`, `amount`, `amount_period`, `status`, `proposed_by`, `approved_by`, `approved_at`, `note`, `created_at`, `alasan_tolak`, `rejected_by`, `rejected_at`, `entered_by`, `entered_at`, `updated_by`, `updated_at`.
