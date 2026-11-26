@@ -1,0 +1,201 @@
+{
+  "base": "http://localhost:4173",
+  "lulus": 32,
+  "gagal": [],
+  "ringkasan": "32 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "1. /target dialihkan ke /target/alquran",
+      "ok": true,
+      "url": "http://localhost:4173/target/alquran"
+    },
+    {
+      "uji": "2. 3 tab domain terlihat",
+      "ok": true,
+      "tab": [
+        "Al Qur'an",
+        "Ilmu Wasilah",
+        "Ilmu Ghayah"
+      ]
+    },
+    {
+      "uji": "3. judul 'Target Al Qur'an' tampil",
+      "ok": true
+    },
+    {
+      "uji": "4. daftar target punya baris data",
+      "ok": true,
+      "baris": 327
+    },
+    {
+      "uji": "5. kepala kolom 'sasaran' ada",
+      "ok": true
+    },
+    {
+      "uji": "5. kepala kolom 'mata pelajaran' ada",
+      "ok": true
+    },
+    {
+      "uji": "5. kepala kolom 'target' ada",
+      "ok": true
+    },
+    {
+      "uji": "5. kepala kolom 'berlaku mulai' ada",
+      "ok": true
+    },
+    {
+      "uji": "5. kepala kolom 'status' ada",
+      "ok": true
+    },
+    {
+      "uji": "5. kepala kolom 'aksi' ada",
+      "ok": true
+    },
+    {
+      "uji": "6. Mudir melihat tombol aksi (Ubah/Riwayat)",
+      "ok": true
+    },
+    {
+      "uji": "7. klik tab mengganti URL ke /target/wasilah",
+      "ok": true
+    },
+    {
+      "uji": "8. judul berubah 'Target Ilmu Wasilah'",
+      "ok": true
+    },
+    {
+      "uji": "9. muat ulang tetap di tab Wasilah",
+      "ok": true,
+      "aktif": "Ilmu Wasilah",
+      "url": "http://localhost:4173/target/wasilah"
+    },
+    {
+      "uji": "10. dialog riwayat tampil berisi target",
+      "ok": true,
+      "cuplikan": "Riwayat target\n\nLevel Dasar A · Baca\n\nTutup\n\nBerlaku mulai Syawwal 1447 H · targ"
+    },
+    {
+      "uji": "11. form ajukan target memuat label wajib",
+      "ok": true,
+      "cuplikan": "Ajukan target Ilmu Wasilah\n\nTarget per halaqah per mata pelajaran, bulanan langs"
+    },
+    {
+      "uji": "11b. bulan berjalan terisi otomatis dari database",
+      "ok": true,
+      "bulan": "— pilih —\n▾",
+      "tahun": "— pilih —\n▾"
+    },
+    {
+      "uji": "11c. form Ilmu Wasilah: target bulanan, tanpa pilihan santri",
+      "ok": true
+    },
+    {
+      "uji": "11d. form Al Qur'an: pilih santri + target massal per halaqah",
+      "ok": true
+    },
+    {
+      "uji": "11e. form Al Qur'an: bulan berjalan terisi otomatis",
+      "ok": true,
+      "bulan": "— pilih —\n▾"
+    },
+    {
+      "uji": "12. saringan status 'Diajukan' menampilkan keadaan kosong",
+      "ok": true,
+      "cuplikan": " membuat baris baru. Target Al Qur'an harian; target Ilmu Wasilah dan Ilmu Ghayah bulanan langsung (tidak dikali Hadir)."
+    },
+    {
+      "uji": "13. Musyrif dibatasi halaqah amanah (tanpa 'Semua halaqah')",
+      "ok": true
+    },
+    {
+      "uji": "14. Musyrif tidak melihat tombol Setujui",
+      "ok": true
+    },
+    {
+      "uji": "15. Musyrif melihat tombol Ubah",
+      "ok": true
+    },
+    {
+      "uji": "16. Masul Al Quran dialihkan dari /target/wasilah ke /target/alquran",
+      "ok": true,
+      "url": "http://localhost:4173/target/alquran"
+    },
+    {
+      "uji": "HP 360 | Al Qur'an: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 360,
+      "lebar_layar": 360
+    },
+    {
+      "uji": "HP 360 | Al Qur'an: 3 tab muat & sentuh >= 44 px",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Wasilah: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 360,
+      "lebar_layar": 360
+    },
+    {
+      "uji": "HP 360 | Ilmu Wasilah: 3 tab muat & sentuh >= 44 px",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "uji": "HP 360 | Ilmu Ghayah: tidak bergeser ke samping",
+      "ok": true,
+      "lebar_dok": 360,
+      "lebar_layar": 360
+    },
+    {
+      "uji": "HP 360 | Ilmu Ghayah: 3 tab muat & sentuh >= 44 px",
+      "ok": true,
+      "tab": [
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        },
+        {
+          "w": 107,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "uji": "konsol bersih",
+      "ok": true,
+      "galat": []
+    }
+  ]
+}
