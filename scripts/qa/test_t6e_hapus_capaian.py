@@ -234,11 +234,13 @@ def main() -> int:  # noqa: C901
 
     # UPDATE tanpa perubahan nilai TIDAK dicatat (log hanya perubahan berarti).
     c.execute("begin")
+    n_sebelum = c.execute("select count(*) from public.change_log").fetchone()[0]
     c.execute("update public.attendance set alpha = alpha where student_id=%s and month_id=%s and domain=%s",
               (att[0], att[1], att[2]))
-    n_noop = c.execute("select count(*) from public.change_log").fetchone()[0]
+    n_sesudah = c.execute("select count(*) from public.change_log").fetchone()[0]
     c.execute("rollback")
-    catat("LOG tidak mencatat UPDATE tanpa perubahan nilai", n_noop == 0, log=n_noop)
+    catat("LOG tidak mencatat UPDATE tanpa perubahan nilai", n_sesudah == n_sebelum,
+          log={"sebelum": n_sebelum, "sesudah": n_sesudah})
 
     # Tanpa JWT (skrip/seed): sumber = skrip:<user> (pakai perubahan nyata)
     c.execute("begin")

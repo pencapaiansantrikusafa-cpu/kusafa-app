@@ -266,19 +266,32 @@ for role, exp in (("musyrif", "DITOLAK(RLS)"), ("masul_alquran", "DITOLAK(RLS)")
         probe(role, PID[role], "update public.month_domain_settings set effective_days=19 "
               "where month_id=%s and domain=%s", (bulan_syawal, "alquran")))
 
-# ---------------------------------------------------------------- 5. targets (setujui)
-for role, exp in (
-    ("musyrif", "DITOLAK(RLS)"),
-    ("masul_wasilah", "DITOLAK(RLS)"),    # domain salah utk target ghayah
-    ("masul_alquran", "DITOLAK(RLS)"),    # domain salah
-    ("masul_ghayah", "DITERIMA"),
-    ("mudir", "DITERIMA"),
-):
-    if not target_gh:
-        rec(role, "targets", "update(status disetujui)", exp, "SKIP(no target diajukan)")
-        continue
-    rec(role, "targets", "update(status disetujui)", exp,
-        probe(role, PID[role], "update public.targets set status='disetujui' where id=%s", (target_gh,)))
+# ---------------------------------------------------------------- 5. targets (T7: hanya RPC)
+# Sejak T7 semua tulis target lewat RPC. INSERT/UPDATE/DELETE langsung dari API role
+# harus ditolak untuk SEMUA role, termasuk Mudir/Admin.
+target_any = satu("select id from public.targets order by id limit 1")
+for role in ("musyrif", "masul_alquran", "masul_wasilah", "masul_ghayah", "mudir", "admin", "anon"):
+    exp = "DITOLAK(RLS)"
+    if target_any:
+        rec(role, "targets", "update langsung", exp,
+            probe(role, PID.get(role), "update public.targets set amount=amount where id=%s", (target_any,)))
+        rec(role, "targets", "delete langsung", exp,
+            probe(role, PID.get(role), "delete from public.targets where id=%s", (target_any,)))
+        rec(role, "targets", "insert langsung", exp,
+            probe(role, PID.get(role),
+                  "insert into public.targets(domain,subject_id,student_id,effective_month_id,amount,amount_period,status) "
+                  "values ('alquran',%s,%s,%s,1,'harian','diajukan')",
+                  (sub_alquran, st_ampu, bulan_syawal)))
+    else:
+        for op in ("update langsung", "delete langsung", "insert langsung"):
+            rec(role, "targets", op, exp, "SKIP(no target)")
+
+# SELECT targets: staf boleh, anon ditolak.
+for role in ("musyrif", "masul_alquran", "masul_ghayah", "mudir", "admin"):
+    rec(role, "targets", "select", "DITERIMA",
+        probe(role, PID[role], "select id from public.targets limit 1", is_select=True))
+rec("anon", "targets", "select", "DITOLAK(RLS)",
+    probe("anon", None, "select id from public.targets limit 1", is_select=True))
 
 # ---------------------------------------------------------------- 6. profiles (role/aktif)
 other = satu("select id from public.profiles where role<>'admin' and is_active limit 1")
