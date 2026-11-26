@@ -76,10 +76,21 @@ interface Props {
   onChange: (id: string) => void;
   /** Keterangan kecil di bawah (mis. "Pengampu belum ditetapkan"). */
   keterangan?: string;
+  /** Teks pilihan kosong (mis. "Semua halaqah") untuk dropdown saringan. */
+  opsiKosong?: string;
 }
 
 /** Dropdown halaqah/level/kelompok yang selalu menampilkan nama pengampu, dengan pencarian. */
-export default function PemilihHalaqah({ id, label, halaqah, pengampu, nilai, onChange, keterangan }: Props) {
+export default function PemilihHalaqah({
+  id,
+  label,
+  halaqah,
+  pengampu,
+  nilai,
+  onChange,
+  keterangan,
+  opsiKosong,
+}: Props) {
   return (
     <DropdownCari
       id={id}
@@ -94,6 +105,7 @@ export default function PemilihHalaqah({ id, label, halaqah, pengampu, nilai, on
       onChange={onChange}
       placeholderCari="Ketik halaqah atau nama pengampu..."
       keterangan={keterangan}
+      opsiKosong={opsiKosong}
     />
   );
 }

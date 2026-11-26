@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import CapaianPage from "./pages/CapaianPage";
 import SantriPage from "./pages/SantriPage";
 import InputPage from "./pages/InputPage";
+import TargetPage from "./pages/TargetPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import AppLayout from "./components/AppLayout";
 
@@ -41,8 +42,10 @@ export default function App() {
         <Route path="santri/:id" element={<SantriPage />} />
         <Route path="input" element={<InputPage />} />
         <Route path="input/:domain" element={<InputPage />} />
+        <Route path="target" element={<TargetPage />} />
+        <Route path="target/:domain" element={<TargetPage />} />
         {items
-          .filter((i) => i.key !== "capaian" && i.key !== "input")
+          .filter((i) => i.key !== "capaian" && i.key !== "input" && i.key !== "target")
           .map((i) => (
             <Route
               key={i.key}

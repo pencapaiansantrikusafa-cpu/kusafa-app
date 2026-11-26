@@ -7,7 +7,7 @@ interface Props {
    * Tiap tab menuju `${dasar}/${domain}`, sehingga tab aktif selalu tercermin di URL
    * (muat ulang dan tombol kembali bekerja tanpa keadaan tersembunyi di memori).
    */
-  dasar: "/input" | "/capaian";
+  dasar: "/input" | "/capaian" | "/target";
   /** Domain yang sedang dibuka (dari URL). */
   aktif: Domain;
   /** Domain yang boleh dipakai role ini, dalam urutan baku. */

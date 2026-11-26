@@ -133,6 +133,26 @@ export function isPeninjau(role: AppRole): boolean {
   return role === "mudir" || role === "admin" || role.startsWith("masul_");
 }
 
+/** Mudir/Admin: akses penuh (semua halaqah, semua domain, boleh lewati bulan terkunci). */
+export function adalahAksesPenuh(role: AppRole): boolean {
+  return role === "mudir" || role === "admin";
+}
+
+/**
+ * Siapa yang boleh MENYETUJUI/MENOLAK target untuk sebuah domain (keputusan T7 3.2a):
+ * Mudir/Admin semua domain; Masul hanya domainnya sendiri
+ * (Masul Al Quran → Al Qur'an, Masul Wasilah → Ilmu Wasilah, Masul Ghayah → Ilmu Ghayah).
+ * Pengampu (Musyrif/ah, Mudarris/ah) tidak menyetujui. Database tetap penjaga terakhir
+ * (RPC `setujui_target`/`tolak_target` memeriksa `is_full_access()` / `is_masul_of()`).
+ */
+export function bolehSetujuiTarget(role: AppRole, domain: Domain): boolean {
+  if (adalahAksesPenuh(role)) return true;
+  if (role === "masul_alquran") return domain === "alquran";
+  if (role === "masul_wasilah") return domain === "wasilah";
+  if (role === "masul_ghayah") return domain === "ghayah";
+  return false;
+}
+
 /**
  * Menu yang tampil untuk sebuah role, mengikuti docs/SPEC.md bagian 3.
  * Ini hanya kenyamanan tampilan: penjagaan sebenarnya ada di RLS database.
