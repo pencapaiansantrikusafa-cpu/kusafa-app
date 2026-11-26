@@ -5,6 +5,24 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 26 November 2026 - T7 [2/2] lanjutan (uji UI target yang menulis + E2E ulang)
+
+- **Uji tulis lewat UI/RPC** `scripts/qa/test_t7_target_tulis.py` **38/38 LULUS** (1280 & 360 px):
+  pengampu ajukan 3 target `diajukan` → Masul Al Quran setujui (laporan `v_monthly_report` memakai target
+  baru, `target_monthly` = target harian × Hadir) → tolak dengan alasan (pengampu melihat alasan) →
+  pengaju batalkan → Masul lintas domain dialihkan & tidak menyetujui → bulan lewat diblokir untuk pengampu
+  dan butuh centang Mudir/Admin (berhasil) → bulan terkunci butuh centang Mudir/Admin → tab & URL.
+- **Disiplin data:** salinan penuh + semua target uji bertanda `note`; `pulihkan_data.py` mendapat
+  parameter `urus` sehingga baris target baru milik orang lain (mis. Mudir mencoba `/target`) **tidak
+  dihapus**. Sidik jari **SAMA**, `targets` kembali **363**, tidak ada baris uji tertinggal.
+- **E2E ulang (hijau):** T6a 14/14, T6b 14/14, T6d2 14/14, T6e 16/16, dropdown 10/10, smoke produksi
+  Vercel 42/42 (baca saja). Data/jejak dipulihkan tiap rangkaian.
+- **Perbaikan uji dropdown:** langkah a2 memakai "Jumadal Ula" (bulan sebelumnya Rabiul Akhir terisi),
+  bukan "Jumadal Akhir" yang bulan sebelumnya (Jumadal Ula) memang kosong di seed. Logika aplikasi tetap.
+- `change_log` kini **305** baris (append-only). T7 dinyatakan selesai; **T8 belum dimulai**.
+
+---
+
 ## 26 November 2026 - T7 [2/2] (UI `/target`, notifikasi target, tampilan target di laporan)
 
 - **Halaman `/target`** (rute `target` + `target/:domain`, tab 3 domain): daftar target dengan saringan

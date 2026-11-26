@@ -158,7 +158,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/seed/smoke_login.py` | Menguji login beberapa akun dummy tanpa browser; kata sandi tidak dicetak. |
 | `scripts/seed/requirements.txt` | Dependensi Python untuk skrip seed. |
 | `scripts/qa/db_fingerprint.py` | **T6d3**: sidik jari database (18 tabel, jumlah baris + checksum md5). `--simpan` sebelum uji, `--banding` sesudah; hasil wajib SAMA. Hanya membaca. |
-| `scripts/qa/pulihkan_data.py` | **T6d3**: simpan salinan penuh `progress_entries`/`attendance`/`monthly_notes` lalu pulihkan persis (nilai + jejak). Dipakai semua uji yang menulis. |
+| `scripts/qa/pulihkan_data.py` | **T6d3**: simpan salinan penuh `progress_entries`/`attendance`/`monthly_notes`/`targets` lalu pulihkan persis (nilai + jejak). **T7 [2/2]**: parameter `urus` membatasi baris yang boleh disentuh uji, sehingga baris baru milik orang lain (mis. Mudir mencoba `/target`) tidak dihapus. Dipakai semua uji yang menulis. |
 | `scripts/qa/test_t6e_hapus_capaian.py` | T6e (35 uji, transaksi + ROLLBACK): role, pratinjau, hapus satu/massal, bulan terkunci, bulan sesudahnya, bulan 0, log DELETE/UPDATE tiga tabel, log tanpa JWT, log tidak bisa diubah/dihapus/ditulis. |
 | `scripts/qa/test_t6e_e2e_hapus.py` | T6e E2E (16 uji): Masul tanpa tombol hapus, dialog (santri/bulan/nilai), hapus satu & massal, bulan terkunci minta centang, data dipulihkan persis. |
 | `scripts/qa/test_t6e_uji_penerimaan.py` | T6e **uji penerimaan** (15 uji): 3 baris capaian percobaan Mudir dihapus lewat UI; log 3 DELETE; sidik jari tepat -3/+3. Tidak dipulihkan. |
@@ -181,8 +181,10 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
 | `scripts/qa/test_targets_t7.py` | T7 (34 uji, transaksi + ROLLBACK): role pengaju/penyetuju, Masul lintas domain, Mudir/Admin, anon, status tidak dipakai laporan, tolak wajib alasan, ubah baris baru, massal, riwayat, bulan 0, lewat/terkunci, kasus (f), individu vs halaqah, tiebreak, bulanan tidak dikali Hadir, tulis langsung ditolak. |
 | `scripts/qa/verify_t7_report_unchanged.sql` | T7: bandingkan rumus laporan **sebelum** vs **sesudah** untuk seluruh 2.036 baris Al Qur'an; hasil 0 beda. |
+| `scripts/qa/test_t7_target_tulis.py` | T7 [2/2] E2E **menulis lewat UI/RPC** (38 uji): pengampu ajukan -> Masul setujui (laporan pakai target baru), tolak + alasan (dilihat pengampu), batalkan, Masul lintas domain, bulan lewat/terkunci butuh konfirmasi Mudir/Admin, tab & URL 1280/360 px; semua target uji bertanda `note`, dipulihkan persis, sidik jari SAMA. |
 | `scripts/db/fixes/2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` | T7b: 25 target DUMMY Wasilah + 11 Ghayah (bulanan, Syawwal 1447), izin Mudir; wajib diganti T8/T10. |
-| `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. |
+| `scripts/qa/test_input_dropdown_e2e.py` | Uji E2E **tampilan** dropdown Input: label terpilih setelah pilih dari daftar/pencarian, centang khatam, simpan -> database -> muat ulang; memulihkan data uji. Langkah a2 memakai bulan Jumadal Ula (bulan sebelumnya Rabiul Akhir terisi). |
+| `scripts/qa/test_t7_target_ui.py` | T7 [2/2] E2E **baca-saja** (36 uji, 1280 & 360 px): tab & URL halaman Target, saringan, form, dialog aksi, riwayat, notifikasi target; konsol bersih. |
 | `scripts/qa/repro_input_dropdown.py` | Reproduksi bug label dropdown per langkah + sapuan dropdown tiap role (Playwright). |
 | `scripts/qa/serve_dist.py` | Server statis `dist/` (SPA) untuk mengukur hasil build tanpa `serve`. |
 | `scripts/qa/compare_rabiul_awwal_excel.py` | Bandingkan HE/Hadir/izin-sakit-alpha/label+posisi capaian Rabiul Awwal DB vs Excel (109 santri, sampel 15); hanya baca. |

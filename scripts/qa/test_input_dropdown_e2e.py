@@ -142,10 +142,11 @@ def main() -> int:
             page.screenshot(path=str(FOTO / "e2e_01_terbuka.png"), full_page=True)
 
             # a2. "Bulan lalu" harus tampil SEJAK AWAL, walau item bulan ini belum dipilih.
-            #     Dipakai bulan Jumadal Akhir: belum ada capaian, bulan sebelumnya terisi.
+            #     Dipakai bulan Jumadal Ula: belum ada capaian, tetapi bulan sebelumnya
+            #     (Rabiul Akhir) terisi, sehingga "Bulan lalu" harusnya berisi, bukan "belum diisi".
             page.click("#input-bulan")
             page.wait_for_selector('[role="option"]', timeout=20000)
-            page.get_by_role("option", name="Jumadal Akhir", exact=True).first.click()
+            page.get_by_role("option", name="Jumadal Ula", exact=True).first.click()
             page.wait_for_timeout(3000)
             isi = page.inner_text("main")
             kosong = [

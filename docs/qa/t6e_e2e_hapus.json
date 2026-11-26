@@ -32,8 +32,8 @@
     {
       "uji": "hapus lewat UI tercatat di log (DELETE, aktor Mudir)",
       "ok": true,
-      "log_delete": 14,
-      "sebelumnya": 13
+      "log_delete": 24,
+      "sebelumnya": 23
     },
     {
       "uji": "ada tombol hapus massal yang aktif",
@@ -49,8 +49,8 @@
       "uji": "hapus massal menghapus sejumlah santri yang dijanjikan dialog",
       "ok": true,
       "terdampak": 8,
-      "log_delete": 38,
-      "sebelumnya": 29
+      "log_delete": 94,
+      "sebelumnya": 85
     },
     {
       "uji": "bulan terkunci: tombol hapus tetap ada untuk Mudir",
@@ -84,8 +84,8 @@
     {
       "uji": "log bertambah (append-only, bukan dihapus)",
       "ok": true,
-      "awal": 86,
-      "akhir": 96
+      "awal": 183,
+      "akhir": 193
     }
   ]
 }

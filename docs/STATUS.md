@@ -1,6 +1,6 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **26 November 2026** (T7 [1b/2] — fondasi target dinamis selesai, UI belum).
+**Sumber kebenaran status.** Diperbarui: **26 November 2026** (T7 [2/2] — uji UI yang menulis 38/38, E2E ulang & smoke produksi hijau).
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
@@ -12,22 +12,22 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 | Situs produksi | `https://kusafa-app.vercel.app` |
 | Migrasi terakhir | `20261126000031_targets_audit_semantics.sql` (berikutnya `20261126000032_...`) |
 
-### Hasil uji terakhir (T7 [1b/2], 26 November 2026)
+### Hasil uji terakhir (T7 [2/2] uji tulis, 26 November 2026)
 
 | Rangkaian | Hasil |
 |---|---|
+| `test_t7_target_tulis.py` (E2E **menulis** lewat UI/RPC, 38 uji) | **38/38 LULUS**; sidik jari SAMA, data dipulihkan persis |
+| `test_t7_target_ui.py` (E2E baca-saja, 1280 + 360 px) | **36/36 LULUS** |
+| E2E ulang: T6a / T6b / T6d2 / T6e | **14/14 / 14/14 / 14/14 / 16/16** |
+| E2E dropdown Input (`test_input_dropdown_e2e.py`) | **10/10** (setelah perbaikan pilihan bulan uji; lihat 2o) |
+| Smoke produksi Vercel (baca saja) | **42/42 PASS** |
 | `test_targets_t7.py` (DB, 34 uji, semua rollback) | **34/34 LULUS** |
-| `verify_t7_report_unchanged.sql` (rumus lama vs sekarang, Al Qur'an) | **2.036 baris; 0 beda di kedua arah** |
-| `test_t6e_hapus_capaian.py` (DB) | **35/35** (prasyarat bulan 8 disiapkan sementara lalu dipulihkan) |
-| `rls_matrix.py` | **94/97 OK, 3 SKIP, 0 GAGAL**; targets: semua tulis langsung ditolak, SELECT staf diterima |
-| DB lama, regresi, Excel penuh, Rabiul Awwal, data awal, no-halaqah, signup | 16/16, 7/7, 7/7, 7/7, 5/5, 9/9, 13/13 (+6/7 1 SKIP), 9/9 |
-| T6a / T6b / T6d2 / `npm test` | 14/14 / 29/29 / 68/68 / 14/14 |
-| `npm run typecheck` / `npm run build` | hijau / berhasil |
-| Sidik jari database sebelum/sesudah uji | **SAMA** (16.504 baris, 19 tabel) |
-| Smoke produksi | **BELUM DIVERIFIKASI** (belum dijalankan ulang pada sesi ini) |
+| `rls_matrix.py` | **94/97 OK, 3 SKIP, 0 GAGAL** |
+| `npm run typecheck` / `npm run build` / `npm test` | hijau / berhasil / 14/14 |
+| Sidik jari database sebelum/sesudah uji tulis | **SAMA** (16.504 baris, 19 tabel) |
 
 **Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
-`change_log` **103** baris (append-only; bertambah karena uji yang menulis), `targets` **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah).
+`change_log` **305** baris (append-only; bertambah karena uji yang menulis), `targets` **363** (327 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah).
 
 Semua angka di bawah diperiksa langsung pada 23-26 November 2026 (perintah dan hasilnya dicatat di bagian terkait).
 Sesuatu yang belum dijalankan atau belum diuji ditulis **BELUM DIVERIFIKASI**, bukan SELESAI.
@@ -59,7 +59,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T6d2** | Ketiga Masul boleh input di semua halaqah domainnya + jejak pengisi | **SELESAI** (lihat 2k) | migrasi `000017`-`000018`; uji DB 68/68, E2E 14/14, RLS 67/75 | Menggantikan keputusan T6b soal cakupan Masul |
 | **T6d3** | Pembersihan data + disiplin uji (sidik jari, seed bersih, banding Excel penuh) | **SELESAI** (lihat 2l) | `scripts/qa/db_fingerprint.py`, `pulihkan_data.py`, `test_seed_bersih.py`, `scripts/db/fixes/` | Aturan mengikat semua tahap |
 | **T6e** | Hapus capaian (Mudir/Admin) + log perubahan | **SELESAI** (lihat 2m) | migrasi `000019`-`000020`, `hapus_capaian*`, `change_log`, `DialogHapusCapaian.tsx`; uji 35/35, 16/16, 15/15, 12/12 | Bulan terkunci & bulan sesudahnya wajib konfirmasi |
-| **T7** | Target dinamis (ajukan/setujui) | **UI SELESAI** (lihat 2n dan 2o); uji tulis & peragaan ulang belum | migrasi `000021`-`000031`, RPC lengkap, `src/pages/Target*` + `FormTarget` dkk, `test_targets_t7.py` 34/34, `test_t7_target_ui.py` 36/36 (baca saja) | Uji UI yang menulis (item 4) dan E2E lama (item 5) **BELUM DIVERIFIKASI** |
+| **T7** | Target dinamis (ajukan/setujui) | **SELESAI** (lihat 2n, 2o, 2p); uji tulis 38/38 & E2E ulang hijau | migrasi `000021`-`000031`, RPC lengkap, `src/pages/Target*` + `FormTarget` dkk, `test_targets_t7.py` 34/34, `test_t7_target_ui.py` 36/36 (baca saja), `test_t7_target_tulis.py` 38/38 (menulis) | Uji UI yang menulis (item 4) & E2E lama (item 5) **LULUS**; sidik jari SAMA |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |
@@ -856,7 +856,8 @@ Dari `src/App.tsx`:
 ## 2o. T7 [2/2] - UI `/target` + notifikasi target (26 November 2026)
 
 **Cakupan sesi ini:** UI target, notifikasi target, tampilan kolom target, dan uji baca-saja.
-Uji UI yang **menulis** dan peragaan ulang E2E lama **BELUM DIVERIFIKASI**.
+Uji UI yang **menulis** diselesaikan pada bagian **2p** (38/38, sidik jari SAMA); peragaan ulang E2E lama
+dan smoke produksi juga sudah dijalankan di 2p.
 
 ### Berkas baru/diubah
 
@@ -892,3 +893,63 @@ Uji UI yang **menulis** dan peragaan ulang E2E lama **BELUM DIVERIFIKASI**.
 - Semua tulis `targets` tetap lewat RPC; tidak ada INSERT/UPDATE/DELETE langsung dari UI.
 - Target DUMMY dikenali dari `note like 'DUMMY - target sementara Wasilah/Ghayah%'`.
 - Capaian Wasilah/Ghayah 0 baris adalah BENAR (Excel tidak punya kolom capaian); lihat `docs/DATA-NOTES.md` bagian 12.
+
+---
+
+## 2p. T7 [2/2] - uji UI target yang MENULIS + E2E ulang (26 November 2026)
+
+**Perintah kerja:** uji tulis lewat RPC (bukan SQL) per role sambil memeriksa tampilan; jalankan ulang E2E
+T6a/T6b/T6d2/T6e + dropdown + smoke produksi; pulihkan data PERSIS; jangan menghapus baris target baru
+buatan Mudir; berhenti sebelum T8.
+
+### Berkas
+- `scripts/qa/test_t7_target_tulis.py` (baru): E2E yang menulis lewat UI (RPC), **38 uji**.
+- `scripts/qa/pulihkan_data.py`: `pulihkan(db, asli, urus=...)`. `urus` membatasi baris yang boleh
+  disentuh uji; baris baru milik orang lain (mis. Mudir mencoba `/target`) **tidak dihapus/ ditimpa**.
+  Tanpa `urus`, perilaku lama dipertahankan (dipakai uji-uji T6).
+- `scripts/qa/test_input_dropdown_e2e.py`: langkah a2 memakai bulan **Jumadal Ula** (sebelumnya
+  Jumadal Akhir). Alasannya di bawah.
+
+### Hasil `test_t7_target_tulis.py` - 38/38 LULUS (sidik jari SAMA)
+Konteks run: HLQ-PA-1, pengampu Ust. Fulan 1, santri Santriwan fulan 7, Hadir bulan 7 = 18.
+
+| Alur | Bukti di tampilan & database |
+|---|---|
+| Pengampu mengajukan | 3 target (Tilawah 3, Tahfidz 2, Kitabah 1) berstatus **Diajukan**; pengampu **tidak** melihat tombol Setujui/Tolak; bulan default = bulan berjalan (Rabiul Akhir) |
+| Masul Al Quran menyetujui | Tilawah **disetujui**, `approved_by` = Masul Al Quran; `v_monthly_report` `target_amount` 3, `target_monthly` 54 (=3×18); halaman Capaian menampilkan target baru |
+| Tolak dengan alasan | Tahfidz **ditolak**, `alasan_tolak` tersimpan; pengampu melihat status **Ditolak** + alasannya |
+| Pengaju membatalkan | Kitabah **dibatalkan** (baris tetap tersimpan sebagai riwayat) |
+| Masul lintas domain | Masul Wasilah dialihkan dari `/target/alquran` ke `/target/wasilah`; target uji tetap `diajukan` (tidak disetujui) |
+| Bulan lewat (pengampu) | Peringatan "SUDAH LEWAT"; Simpan **nonaktif**; hanya Mudir/Admin yang boleh |
+| Bulan lewat (Mudir) | Centang "Saya (Mudir/Admin) tetap ingin melanjutkan" muncul; Simpan aktif setelah dicentang; target bulan Rabiul Awwal tersimpan & disetujui |
+| Bulan terkunci | Dengan `is_locked=true` sementara, Mudir/Admin melihat peringatan "SUDAH DIKUNCI" + centang konfirmasi (lalu `is_locked` dipulihkan) |
+| Tab & URL | 1280 px: `/target` → `/target/alquran`, 3 tab, klik tab mengganti URL. 360 px: ketiga domain, 3 tab ≥44 px, tanpa geseran samping |
+| Konsol | bersih (0 error) |
+
+**Disiplin data:** salinan penuh di awal, semua target uji ditandai `note` `UJI-T7-TULIS-<waktu>`;
+pemulihan hanya menghapus baris bertanda itu. Diverifikasi: tidak ada baris target lama yang hilang,
+nilai baris lama tidak berubah, tidak ada baris uji tertinggal, `targets` kembali **363**, sidik jari
+**SAMA** (16.504 baris, 19 tabel). `change_log` bertambah (append-only, baris lama utuh) - itu bukti.
+Pada run ini **0 baris target baru milik Mudir** ditemukan; bila ada, skrip melaporkan jumlah & isinya
+dan sengaja **tidak menghapusnya** (bukan kegagalan sidik jari).
+
+### E2E ulang + smoke produksi
+| Rangkaian | Hasil |
+|---|---|
+| `test_t6a_tabel.py` | **14/14** |
+| `test_t6b_e2e.py` | **14/14** (data dipulihkan persis, sidik jari sama) |
+| `test_t6d2_e2e_masul.py` | **14/14** (data & jejak dipulihkan) |
+| `test_t6e_e2e_hapus.py` | **16/16** (data dipulihkan, log bertambah) |
+| `test_input_dropdown_e2e.py` | **10/10** (capaian 2.036 → 2.036) |
+| `smoke_e2e.py` produksi (`https://kusafa-app.vercel.app`) | **42/42 PASS** (baca saja) |
+
+**Perbaikan uji dropdown:** langkah a2 memilih "Jumadal Akhir" dan mengharapkan "Bulan lalu" berisi dari
+"Jumadal Ula". Namun data seed berhenti di **Rabiul Akhir (bulan 7)**; bulan 8-9 kosong, sehingga
+"belum diisi" **benar**. Uji kini memakai **Jumadal Ula (bulan 8)** yang bulan sebelumnya (Rabiul Akhir)
+terisi: dropdown kosong tetapi "Bulan lalu" berisi. Ini memperbaiki uji yang bergantung data, bukan
+mengubah logika aplikasi.
+
+### Keadaan data akhir
+`targets` **363** (327 Al Qur'an + 36 DUMMY), `progress_entries` **2.036**, kehadiran **599 / 756 / 749**,
+`monthly_notes` 0, `month_domain_settings` 21, `change_log` **305**. Tidak ada baris target uji tersisa;
+`is_locked` bulan 7 kembali `false`.

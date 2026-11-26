@@ -7,7 +7,7 @@
     {
       "uji": "wasilah: halaman siap < 1,5 s",
       "ok": true,
-      "detik": 0.88
+      "detik": 0.89
     },
     {
       "uji": "wasilah: belum ada capaian -> placeholder wajar",
@@ -43,7 +43,7 @@
     {
       "uji": "ghayah: halaman siap < 1,5 s",
       "ok": true,
-      "detik": 0.87
+      "detik": 0.9
     },
     {
       "uji": "ghayah: belum ada capaian -> placeholder wajar",
@@ -81,10 +81,11 @@
       "galat": []
     },
     {
-      "uji": "data uji dipulihkan (jumlah baris sama seperti semula)",
+      "uji": "data uji dipulihkan persis (sidik jari sama)",
       "ok": true,
       "sebelum": 0,
-      "sesudah": 0
+      "sesudah": 0,
+      "beda": {}
     }
   ]
 }

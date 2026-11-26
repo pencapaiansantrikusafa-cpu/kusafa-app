@@ -33,12 +33,12 @@ Diperbarui 26 November 2026, HEAD sebelum dokumen ini `417a7ec`. Rincian lengkap
 | Pra-T6 | Audit, hardening, data, notifikasi, verifikasi | SELESAI |
 | T6a-T6e | Tabel/input Wasilah & Ghayah, tab domain, Masul, hapus capaian + log | SELESAI |
 | **T7 [1b/2]** | **Fondasi target dinamis (database, RPC, uji)** | **SELESAI** |
-| **T7 [2/2]** | **UI `/target`** | **BELUM, berikutnya** |
+| **T7 [2/2]** | **UI `/target` + uji tulis** | **SELESAI** |
 | T8 | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | BELUM |
 | T9 | Pengujian & QA penuh | SEBAGIAN |
 | T10 | Deploy akhir, hapus dummy, repo privat | BELUM |
 
-Pemeriksaan terakhir (26 Nov 2026): `npm run typecheck` **hijau**, `npm run build` **berhasil**, `npm run test` **14/14**, `test_targets_t7.py` **34/34**, matriks RLS **94/97 (3 SKIP, 0 GAGAL)**, banding rumus laporan lama vs baru **2.036 baris, 0 beda**, sidik jari database **SAMA**, `check_repo_safety.py` **lolos**. E2E browser dan smoke produksi **BELUM DIVERIFIKASI** ulang setelah perubahan database T7.
+Pemeriksaan terakhir (26 Nov 2026): `npm run typecheck` **hijau**, `npm run build` **berhasil**, `npm run test` **14/14**, `test_targets_t7.py` **34/34**, matriks RLS **94/97 (3 SKIP, 0 GAGAL)**, banding rumus laporan lama vs baru **2.036 baris, 0 beda**, sidik jari database **SAMA**, `check_repo_safety.py` **lolos**. E2E target T7 **baca-saja 36/36** dan **menulis 38/38**; E2E T6a/T6b/T6d2/T6e **14/14/14/16**, dropdown **10/10**, smoke produksi Vercel **42/42** (baca saja).
 
 **Serah terima**: `docs/HANDOVER.md`. **Status nyata**: `docs/STATUS.md`. **Aturan bisnis**: `docs/SPEC.md`.
 

@@ -15,9 +15,9 @@
       "ok": true,
       "dropdown_kosong": 3,
       "baris_bulan_lalu": [
-        "Bulan lalu: Karima - 1 (putaran 2)",
-        "Bulan lalu: Al Fatihah - 1 (putaran 1)",
-        "Bulan lalu: IBQ PAUD - 1 (putaran 1)"
+        "Bulan lalu: Al Qur'an - 136 (putaran 1)",
+        "Bulan lalu: An Naba' - 39 (putaran 1)",
+        "Bulan lalu: Menyalin - 87 (putaran 1)"
       ]
     },
     {
@@ -71,8 +71,8 @@
   "lulus": 10,
   "gagal": [],
   "pemulihan": {
-    "jumlah_awal": 2039,
-    "jumlah_akhir": 2039,
+    "jumlah_awal": 2036,
+    "jumlah_akhir": 2036,
     "cocok": true,
     "beda": {}
   },
