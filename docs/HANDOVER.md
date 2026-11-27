@@ -69,7 +69,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 1. **1 baris target Al Qur'an sisa uji T7 [2/2]** (Tahfidz, Santriwan fulan 26, Rabiul Akhir, amount 2, 26 Nov 09:27 UTC) — **SELESAI dihapus 27 Nov 2026** (percobaan Mudir). Skrip `scripts/db/fixes/2026-11-27_hapus_target_percobaan_r5.sql`; target Al Qur'an 328→327, sidik jari hanya `targets` -1, tercatat `change_log`. Lihat `DATA-NOTES.md` 0b.
 2. **`test_t6e_hapus_capaian.py` butuh baris capaian bulan 8.** — **SELESAI diperbaiki & dijalankan 27 Nov 2026: 35/35 LULUS, sidik jari SAMA.** Uji kini membuat SATU baris capaian bulan 8 sementara untuk santri+mapel yang sama (yang punya capaian bulan 6 & 7), membersihkannya di blok `finally` dengan `session_replication_role = replica` agar tidak menulis `change_log`; tidak ada baris yang tertinggal.
 3. **3 sel matriks RLS SKIP:** profil `wali` belum ada dan tidak ada target `diajukan` di data dummy.
-4. **`change_log`** append-only; sekarang **356** baris (bertambah karena uji yang menulis), baris lama utuh.
+4. **`change_log`** append-only; sekarang **367** baris (bertambah karena uji yang menulis + R5), baris lama utuh.
 5. **Skrip `2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` usang** (DUMMY bentuk lama). Berkop peringatan "JANGAN dijalankan lagi"; database otomatis menolak bentuk `amount`.
 6. **Capaian Wasilah/Ghayah = 0 baris memang benar**: Excel tidak punya kolom capaian (lihat `docs/DATA-NOTES.md` bagian 12). Capaian asli diinput lewat aplikasi.
 7. **Smoke produksi setelah pergantian skema belum dijalankan** — **SELESAI 27 Nov 2026: 42/42 PASS (baca saja)** pada `https://kusafa-app.vercel.app`, setelah skema T7c. Laporan `docs/qa/smoke_e2e_2026-11-27_prod.json`.
