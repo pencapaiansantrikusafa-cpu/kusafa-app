@@ -1,0 +1,145 @@
+{
+  "lulus": 13,
+  "gagal": [],
+  "rincian": [
+    {
+      "uji": "1. Mapel tanpa capaian TIDAK diminta target (hanya mapel yang dikirim)",
+      "ok": true,
+      "res": {
+        "baris": 6,
+        "mapel": 1,
+        "target": 1,
+        "anggota": 6,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "2. Ditolak bila mapel yang capaiannya dikirim belum punya target",
+      "ok": true,
+      "pesan": "Target bulan depan belum diisi untuk mata pelajaran: Sirah (kecuali yang sudah tuntas atau sudah punya target)."
+    },
+    {
+      "uji": "3a. Target saja (tanpa capaian) boleh disimpan; jadi target hidup",
+      "ok": true,
+      "rows": [
+        [
+          "disetujui",
+          "cd7267f2-c163-54e2-b123-326a75e36a1d"
+        ]
+      ]
+    },
+    {
+      "uji": "3b. Tidak wajib mengisi ulang target bila target bulan depan SUDAH ada",
+      "ok": true,
+      "res": {
+        "baris": 6,
+        "mapel": 1,
+        "target": 0,
+        "anggota": 6,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "4. Koreksi capaian + target SAMA: tidak membuat baris target baru",
+      "ok": true,
+      "res": {
+        "baris": 6,
+        "mapel": 1,
+        "target": 0,
+        "anggota": 6,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
+      },
+      "rows": [
+        [
+          "disetujui",
+          "cd7267f2-c163-54e2-b123-326a75e36a1d"
+        ]
+      ],
+      "pesan": ""
+    },
+    {
+      "uji": "5. Jalur simpan lama (capaian saja) DITUTUP",
+      "ok": true,
+      "pesan": "Jalur simpan lama sudah ditutup. Simpan capaian dan target bulan depan sekaligus lewat wasilah_simpan_gabungan."
+    },
+    {
+      "uji": "6a. Form memuat bulan_depan, target bulan ini, target bulan depan, tanpa_mapel",
+      "ok": true
+    },
+    {
+      "uji": "6b. Target depan berlabel + posisi; mapel punya penanda tuntas",
+      "ok": true,
+      "depan": {
+        "pos": 1,
+        "status": "disetujui",
+        "item_label": "Sirah · Sirah Nabawiyah 1 - Pelajaran 1 : Nabiku Nabi Muhammad",
+        "subject_id": "c7f94c36-ca17-5f17-a6a9-b03b520ac9b4",
+        "target_item_id": "cd7267f2-c163-54e2-b123-326a75e36a1d"
+      }
+    },
+    {
+      "uji": "7a. Pengampu TIDAK boleh mengganti target yang sudah disetujui lewat simpan gabungan",
+      "ok": true,
+      "pesan": "Target bulan depan sudah disetujui. Untuk mengusulkan butir lain, gunakan halaman Target (tombol Ubah)."
+    },
+    {
+      "uji": "7b. Masul domain mengganti target disetujui: lama dibatalkan, baru disetujui",
+      "ok": true,
+      "st": "DITERIMA",
+      "rows": [
+        [
+          "dibatalkan",
+          "cd7267f2-c163-54e2-b123-326a75e36a1d"
+        ],
+        [
+          "disetujui",
+          "fad06fe7-2174-5ecd-871f-0ad4127d3c3d"
+        ]
+      ],
+      "pesan": ""
+    },
+    {
+      "uji": "8a. Notifikasi: Masul domain dapat baris, level 6 ditandai, target terdeteksi",
+      "ok": true,
+      "baris": 26,
+      "level6": 1,
+      "ada": 1
+    },
+    {
+      "uji": "8b. Notifikasi: Masul domain lain 0 baris, Mudir dapat baris",
+      "ok": true,
+      "masul_ghayah": 0,
+      "mudir": 26
+    },
+    {
+      "uji": "9. Mapel TUNTAS tidak diwajibkan target",
+      "ok": true,
+      "res": {
+        "baris": 6,
+        "mapel": 1,
+        "target": 0,
+        "anggota": 6,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    }
+  ]
+}

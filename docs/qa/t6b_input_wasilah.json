@@ -14,8 +14,13 @@
       "hasil": {
         "baris": 6,
         "mapel": 1,
+        "target": 1,
         "anggota": 6,
-        "tersimpan": true
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
       },
       "anggota_aktif": 6
     },
@@ -37,6 +42,7 @@
       "ok": true,
       "capaian": [
         {
+          "pos": 1,
           "jumlah": 6,
           "item_id": "cd7267f2-c163-54e2-b123-326a75e36a1d",
           "variasi": 1,
@@ -71,8 +77,13 @@
       "hasil": {
         "baris": 12,
         "mapel": 2,
+        "target": 1,
         "anggota": 6,
-        "tersimpan": true
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 2,
+        "di_bawah_capaian": []
       }
     },
     {
@@ -81,8 +92,13 @@
       "hasil": {
         "baris": 13,
         "mapel": 1,
+        "target": 1,
         "anggota": 13,
-        "tersimpan": true
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": []
       }
     },
     {
@@ -102,7 +118,7 @@
     {
       "uji": "13. mapel yang bukan milik halaqah ditolak",
       "ok": true,
-      "pesan": "Mata pelajaran itu tidak ditetapkan untuk halaqah ini."
+      "pesan": "Mata pelajaran itu tidak aktif untuk halaqah ini."
     },
     {
       "uji": "14. Masul Wasilah boleh menulis Wasilah (penanggung jawab domain)",

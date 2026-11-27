@@ -215,14 +215,21 @@ def main() -> int:  # noqa: C901 - uji berurutan
                         where b.subject_id=%s order by b.sort_order, b.stage_order, ci.seq offset 2 limit 1""", (sid0,))
     try:
         jadi("mudir")
+        # Tanpa konfirmasi: DITOLAK (target di bawah capaian = pengulangan).
+        st6, _, pesan6 = coba("mudir", (hal_w, bulan6,
+                        [{"subject_id": sid0, "item_id": item_atas}],
+                        [{"subject_id": sid0, "target_item_id": item_bawah}], False))
+        catat("6a. Target di bawah capaian DITOLAK tanpa konfirmasi",
+              st6 == "DITOLAK" and "bawah capaian" in (pesan6 or ""), pesan=pesan6)
+
         res6 = panggil((hal_w, bulan6,
                         [{"subject_id": sid0, "item_id": item_atas}],
                         [{"subject_id": sid0, "target_item_id": item_bawah},
-                         {"subject_id": mw[1][0], "target_item_id": item(mw[1][0])}], False))
+                         {"subject_id": mw[1][0], "target_item_id": item(mw[1][0])}], True))
         ada_bawah = bool(res6 and any(str(x["subject_id"]) == str(sid0) for x in res6.get("di_bawah_capaian", [])))
-        catat("6. Target di bawah capaian DITERIMA + dilaporkan di di_bawah_capaian", ada_bawah, res=res6)
+        catat("6. Target di bawah capaian DITERIMA dengan konfirmasi + dilaporkan di di_bawah_capaian", ada_bawah, res=res6)
     except psycopg.errors.Error as e:  # noqa: PERF203
-        catat("6. Target di bawah capaian DITERIMA + dilaporkan di di_bawah_capaian", False, pesan=str(e).split("\n")[0])
+        catat("6. Target di bawah capaian DITERIMA dengan konfirmasi + dilaporkan di di_bawah_capaian", False, pesan=str(e).split("\n")[0])
     c.execute("rollback to savepoint s6")
 
     # ============================================================ 7. Level 6

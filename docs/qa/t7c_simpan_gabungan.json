@@ -1,14 +1,16 @@
 {
-  "lulus": 18,
+  "lulus": 19,
   "gagal": [],
-  "ringkasan": "18 LULUS, 0 gagal",
+  "ringkasan": "19 LULUS, 0 gagal",
   "rincian": [
     {
       "uji": "1a. Mudir: simpan gabungan berhasil (capaian + target bulan depan)",
       "ok": true,
       "res": {
         "baris": 12,
+        "mapel": 2,
         "target": 2,
+        "anggota": 6,
         "tersimpan": true,
         "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
         "tanpa_mapel": false,
@@ -27,7 +29,7 @@
     {
       "uji": "2. Ditolak bila mapel aktif belum punya target",
       "ok": true,
-      "pesan": "Target bulan depan belum diisi untuk mata pelajaran: Hisab (kecuali yang sudah tuntas)."
+      "pesan": "Target bulan depan belum diisi untuk mata pelajaran: Hisab (kecuali yang sudah tuntas atau sudah punya target)."
     },
     {
       "uji": "2b. Capaian tidak tersimpan saat simpan gabungan ditolak",
@@ -40,7 +42,9 @@
       "ok": true,
       "res": {
         "baris": 0,
+        "mapel": 0,
         "target": 1,
+        "anggota": 6,
         "tersimpan": true,
         "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
         "tanpa_mapel": false,
@@ -54,7 +58,9 @@
       "ok": true,
       "res": {
         "baris": 12,
+        "mapel": 2,
         "target": 0,
+        "anggota": 6,
         "tersimpan": true,
         "bulan_depan": null,
         "tanpa_mapel": false,
@@ -78,7 +84,9 @@
       "ok": true,
       "res": {
         "baris": 12,
+        "mapel": 2,
         "target": 2,
+        "anggota": 6,
         "tersimpan": true,
         "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
         "tanpa_mapel": false,
@@ -103,11 +111,18 @@
       "pesan": "permission denied for function wasilah_simpan_gabungan"
     },
     {
-      "uji": "6. Target di bawah capaian DITERIMA + dilaporkan di di_bawah_capaian",
+      "uji": "6a. Target di bawah capaian DITOLAK tanpa konfirmasi",
+      "ok": true,
+      "pesan": "Target bulan depan di bawah capaian (pengulangan) untuk mata pelajaran: Sirah. Centang konfirmasi untuk melanjutkan."
+    },
+    {
+      "uji": "6. Target di bawah capaian DITERIMA dengan konfirmasi + dilaporkan di di_bawah_capaian",
       "ok": true,
       "res": {
         "baris": 6,
+        "mapel": 1,
         "target": 2,
+        "anggota": 6,
         "tersimpan": true,
         "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
         "tanpa_mapel": false,
@@ -127,8 +142,10 @@
       "ok": true,
       "res": {
         "baris": 0,
+        "mapel": 0,
         "pesan": "Tuntas, belum ada pelajaran lanjutan",
         "target": 0,
+        "anggota": 0,
         "tersimpan": true,
         "tanpa_mapel": true,
         "mapel_capaian": 0

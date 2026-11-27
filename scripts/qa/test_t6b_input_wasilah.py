@@ -50,9 +50,49 @@ def catat(nama: str, ok: bool, **info) -> None:
         GAGAL.append(nama)
 
 
+GABUNGAN_SQL = (
+    "select public.wasilah_simpan_gabungan(%s,%s,%s::jsonb,%s::jsonb,true)"
+)
+
+# Jalur simpan lama (capaian saja) ditutup di server (T7c [3/3]). Uji T6b dialihkan
+# ke `wasilah_simpan_gabungan`: target bulan depan diisi otomatis untuk tiap mapel
+# yang capaiannya dikirim, supaya aturan RLS/hak tulis/bulan terkunci tetap diuji.
+def buat_target(cur, halaqah: str, items: list[dict]) -> list[dict]:
+    hasil: list[dict] = []
+    for sid in {x.get("subject_id") for x in items}:
+        if not sid:
+            continue
+        cur.execute(
+            """select ci.id from public.curriculum_items ci
+               join public.books b on b.id = ci.book_id
+               where b.subject_id = %s and ci.is_active and b.is_active
+               order by b.sort_order, b.stage_order, ci.seq limit 1""",
+            (sid,),
+        )
+        baris = cur.fetchone()
+        if baris:
+            hasil.append({"subject_id": sid, "target_item_id": baris[0]})
+    return hasil
+
+class Kursor:
+    """Pembungkus kursor: SQL lama `wasilah_input_save` dialihkan ke simpan gabungan."""
+
+    def __init__(self, cur):
+        self._cur = cur
+
+    def execute(self, sql, args=()):
+        if "wasilah_gabungan" in str(sql):
+            hal, bulan, items = args
+            return self._cur.execute(GABUNGAN_SQL, (hal, bulan, items, json.dumps(buat_target(self._cur, hal, json.loads(items)), default=str)))
+        return self._cur.execute(sql, args)
+
+    def __getattr__(self, name):
+        return getattr(self._cur, name)
+
+
 def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
     conn = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
-    c = conn.cursor()
+    c = Kursor(conn.cursor())
 
     # Siapkan data acuan (tanpa menulis).
     c.execute("select id from public.halaqahs where domain='wasilah' and code='Level 1A'")
@@ -138,7 +178,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         subject_w, nama_w = mw[0]
         item_w = item_pertama(subject_w)
         hasil = c.execute(
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_w)}])),
         ).fetchone()[0]
         catat(
@@ -198,7 +238,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         )
         item_kedua = c.fetchone()[0]
         c.execute(
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_kedua)}])),
         )
         c.execute(
@@ -216,7 +256,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
                 {"subject_id": str(mw[1][0]), "item_id": str(item_pertama(mw[1][0]))},
             ]
             h2 = c.execute(
-                "select public.wasilah_input_save(%s,%s,%s::jsonb)", (hal_w, bulan, json.dumps(payload))
+                "wasilah_gabungan", (hal_w, bulan, json.dumps(payload))
             ).fetchone()[0]
             catat("8. dua mata pelajaran sekaligus dalam satu permintaan", h2["mapel"] == 2, hasil=h2)
         else:
@@ -224,7 +264,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
 
         subject_g = mg[0][0]
         h3 = c.execute(
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_g, bulan, json.dumps([{"subject_id": str(subject_g), "item_id": str(item_pertama(subject_g))}])),
         ).fetchone()[0]
         c.execute(
@@ -253,7 +293,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         if len(mw) > 1:
             subject_2 = mw[1][0]
             c.execute(
-                "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+                "wasilah_gabungan",
                 (hal_w, bulan, json.dumps([{"subject_id": str(subject_2), "item_id": str(item_pertama(subject_2))}])),
             )
         c.execute(
@@ -269,8 +309,8 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         # ---------- 5. Bulan 0 & bulan terkunci ----------
         harap_tolak(
             "11. bulan 0 (Data Awal) ditolak",
-            "select public.wasilah_input_save(%s,%s,'[]'::jsonb)",
-            (hal_w, bulan0),
+            "wasilah_gabungan",
+            (hal_w, bulan0, "[]"),
             "Data Awal",
         )
 
@@ -280,15 +320,15 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ).fetchone()[0]
         harap_tolak(
             "12. item milik mapel lain ditolak",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_lain))}])),
             "bukan milik mata pelajaran",
         )
         harap_tolak(
             "13. mapel yang bukan milik halaqah ditolak",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_lain), "item_id": str(item_pertama(subject_lain))}])),
-            "tidak ditetapkan untuk halaqah",
+            "tidak aktif untuk halaqah",
         )
 
         # ---------- 4. RLS per role ----------
@@ -317,7 +357,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_wasilah",
             "Ust. Masul Wasilah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("14. Masul Wasilah boleh menulis Wasilah (penanggung jawab domain)", ok, pesan=pesan)
@@ -326,7 +366,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_wasilah",
             "Ust. Masul Wasilah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_g, bulan, json.dumps([{"subject_id": str(subject_g), "item_id": str(item_pertama(subject_g))}])),
         )
         catat("15. Masul Wasilah ditolak menulis Ghayah", not ok, pesan=pesan)
@@ -335,7 +375,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_ghayah",
             "Ust. Masul Ghayah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_g, bulan, json.dumps([{"subject_id": str(subject_g), "item_id": str(item_pertama(subject_g))}])),
         )
         catat("16. Masul Ghayah boleh menulis Ghayah (penanggung jawab domain)", ok, pesan=pesan)
@@ -344,7 +384,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_alquran",
             "Ust. Masul Al Quran 1",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("17. Masul Al Quran ditolak menulis Wasilah", not ok, pesan=pesan)
@@ -353,7 +393,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "musyrif",
             "Ust. Fulan 1",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("18. Musyrif (Al Qur'an) ditolak menulis Wasilah", not ok, pesan=pesan)
@@ -370,7 +410,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
             ok, pesan = sebagai(
                 "mudarris",
                 guru[0],
-                "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+                "wasilah_gabungan",
                 (hal_w, bulan, json.dumps([{"subject_id": str(guru[1]), "item_id": str(item_pertama(guru[1]))}])),
             )
             catat("19. Mudarris pengampu mapel itu boleh menulis", ok, guru=guru[0], pesan=pesan)
@@ -379,7 +419,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
                 ok, pesan = sebagai(
                     "mudarris",
                     guru[0],
-                    "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+                    "wasilah_gabungan",
                     (hal_w, bulan, json.dumps([{"subject_id": str(lain[0][0]), "item_id": str(item_pertama(lain[0][0]))}])),
                 )
                 catat("20. Mudarris ditolak pada mapel yang tidak diampu", not ok, pesan=pesan)
@@ -397,14 +437,14 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "mudarris",
             guru[0] if guru else "Ust. Masul Wasilah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("21. pengampu ditolak pada bulan terkunci", not ok and "dikunci" in pesan.lower(), pesan=pesan)
         ok, pesan = sebagai(
             "mudir",
             "Mudir",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("22. Mudir diterima pada bulan terkunci", ok, pesan=pesan)
@@ -412,7 +452,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_wasilah",
             "Ust. Masul Wasilah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("22b. Masul Wasilah tetap ditolak pada bulan terkunci", not ok and "dikunci" in pesan.lower(), pesan=pesan)
@@ -449,7 +489,7 @@ def main() -> int:  # noqa: C901 - uji berurutan, sengaja satu fungsi
         ok, pesan = sebagai(
             "masul_ghayah",
             "Ust. Masul Ghayah",
-            "select public.wasilah_input_save(%s,%s,%s::jsonb)",
+            "wasilah_gabungan",
             (hal_w, bulan, json.dumps([{"subject_id": str(subject_w), "item_id": str(item_pertama(subject_w))}])),
         )
         catat("22e. Masul Ghayah ditolak menulis Ilmu Wasilah", not ok, pesan=pesan)
