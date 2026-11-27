@@ -19,7 +19,7 @@ Situs: https://kusafa-app.vercel.app
 
 ## Status pembangunan
 
-Diperbarui 27 November 2026, HEAD sebelum dokumen ini `73970ab`. Rincian lengkap, keputusan final, pertanyaan terbuka, dan langkah berikutnya ada di **`docs/HANDOVER.md`**. Angka dan bukti uji ada di **`docs/STATUS.md`**.
+Diperbarui 27 November 2026, HEAD `2e70798`. Rincian lengkap, keputusan final, pertanyaan terbuka, dan langkah berikutnya ada di **`docs/HANDOVER.md`**. Angka dan bukti uji ada di **`docs/STATUS.md`**.
 
 | Tahap | Nama | Status |
 |---|---|---|

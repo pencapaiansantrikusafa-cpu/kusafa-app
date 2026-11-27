@@ -1,6 +1,6 @@
 # HANDOVER - serah terima KUSAFA
 
-**Terakhir diperbarui**: 27 November 2026, 08:20 (waktu lokal), commit terakhir **`d29bb93`** (`main`, sudah di-push).
+**Terakhir diperbarui**: 27 November 2026, 08:35 (waktu lokal), commit terakhir **`2e70798`** (`main`, sudah di-push).
 Dokumen ini serah terima tetap. Sumber kebenaran status dan angka: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
 Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data santri asli di sini.
 
