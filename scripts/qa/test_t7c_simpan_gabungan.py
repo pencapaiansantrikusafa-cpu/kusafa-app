@@ -250,6 +250,65 @@ def main() -> int:  # noqa: C901 - uji berurutan
     catat("8. v_monthly_report Al Qur'an SEBELUM vs SESUDAH simpan gabungan identik",
           st8 == "DITERIMA" and h_sebelum == h_sesudah, sebelum=h_sebelum[:12], sesudah=h_sesudah[:12])
 
+    # ============================================================ 9. view target butir + status lintas buku
+    c.execute("savepoint s9")
+    hisab = next((sid for sid, nm in mw if nm == "Hisab"), None)
+    sirah = next((sid for sid, nm in mw if nm == "Sirah"), None)
+    if hisab and sirah:
+        item_ai4 = satu("""select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id
+                           where b.name='Anak Islam Pandai Berhitung 4' and ci.is_active
+                           order by ci.seq desc limit 1""")  # pos 175 (butir terakhir buku 4)
+        item_mat1a = satu("""select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id
+                             where b.name='Matematika Jilid 1' and ci.is_active order by ci.seq asc limit 1""")  # pos 176
+        item_mat1b = satu("""select ci.id from public.curriculum_items ci join public.books b on b.id=ci.book_id
+                             where b.name='Matematika Jilid 1' and ci.is_active order by ci.seq asc offset 1 limit 1""")  # pos 177
+        # capaian Hisab di butir terakhir buku 4 (pos 175) untuk semua anggota, target Matematika Jilid 1 (pos 176)
+        c.execute("""insert into public.progress_entries (student_id, halaqah_id, subject_id, month_id, item_id, putaran)
+                     select hm.student_id, %s, %s, %s, %s, 1 from public.halaqah_members hm
+                     where hm.halaqah_id=%s and hm.left_on is null
+                     on conflict (student_id, subject_id, month_id) do update set item_id=excluded.item_id""",
+                  (hal_w, hisab, bulan6, item_ai4, hal_w))
+        c.execute("""insert into public.targets (domain, subject_id, halaqah_id, effective_month_id,
+                                                 amount, amount_period, target_item_id, status)
+                     values ('wasilah', %s, %s, %s, null, 'bulanan', %s, 'disetujui')""",
+                  (hisab, hal_w, bulan6, item_mat1a))
+        pos_now, tpos, tstat, tkurang, ttercapai = c.execute(
+            """select pos, target_pos, target_status, target_kurang, target_tercapai
+               from public.v_monthly_report
+               where domain='wasilah' and subject_id=%s and month_id=%s and halaqah_id=%s
+               order by student_id limit 1""", (hisab, bulan6, hal_w)).fetchone()
+        catat("9a. Lintas buku: capaian buku 4 -> target Matematika Jilid 1 = 'Kurang 1 butir'",
+              pos_now == 175 and tpos == 176 and tstat == "Kurang 1 butir"
+              and float(tkurang) == 1 and ttercapai is False,
+              pos=pos_now, target_pos=tpos, status=tstat)
+        # capaian maju ke Matematika Jilid 1 halaman 2 (pos 177) -> Tercapai
+        c.execute("""update public.progress_entries set item_id=%s
+                     where subject_id=%s and month_id=%s and halaqah_id=%s""", (item_mat1b, hisab, bulan6, hal_w))
+        tstat2, tkurang2, ttercapai2 = c.execute(
+            """select target_status, target_kurang, target_tercapai from public.v_monthly_report
+               where domain='wasilah' and subject_id=%s and month_id=%s and halaqah_id=%s
+               order by student_id limit 1""", (hisab, bulan6, hal_w)).fetchone()
+        catat("9b. Capaian >= target -> 'Tercapai' (kurang 0, tercapai true)",
+              tstat2 == "Tercapai" and float(tkurang2) == 0 and ttercapai2 is True, status=tstat2)
+        # mapel tanpa target disetujui -> kolom target kosong (null), bukan 0
+        # (hapus dulu target DUMMY Sirah pada halaqah ini di dalam savepoint agar benar-benar tanpa target)
+        c.execute("""delete from public.targets where halaqah_id=%s and subject_id=%s and status='disetujui'""",
+                  (hal_w, sirah))
+        c.execute("""insert into public.progress_entries (student_id, halaqah_id, subject_id, month_id, item_id, putaran)
+                     select hm.student_id, %s, %s, %s, %s, 1 from public.halaqah_members hm
+                     where hm.halaqah_id=%s and hm.left_on is null
+                     on conflict (student_id, subject_id, month_id) do update set item_id=excluded.item_id""",
+                  (hal_w, sirah, bulan6, item(sirah), hal_w))
+        tstat3, tpos3 = c.execute(
+            """select target_status, target_pos from public.v_monthly_report
+               where domain='wasilah' and subject_id=%s and month_id=%s and halaqah_id=%s
+               order by student_id limit 1""", (sirah, bulan6, hal_w)).fetchone()
+        catat("9c. Tanpa target: target_status & target_pos KOSONG (null), bukan 0",
+              tstat3 is None and tpos3 is None, status=tstat3)
+    else:
+        catat("9. View target butir (lintas buku) — mapel Hisab/Sirah tidak ditemukan", False)
+    c.execute("rollback to savepoint s9")
+
     conn.rollback()
     conn.close()
 

@@ -1,7 +1,7 @@
 {
-  "lulus": 15,
+  "lulus": 18,
   "gagal": [],
-  "ringkasan": "15 LULUS, 0 gagal",
+  "ringkasan": "18 LULUS, 0 gagal",
   "rincian": [
     {
       "uji": "1a. Mudir: simpan gabungan berhasil (capaian + target bulan depan)",
@@ -138,8 +138,25 @@
     {
       "uji": "8. v_monthly_report Al Qur'an SEBELUM vs SESUDAH simpan gabungan identik",
       "ok": true,
-      "sebelum": "cbab30daf517",
-      "sesudah": "cbab30daf517"
+      "sebelum": "dffee2bde2a2",
+      "sesudah": "dffee2bde2a2"
+    },
+    {
+      "uji": "9a. Lintas buku: capaian buku 4 -> target Matematika Jilid 1 = 'Kurang 1 butir'",
+      "ok": true,
+      "pos": "175",
+      "target_pos": "176",
+      "status": "Kurang 1 butir"
+    },
+    {
+      "uji": "9b. Capaian >= target -> 'Tercapai' (kurang 0, tercapai true)",
+      "ok": true,
+      "status": "Tercapai"
+    },
+    {
+      "uji": "9c. Tanpa target: target_status & target_pos KOSONG (null), bukan 0",
+      "ok": true,
+      "status": null
     }
   ]
 }

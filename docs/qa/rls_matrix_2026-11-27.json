@@ -1,0 +1,884 @@
+{
+  "ringkasan": {
+    "total": 97,
+    "ok": 94,
+    "skip": 3,
+    "gagal": 0,
+    "ran_at": "2026-11-27T08:02:16.529822"
+  },
+  "baris": [
+    {
+      "role": "mudir",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudarris",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudarris",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudarris",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "wali",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "SKIP(no profil)",
+      "status": "SKIP",
+      "catatan": ""
+    },
+    {
+      "role": "wali",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "SKIP(no profil)",
+      "status": "SKIP",
+      "catatan": ""
+    },
+    {
+      "role": "wali",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "SKIP(no profil)",
+      "status": "SKIP",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "students",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "halaqahs",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "progress_entries",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "insert(halaqah sendiri)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "insert(halaqah lain)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "progress_entries",
+      "operasi": "insert",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "progress_entries",
+      "operasi": "insert",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "insert(halaqah tak diampu oleh profil uji)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain alquran)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "attendance",
+      "operasi": "insert(domain alquran)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain alquran)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "attendance",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "attendance",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "attendance",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "attendance",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain ghayah)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "attendance",
+      "operasi": "insert(domain alquran)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain alquran)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "attendance",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "monthly_notes",
+      "operasi": "insert(domain wasilah)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "progress_entries",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "attendance",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "progress_entries",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "attendance",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "progress_entries",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "attendance",
+      "operasi": "delete",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "progress_entries",
+      "operasi": "delete",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "attendance",
+      "operasi": "delete",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "attendance",
+      "operasi": "insert(bulan terkunci)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "attendance",
+      "operasi": "insert(bulan terkunci)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "attendance",
+      "operasi": "insert(bulan terkunci)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "month_domain_settings",
+      "operasi": "update(Hari Efektif)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "month_domain_settings",
+      "operasi": "update(Hari Efektif)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "month_domain_settings",
+      "operasi": "update(Hari Efektif)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "month_domain_settings",
+      "operasi": "update(Hari Efektif)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_wasilah",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "targets",
+      "operasi": "update langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "targets",
+      "operasi": "delete langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "targets",
+      "operasi": "insert langsung",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_alquran",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "masul_ghayah",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "mudir",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "anon",
+      "tabel": "targets",
+      "operasi": "select",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "musyrif",
+      "tabel": "profiles",
+      "operasi": "update(role user lain)",
+      "diharapkan": "DITOLAK(RLS)",
+      "aktual": "DITOLAK(RLS)",
+      "status": "OK",
+      "catatan": ""
+    },
+    {
+      "role": "admin",
+      "tabel": "profiles",
+      "operasi": "update(role user lain)",
+      "diharapkan": "DITERIMA",
+      "aktual": "DITERIMA",
+      "status": "OK",
+      "catatan": ""
+    }
+  ]
+}
