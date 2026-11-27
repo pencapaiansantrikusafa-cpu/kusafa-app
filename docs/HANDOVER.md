@@ -163,7 +163,7 @@ Berlaku di atas 3.2.
 - Data sekarang (diperiksa 27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` bertambah (append-only), `month_domain_settings` 21, `profiles` 24.
 - `month_domain_settings` hanya bulan 1-7; `is_locked` semua `false`; bulan 8-12 dan pengisian Hari Efektif adalah T8.
 - **Matriks RLS:** 94 OK / 3 SKIP / 0 GAGAL. SKIP: profil `wali`, target `diajukan`.
-- Situs produksi: `https://kusafa-app.vercel.app` (HTTP 200, terakhir diperiksa 26 Nov 2026 sebelum pergantian skema T7c).
+- Situs produksi: `https://kusafa-app.vercel.app` (HTTP 200; **27 Nov 2026** setelah deploy form T7c [3/3], commit `8275103`: bundel produksi memanggil `wasilah_simpan_gabungan`, jalur lama `wasilah_input_save` sudah tidak ada; smoke baca saja **42/42 PASS** — `docs/qa/smoke_e2e_2026-11-27_prod.json`).
 
 ---
 
@@ -180,7 +180,7 @@ Berlaku di atas 3.2.
 9. **Retensi `change_log`**: belum ada pemangkasan; perlu keputusan bila log dianggap terlalu besar.
 10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): **DITUTUP 27 Nov 2026** — dihapus lewat skrip idempoten, tercatat `change_log`.
 11. **Pemetaan mapel Excel benar** (keputusan 3.2a) dan tidak ada perubahan data. Konfirmasi bahwa layar pergantian mapel halaqah dan kewajiban target bulan depan cukup dikerjakan di T7c [2/3] / T8.
-12. **Smoke produksi setelah T7c [1/3]** — **DITUTUP 27 Nov 2026**: smoke baca-saja dijalankan setelah deploy Vercel terbaru, **42/42 PASS**.
+12. **Smoke produksi** — **DITUTUP 27 Nov 2026**, terakhir setelah deploy form T7c [3/3] (commit `8275103`): smoke baca-saja **42/42 PASS**.
 13. **ASUMSI kewajiban target [2/3] — SELESAI DIKONFIRMASI (keputusan Mudir 27 November 2026 = keputusan ⓐ).** Target bulan depan **wajib hanya untuk mapel yang capaiannya sedang disimpan**; tidak wajib bila untuk mapel itu di bulan berikutnya **sudah ada target hidup** (`diajukan`/`disetujui`) atau mapel sudah **tuntas**; koreksi capaian tidak memaksa mengisi ulang target. Diimplementasikan di `wasilah_simpan_gabungan` (migrasi `000036`) dan diuji `test_t7c_form_e2e.py`. Mapel lain yang belum punya target dilaporkan lewat notifikasi "belum punya target" ([3c]).
 
 ---

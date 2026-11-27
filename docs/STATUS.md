@@ -20,6 +20,7 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 | `test_t7c_simpan_gabungan.py` (BACKEND, 18 uji) | **18/18 LULUS**; sidik jari SAMA (dari [2/3]) |
 | `test_targets_t7.py` / `test_t7c_target_tujuan.py` / `regression_execute.py` | **34/34 / 48/48 / 8/8 LULUS** |
 | `npm run typecheck` / `npm run build` / `npm test` | hijau / berhasil / 14/14 |
+| Smoke produksi Vercel (baca saja) setelah deploy form T7c [3/3] | **42/42 PASS** (`docs/qa/smoke_e2e_2026-11-27_prod.json`); bundel produksi memanggil `wasilah_simpan_gabungan` |
 
 **Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
 `change_log` bertambah (append-only; baris lama utuh), `targets` **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah; DUMMY berbentuk TUJUAN AKHIR tanpa amount). Migrasi **36**.
