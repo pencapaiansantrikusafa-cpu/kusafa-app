@@ -64,12 +64,12 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 ### Bug/error yang diketahui
 
 1. **1 baris target Al Qur'an sisa uji T7 [2/2]** (Tahfidz, Santriwan fulan 26, Rabiul Akhir, amount 2, 26 Nov 09:27 UTC) — **SELESAI dihapus 27 Nov 2026** (percobaan Mudir). Skrip `scripts/db/fixes/2026-11-27_hapus_target_percobaan_r5.sql`; target Al Qur'an 328→327, sidik jari hanya `targets` -1, tercatat `change_log`. Lihat `DATA-NOTES.md` 0b.
-2. **`test_t6e_hapus_capaian.py` butuh baris capaian bulan 8.** Data dummy tidak punya capaian bulan 8; uji berhasil 35/35 setelah satu baris sementara disisipkan lalu dihapus. Masalah prasyarat uji, bukan regresi. Belum dijalankan ulang pada sesi 26-27 Nov (**BELUM DIVERIFIKASI**).
+2. **`test_t6e_hapus_capaian.py` butuh baris capaian bulan 8.** — **SELESAI diperbaiki & dijalankan 27 Nov 2026: 35/35 LULUS, sidik jari SAMA.** Uji kini membuat SATU baris capaian bulan 8 sementara untuk santri+mapel yang sama (yang punya capaian bulan 6 & 7), membersihkannya di blok `finally` dengan `session_replication_role = replica` agar tidak menulis `change_log`; tidak ada baris yang tertinggal.
 3. **3 sel matriks RLS SKIP:** profil `wali` belum ada dan tidak ada target `diajukan` di data dummy.
 4. **`change_log`** append-only; sekarang **356** baris (bertambah karena uji yang menulis), baris lama utuh.
 5. **Skrip `2026-11-26_t7b_target_dummy_wasilah_ghayah.sql` usang** (DUMMY bentuk lama). Berkop peringatan "JANGAN dijalankan lagi"; database otomatis menolak bentuk `amount`.
 6. **Capaian Wasilah/Ghayah = 0 baris memang benar**: Excel tidak punya kolom capaian (lihat `docs/DATA-NOTES.md` bagian 12). Capaian asli diinput lewat aplikasi.
-7. **Smoke produksi setelah pergantian skema belum dijalankan** (kode frontend tidak berubah): **BELUM DIVERIFIKASI**.
+7. **Smoke produksi setelah pergantian skema belum dijalankan** — **SELESAI 27 Nov 2026: 42/42 PASS (baca saja)** pada `https://kusafa-app.vercel.app`, setelah skema T7c. Laporan `docs/qa/smoke_e2e_2026-11-27_prod.json`.
 8. **Skrip hapus DUMMY lama pernah berbahaya** (`like 'DUMMY%'` ikut menghapus DUMMY baru). Sudah dipersempit dan diuji; jangan mengembalikan pola lama.
 
 ### Langkah berikutnya (berurutan)
@@ -154,7 +154,7 @@ Berlaku di atas 3.2.
 - `targets` hanya punya policy SELECT (staf); tulis lewat RPC. **15 fungsi target** tanpa `EXECUTE` untuk `anon` maupun `PUBLIC`; RPC target hanya `authenticated` (dijaga `regression_execute.py`).
 - `change_log` hanya SELECT untuk Mudir/Admin, append-only.
 - **Seed dummy 1447 sudah dimuat** dan **destruktif (TRUNCATE)**. Jangan jalankan ulang tanpa perintah Mudir.
-- Data sekarang (diperiksa 26-27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **364** (328 Al Qur'an + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` **356** baris, `month_domain_settings` 21, `profiles` 24.
+- Data sekarang (diperiksa 27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` bertambah (append-only), `month_domain_settings` 21, `profiles` 24.
 - `month_domain_settings` hanya bulan 1-7; `is_locked` semua `false`; bulan 8-12 dan pengisian Hari Efektif adalah T8.
 - **Matriks RLS:** 94 OK / 3 SKIP / 0 GAGAL. SKIP: profil `wali`, target `diajukan`.
 - Situs produksi: `https://kusafa-app.vercel.app` (HTTP 200, terakhir diperiksa 26 Nov 2026 sebelum pergantian skema T7c).
@@ -174,7 +174,7 @@ Berlaku di atas 3.2.
 9. **Retensi `change_log`**: belum ada pemangkasan; perlu keputusan bila log dianggap terlalu besar.
 10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): **DITUTUP 27 Nov 2026** — dihapus lewat skrip idempoten, tercatat `change_log`.
 11. **Pemetaan mapel Excel benar** (keputusan 3.2a) dan tidak ada perubahan data. Konfirmasi bahwa layar pergantian mapel halaqah dan kewajiban target bulan depan cukup dikerjakan di T7c [2/3] / T8.
-12. **Smoke produksi setelah T7c [1/3]** belum dijalankan. Perlu izin menjalankan smoke baca-saja (`42/42`) setelah deploy Vercel berikutnya.
+12. **Smoke produksi setelah T7c [1/3]** — **DITUTUP 27 Nov 2026**: smoke baca-saja dijalankan setelah deploy Vercel terbaru, **42/42 PASS**.
 
 ---
 

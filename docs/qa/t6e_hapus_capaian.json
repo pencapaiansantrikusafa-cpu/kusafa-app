@@ -82,10 +82,15 @@
         "putaran": 1,
         "terkunci": false,
         "putaran_lalu": 1,
-        "bulan_sesudah": [],
-        "jumlah_sesudah": 0,
+        "bulan_sesudah": [
+          {
+            "bulan": "Jumadal Ula",
+            "label": "Menyalin - 131"
+          }
+        ],
+        "jumlah_sesudah": 1,
         "mulai_putaran_baru": false,
-        "perlu_setuju_lanjutan": false
+        "perlu_setuju_lanjutan": true
       }
     },
     {
@@ -143,10 +148,14 @@
         ],
         "halaqah": "HLQ-PA-1",
         "terkunci": false,
-        "bulan_sesudah": [],
+        "bulan_sesudah": [
+          {
+            "bulan": "Jumadal Ula"
+          }
+        ],
         "variasi_nilai": 6,
-        "jumlah_sesudah": 0,
-        "perlu_setuju_lanjutan": false
+        "jumlah_sesudah": 1,
+        "perlu_setuju_lanjutan": true
       }
     },
     {
@@ -175,18 +184,18 @@
       "ok": true,
       "info": {
         "ada": true,
-        "pos": 412,
+        "pos": 460,
         "bulan": "Rabiul Akhir",
-        "label": "Menyalin - 83",
+        "label": "Menyalin - 131",
         "mapel": "Kitabah",
-        "santri": "Santriwati fulanah 1",
+        "santri": "Santriwan fulan 7",
         "putaran": 1,
         "terkunci": false,
         "putaran_lalu": 1,
         "bulan_sesudah": [
           {
             "bulan": "Jumadal Ula",
-            "label": "Menyalin - 83"
+            "label": "Menyalin - 131"
           }
         ],
         "jumlah_sesudah": 1,
@@ -197,7 +206,7 @@
     {
       "uji": "bulan sesudahnya terisi: ditolak tanpa konfirmasi",
       "ok": true,
-      "pesan": "Bulan sesudahnya sudah terisi ([{\"bulan\": \"Jumadal Ula\", \"label\": \"Menyalin - 83\"}]). Menghapus bulan ini akan membuat selisih bulan sesudahnya tidak konsisten. Hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit."
+      "pesan": "Bulan sesudahnya sudah terisi ([{\"bulan\": \"Jumadal Ula\", \"label\": \"Menyalin - 131\"}]). Menghapus bulan ini akan membuat selisih bulan sesudahnya tidak konsisten. Hapus mulai dari bulan terakhir, atau beri konfirmasi eksplisit."
     },
     {
       "uji": "bulan sesudahnya terisi: diterima dengan konfirmasi",
@@ -274,8 +283,8 @@
       "uji": "LOG tidak mencatat UPDATE tanpa perubahan nilai",
       "ok": true,
       "log": {
-        "sebelum": 102,
-        "sesudah": 102
+        "sebelum": 367,
+        "sesudah": 367
       }
     },
     {
@@ -314,7 +323,7 @@
       "uji": "log: Mudir/Admin bisa membaca log",
       "ok": true,
       "hasil": [
-        102
+        367
       ],
       "pesan": ""
     },
