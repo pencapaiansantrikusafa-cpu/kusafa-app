@@ -1,6 +1,6 @@
 # HANDOVER - serah terima KUSAFA
 
-**Terakhir diperbarui**: 27 November 2026, 08:35 (waktu lokal), commit terakhir **`2e70798`** (`main`, sudah di-push).
+**Terakhir diperbarui**: 27 November 2026, sesi pemulihan T7c (waktu lokal), setelah commit form UI T7c [3/3] butir 1-2.
 Dokumen ini serah terima tetap. Sumber kebenaran status dan angka: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
 Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data santri asli di sini.
 
@@ -28,7 +28,9 @@ Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data san
 | T7 [2/2] | UI `/target` (daftar, ajukan, setujui/tolak, ubah, riwayat) + uji tulis | **SELESAI** | `src/pages/TargetPage.tsx`, `TargetDomainPage.tsx`, `FormTarget.tsx`, `DialogAksiTarget.tsx`, `DialogRiwayatTarget.tsx`, `src/lib/target.ts`, `test_t7_target_ui.py` 36/36, `test_t7_target_tulis.py` 38/38 |
 | **T7c [1/3]** | **Target Wasilah/Ghayah = TUJUAN AKHIR (butir kurikulum): database, RPC, bulk, DUMMY, uji** | **SELESAI** | migrasi `20261126000032_targets_tujuan_akhir.sql`, `scripts/db/fixes/2026-11-26_t7c_*.sql`, `scripts/qa/test_t7c_target_tujuan.py` (48/48) |
 | T7c [2/3] | **BACKEND**: simpan gabungan capaian + target bulan depan (satu transaksi), `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah menampilkan butir/posisi target | **SELESAI** | migrasi `000033`-`000035`, `test_t7c_simpan_gabungan.py` 18/18, sidik jari SAMA |
-| T7c [3/3] | **UI**: form Wasilah/Ghayah pilih butir, tampilkan butir, bulk di layar, kewajiban target bulan depan + pembuktian akhir (E2E + smoke produksi) | **BELUM** | belum ada |
+| T7c [3/3] form | **UI butir 1-2**: form Input Wasilah/Ghayah = capaian + **target bulan depan**, simpan gabungan, kewajiban target ⓐ, peringatan di bawah capaian, Tuntas/Level 6 | **SELESAI (butir 1-2)** | migrasi `000036`, `FormInputWasilah.tsx`, `InputWasilahPage.tsx`, `DropdownCari.tsx`, `test_t7c_form_e2e.py` 4/4, sidik jari SAMA |
+| T7c [3b] | **UI tab `/target` Wasilah/Ghayah**: satu baris per halaqah + tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`), tabel Capaian menampilkan target & Tercapai/Kurang N butir | **BELUM** | kode setengah jadi **belum di-commit**: `TabelTargetHalaqah.tsx` (baru), `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx` |
+| T7c [3c] | **Notifikasi "belum punya target" + E2E penuh + tangkapan layar HP/desktop** | **BELUM** | `KotakBelumLengkap.tsx` (semantik baru `target_belum_domain`, belum di-commit), `test_t7c3_e2e.py` + `docs/qa/t7c3/` (penuh; 19/20, 1 gagal = ambang waktu halaman Input 1,89 s) |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan**, pergantian mapel halaqah | **BELUM** | rute `/kurikulum`, `/halaqah`, `/pengaturan` masih `PlaceholderPage` |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | ± 27 skrip `scripts/qa/`; belum ada proyek Supabase QA terpisah; 3 sel RLS SKIP |
 | T10 | Deploy akhir, hapus dummy, repo privat | **BELUM** | belum ada |
@@ -37,7 +39,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ---
 
-## 2. Tahap yang sedang dikerjakan: T7c BACKEND [2/3] selesai, UI [3/3] belum
+## 2. Tahap yang sedang dikerjakan: T7c [3/3] form SELESAI; tersisa [3b] tab `/target` massal + [3c] notifikasi/E2E penuh
 
 ### Yang sudah jalan (jangan diulang)
 
@@ -56,10 +58,12 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
   - Helper tuntas: `mapel_butir_terakhir(subject)`, `mapel_tuntas(halaqah,subject,bulan)`, `halaqah_tanpa_mapel(halaqah)` (Level 6), `halaqah_status_tuntas(halaqah,bulan)` (data untuk notifikasi Masul).
   - **RPC `wasilah_simpan_gabungan(halaqah, bulan, capaian, target, konfirmasi)`**: capaian bulan ini (alur T6b, disalin ke anggota) + target bulan depan dalam **satu transaksi**. Menolak bila ada mapel aktif (yang boleh ditulis pemanggil) tanpa target, **kecuali tuntas**; bila tidak ada bulan berikutnya, target tidak diminta. Pengampu → target `diajukan`; Masul domain/Mudir/Admin → `disetujui` (lewat `wasilah_target_bulan_depan`, SECURITY DEFINER). Target di bawah capaian diterima dan dilaporkan di `di_bawah_capaian`. Level 6 = "Tuntas, belum ada pelajaran lanjutan", tidak menulis.
   - **`v_monthly_report` Wasilah/Ghayah** kini punya kolom `target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status` (`'Tercapai'` / `'Kurang N butir'`, lintas buku lewat `item_position`; NULL bila tak ada target). Kolom lama + Al Qur'an **identik** (bukti: hash baris Al Qur'an tak berubah).
+- **T7c [3/3] form UI (27 November 2026, migrasi `000036`)**: form Input Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (label "Mapel · Buku - nomor"), mengirim `wasilah_simpan_gabungan` (capaian bulan ini + target bulan depan, satu transaksi). Kewajiban target = **keputusan ⓐ**: wajib untuk mapel yang **capaiannya disimpan**, dilewati bila **tuntas** atau sudah ada target hidup bulan berikutnya. Peringatan + centang konfirmasi bila target **di bawah capaian** (pengulangan). "Tuntas, target tidak wajib" di butir terakhir; Level 6 "Tuntas, belum ada pelajaran lanjutan". **Jalur simpan lama `wasilah_input_save` ditutup** (melempar galat jelas). Banner sukses dipindah ke induk (`InputWasilahPage`) agar tetap tampil setelah form dimuat ulang. Bukti: `test_t7c_form_e2e.py` 4/4, sidik jari SAMA.
 
 ### Yang belum
 
-- **T7c [3/3] (UI)**: form Wasilah/Ghayah masih mengirim `amount`, sehingga pengajuan dari UI **ditolak database** dengan pesan jelas; daftar/riwayat belum menampilkan butir tujuan akhir; belum ada tombol bulk "Setujui semua target halaqah ini" di layar; kewajiban target bulan depan saat input capaian, peringatan target di bawah capaian, dan tampilan Level 6 "Tuntas" belum dibuat. Ditutup dengan E2E penuh + smoke produksi.
+- **T7c [3b] (UI `/target`)**: tab Wasilah/Ghayah **satu baris per halaqah** + tombol **"Setujui semua target halaqah ini"** (RPC `setujui_target_halaqah`) + tabel Capaian menampilkan `target_label` & `target_status` (Tercapai / Kurang N butir). Kode setengah jadi **BELUM di-commit** (`TabelTargetHalaqah.tsx` baru, `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`).
+- **T7c [3c]**: notifikasi "belum punya target" (`target_belum_domain`, semantik baru di `KotakBelumLengkap.tsx` — **BELUM di-commit**), E2E penuh (pengampu + Masul, lintas domain, Level 6, 1280/360 px), tangkapan layar HP/desktop. `test_t7c3_e2e.py` penuh sudah ditulis (19/20; 1 gagal = ambang waktu halaman Input 1,89 s vs 1,5 s) tapi **BELUM di-commit**.
 - **T8 belum dimulai** (menunggu perintah): kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah, notifikasi kekurangan target bulan depan.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
 - Usulan proyek Supabase QA terpisah belum dibuat (T9/T10).
@@ -77,9 +81,9 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Langkah berikutnya (berurutan)
 
-1. **T7c [3/3] = UI `/target`** (berikutnya): form Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (tanpa angka), label "Mapel · Buku - nomor"; kirim `wasilah_simpan_gabungan` (capaian + target bulan depan sekaligus); daftar/riwayat/laporan menampilkan `target_label`/`target_status`; tombol **"Setujui semua target halaqah ini"** memakai `setujui_target_halaqah`; peringatan "target di bawah capaian" (dari `di_bawah_capaian`); tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan". Ditutup E2E penuh + smoke produksi.
-2. **Konfirmasi asumsi** (HANDOVER §5 butir 13): kewajiban target hanya untuk mapel aktif yang **boleh ditulis pemanggil** (lihat §5).
-3. **Setelah T7 disetujui**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
+1. **[3b] UI tab `/target` Wasilah/Ghayah**: selesaikan & commit kode setengah jadi (`TabelTargetHalaqah.tsx`, `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`): satu baris per halaqah, tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`), tabel Capaian menampilkan `target_label` + `target_status` (Tercapai / Kurang N butir). Typecheck + build + uji tulis.
+2. **[3c] Notifikasi + E2E penuh + tangkapan layar**: sambungkan `target_belum_domain` ke `KotakBelumLengkap.tsx` ("belum punya target"), jalankan `test_t7c3_e2e.py` (penuh, 1280/360 px, Level 6, lintas domain; perbaiki/ganti ambang waktu 1,5 s yang membuat 1 uji gagal), simpan tangkapan layar HP/desktop. Sidik jari wajib SAMA.
+3. **Setelah T7c tuntas**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
 4. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
 
 ---
@@ -150,10 +154,10 @@ Berlaku di atas 3.2.
 
 - Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 - **`DATABASE_URL` = pooler Supabase** (host `*.pooler.supabase.com`, port `5432`, user berawalan `postgres`), bukan koneksi langsung. Kata sandi hanya di `.env.local`.
-- **35 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261127000035_v_monthly_report_tujuan_akhir`**. Berikutnya wajib nomor `20261128000036_...` (atau tanggal berjalan) dan tidak boleh mengubah berkas lama.
-  - Inti: `000001`-`000009`. Hardening/T5c/T6: `000010`-`000020`. Target T7: `000021`-`000031`. T7c: `000032`-`000035`. Daftar lengkap: `docs/STATUS.md` bagian 3.
-- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **58 fungsi** public; **4 view**. (8 fungsi baru T7c [2/3]: `halaqah_mapel_aktif`, `bulan_berikutnya`, `mapel_butir_terakhir`, `mapel_tuntas`, `halaqah_tanpa_mapel`, `halaqah_status_tuntas`, `wasilah_target_bulan_depan`, `wasilah_simpan_gabungan`.)
-- `targets` hanya punya policy SELECT (staf); tulis lewat RPC. **15 fungsi target** tanpa `EXECUTE` untuk `anon` maupun `PUBLIC`; RPC target hanya `authenticated` (dijaga `regression_execute.py`). Fungsi T7c baru juga tanpa `EXECUTE` untuk `anon`/`PUBLIC` (diverifikasi).
+- **36 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261128000036_kewajiban_target_gabungan`**. Berikutnya wajib nomor `20261129000037_...` (atau tanggal berjalan) dan tidak boleh mengubah berkas lama.
+  - Inti: `000001`-`000009`. Hardening/T5c/T6: `000010`-`000020`. Target T7: `000021`-`000031`. T7c: `000032`-`000036`. Daftar lengkap: `docs/STATUS.md` bagian 3.
+- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **59 fungsi** public; **4 view**. (8 fungsi baru T7c [2/3]: `halaqah_mapel_aktif`, `bulan_berikutnya`, `mapel_butir_terakhir`, `mapel_tuntas`, `halaqah_tanpa_mapel`, `halaqah_status_tuntas`, `wasilah_target_bulan_depan`, `wasilah_simpan_gabungan`. Tambah `target_belum_domain` di `000036` untuk notifikasi [3c].)
+- `targets` hanya punya policy SELECT (staf); tulis lewat RPC. Seluruh fungsi target & `wasilah_*` **tanpa `EXECUTE` untuk `anon` maupun `PUBLIC`** (diverifikasi 27 Nov 2026: 23 fungsi target/wasilah semuanya `anon=False`, `public=False`); RPC target & simpan gabungan hanya `authenticated` (dijaga `regression_execute.py`). Jalur simpan lama `wasilah_input_save` kini **melempar galat** (ditutup `000036`).
 - `change_log` hanya SELECT untuk Mudir/Admin, append-only.
 - **Seed dummy 1447 sudah dimuat** dan **destruktif (TRUNCATE)**. Jangan jalankan ulang tanpa perintah Mudir.
 - Data sekarang (diperiksa 27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` bertambah (append-only), `month_domain_settings` 21, `profiles` 24.
@@ -168,7 +172,7 @@ Berlaku di atas 3.2.
 1. **Repo masih PUBLIK.** Harus dijadikan privat sebelum data asli dimuat (`gh repo edit --visibility private --accept-visibility-change-consequences`). Wajib diingatkan lagi di T10.
 2. **Data Awal 252 capaian**: dipertahankan atau dikosongkan saat data asli masuk? Keputusan T10.
 3. **69 capaian dummy yang "mundur"** (lebih kecil dari bulan lalu): disepakati dibiarkan; konfirmasi ulang sebelum T9.
-4. **Halaqah Level 6 (4 santri Wasilah)** belum punya mata pelajaran/pengampu. Data "Tuntas, belum ada pelajaran lanjutan" **sudah disediakan** oleh BACKEND [2/3] (`halaqah_tanpa_mapel`, kembalian `tanpa_mapel`); **tampilannya** di UI menyusul [3/3]/T8.
+4. **Halaqah Level 6 (4 santri Wasilah)** belum punya mata pelajaran/pengampu. Data "Tuntas, belum ada pelajaran lanjutan" **sudah disediakan** oleh BACKEND [2/3] (`halaqah_tanpa_mapel`, kembalian `tanpa_mapel`); **tampilannya di form Input sudah dibuat** ([3/3] form, Level 6). Penampilan di tab `/target` dan Capaian menyusul [3b]/[3c]/T8.
 5. **Hari Efektif bulan 8-12** (semua domain) belum ada; layar pengisiannya T8. Notifikasi "data belum lengkap" karena itu tidak memeriksa bulan-bulan tersebut.
 6. **3 sel RLS SKIP**: perlu profil `wali` dan contoh target `diajukan` untuk diuji (T9).
 7. **DUMMY Wasilah/Ghayah** (25 + 11): kapan butir asli dimasukkan? Perlu daftar butir tujuan akhir dari Mudir (T8).
@@ -177,7 +181,7 @@ Berlaku di atas 3.2.
 10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): **DITUTUP 27 Nov 2026** — dihapus lewat skrip idempoten, tercatat `change_log`.
 11. **Pemetaan mapel Excel benar** (keputusan 3.2a) dan tidak ada perubahan data. Konfirmasi bahwa layar pergantian mapel halaqah dan kewajiban target bulan depan cukup dikerjakan di T7c [2/3] / T8.
 12. **Smoke produksi setelah T7c [1/3]** — **DITUTUP 27 Nov 2026**: smoke baca-saja dijalankan setelah deploy Vercel terbaru, **42/42 PASS**.
-13. **ASUMSI kewajiban target [2/3] — mohon dikonfirmasi.** Keputusan 3.2a menulis target bulan depan "wajib untuk tiap mapel aktif". Bila dibaca harfiah, seorang **pengampu** (yang hanya mengampu 1 dari 2 mapel pada satu halaqah) **mustahil** menyimpan karena tidak berhak mengisi target mapel lain. Karena itu saya menerapkan: **SERVER menolak bila ada mapel aktif YANG BOLEH DITULIS PEMANGGIL yang belum punya target (kecuali tuntas).** Untuk Masul domain/Mudir/Admin = semua mapel; untuk pengampu = mapel yang diampu saja. Apakah ini sesuai maksud, atau pengampu memang tidak memakai simpan gabungan (hanya Masul/Mudir yang mengisi target semua mapel)?
+13. **ASUMSI kewajiban target [2/3] — SELESAI DIKONFIRMASI (keputusan Mudir 27 November 2026 = keputusan ⓐ).** Target bulan depan **wajib hanya untuk mapel yang capaiannya sedang disimpan**; tidak wajib bila untuk mapel itu di bulan berikutnya **sudah ada target hidup** (`diajukan`/`disetujui`) atau mapel sudah **tuntas**; koreksi capaian tidak memaksa mengisi ulang target. Diimplementasikan di `wasilah_simpan_gabungan` (migrasi `000036`) dan diuji `test_t7c_form_e2e.py`. Mapel lain yang belum punya target dilaporkan lewat notifikasi "belum punya target" ([3c]).
 
 ---
 
@@ -237,6 +241,7 @@ npm run build
 python3 scripts/qa/serve_dist.py 4173 &
 BASE_URL=http://localhost:4173 .venv-qa/bin/python scripts/qa/test_t7_target_ui.py
 BASE_URL=http://localhost:4173 .venv-qa/bin/python scripts/qa/test_t7_target_tulis.py
+BASE_URL=http://localhost:4173 .venv-qa/bin/python scripts/qa/test_t7c_form_e2e.py   # T7c [3/3] form (baru, 4/4)
 BASE_URL=http://localhost:4173 .venv-qa/bin/python scripts/qa/smoke_e2e.py
 ```
 

@@ -64,14 +64,20 @@ Pemilik proyek: Mudir KUSAFA (bukan programmer). Jelaskan keputusan teknis denga
 - Bila butuh memeriksa isi berkas panjang, pakai `read` dengan `offset`/`limit` atau `grep`
   untuk bagian yang relevan, bukan seluruh berkas.
 
-## Batas token sesi (perintah Mudir 27 November 2026)
+## Aturan sesi pendek (perintah Mudir 27 November 2026)
 
-- **Hentikan dan buat handover bila Total Tokens sesi mencapai 250.000** (angka sementara), JANGAN
-  menunggu 50% dari 1.000.000. Sesi sebelumnya mati oleh galat **413 (request terlalu besar)** dari gateway,
-  bukan karena kehabisan token model.
-- Pantau angka **Total Tokens** di info sesi. Bila angka itu **tidak bisa dibaca sendiri** oleh agent,
-  hentikan setiap **3-4 sub-tugas selesai**, commit + push + perbarui `docs/HANDOVER.md`, lalu beri tahu
-  Mudir agar sesi dapat ditutup secara terkendali.
+Penyebab galat **413 (request terlalu besar)**: body permintaan ke gateway terlalu besar karena **riwayat
+sesi menumpuk** — bukan kehabisan token model. Karena itu disiplin berikut mengikat untuk SETIAP sesi.
+
+- **Jangan menampilkan atau membaca berkas besar secara utuh** (migrasi, JSON uji, sidik jari, tangkapan
+  layar). Pakai `sed -n`, `head`, `tail`, `rg`/`grep`, dan `wc -l`; ringkas hasilnya. Keluaran besar
+  disimpan ke berkas lalu ditampilkan ringkasannya saja (aturan "Batas keluaran perintah" di atas).
+- **Jangan menulis berkas lebih dari ± 200 baris dalam SATU panggilan** (`write`/`edit`). Pecah per
+  bagian: tulis bagian pertama lalu tambahkan bagian berikutnya dengan `edit` (atau panggilan lanjutan).
+- **Setelah SETIAP 2 sub-tugas selesai dan ter-commit**: tulis/perbarui `docs/HANDOVER.md`, lalu
+  **BERHENTI** dan minta Mudir membuka sesi baru. Jangan meneruskan ke sub-tugas ketiga dalam sesi yang sama.
+- **Batas keras**: hentikan bila **Total Tokens sesi sekitar 150.000**. Bila angka itu tidak bisa dibaca
+  sendiri oleh agent, berlaku aturan di atas (berhenti setelah 2 sub-tugas selesai).
 
 ## Cara bekerja (aturan tetap)
 - **Satu sub-tugas, satu commit kecil.** Setelah sub-tugas selesai: jalankan `npm run typecheck` dan `npm run build`,

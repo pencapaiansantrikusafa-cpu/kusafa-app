@@ -1,0 +1,61 @@
+{
+  "marker": "UJI-T7C3-FORM-20261127-174924",
+  "lulus": 4,
+  "gagal": [],
+  "rincian": [
+    {
+      "uji": "1. Pengampu simpan gabungan: pesan sukses tampil + capaian tersalin + target diajukan",
+      "ok": true,
+      "pesan": "Data tersimpan: 1 capaian (disalin ke 10 anggota) dan 1 target bulan depan.",
+      "mapel": "Baca",
+      "baris": 10,
+      "anggota": 10,
+      "target": [
+        [
+          "diajukan",
+          "2408317d-23c9-538d-87b2-5f04d05b9e95"
+        ]
+      ]
+    },
+    {
+      "uji": "2. Target bulan depan tersimpan tampil kembali (keterangan 'Sudah ada')",
+      "ok": true,
+      "mapel": "Baca"
+    },
+    {
+      "uji": "3. Masul Wasilah simpan gabungan: pesan sukses tampil + target langsung disetujui",
+      "ok": true,
+      "pesan": "Data tersimpan: 1 capaian (disalin ke 10 anggota) dan 1 target bulan depan.",
+      "mapel": "Tulis",
+      "baris": 10,
+      "target": [
+        [
+          "disetujui",
+          "9350a5b5-9dba-540a-897c-b90ebfa52804"
+        ]
+      ]
+    },
+    {
+      "uji": "4. Data dipulihkan PERSIS + sidik jari SAMA",
+      "ok": true,
+      "beda": {},
+      "log_tumbuh": [
+        {
+          "tabel": "change_log",
+          "sebelum": {
+            "baris": 807,
+            "maks_id": 1696,
+            "checksum_sampai_maks": "980aeaa857900bbac8e4b0953a7d654a"
+          },
+          "sesudah": {
+            "baris": 830,
+            "maks_id": 1719,
+            "checksum_sampai_maks": "829819b1c88a0d72baa67c9961ea23c4"
+          },
+          "selisih_baris": 23,
+          "baris_lama_utuh": false
+        }
+      ]
+    }
+  ]
+}

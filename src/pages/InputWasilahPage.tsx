@@ -64,6 +64,7 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
   const [memuat, setMemuat] = useState(true);
   const [memuatForm, setMemuatForm] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
+  const [sukses, setSukses] = useState<string | null>(null);
 
   // ---------- Pembukaan halaman: satu RPC ----------
   useEffect(() => {
@@ -154,6 +155,11 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
     void muatForm();
   }, [muatForm]);
 
+  // Pesan sukses hanya untuk halaqah/bulan yang baru disimpan; hilang saat berganti pilihan.
+  useEffect(() => {
+    setSukses(null);
+  }, [halaqahId, bulanId]);
+
   /** Pencarian item di server per mata pelajaran (pola T5c; label berawalan nama mapel). */
   const cariItemServer = useCallback(
     (subjectId: string): CariDiServer => ({
@@ -240,6 +246,12 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
         </p>
       )}
 
+      {sukses && (
+        <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          {sukses}
+        </p>
+      )}
+
       {bulanId && (
         <KotakBelumLengkap
           bulanId={bulanId}
@@ -258,7 +270,7 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
         <p className="rounded-xl bg-white p-6 text-sm text-gray-600 ring-1 ring-black/5">
           {halaqqahKosong(namaHalaqah)}
         </p>
-      ) : form.santri.length === 0 ? (
+      ) : form.santri.length === 0 && !form.tanpa_mapel ? (
         <p className="rounded-xl bg-white p-6 text-sm text-gray-600 ring-1 ring-black/5">
           Belum ada anggota di {namaHalaqah || "halaqah ini"}.
         </p>
@@ -269,7 +281,10 @@ export default function InputWasilahPage({ domain }: { domain: Domain }) {
           bulanNama={`${namaHalaqah} · ${namaBulan}`}
           data={form}
           cariItemServer={cariItemServer}
-          onSelesai={() => void muatForm()}
+          onSelesai={(pesanSukses) => {
+            setSukses(pesanSukses);
+            void muatForm();
+          }}
         />
       )}
     </div>

@@ -250,8 +250,8 @@ export default function DropdownCari({
   }
 
   return (
-    <div ref={kotakRef} className="relative">
-      <span id={idLab} className="block text-sm font-medium text-gray-800">
+    <div ref={kotakRef} className="relative min-w-0">
+      <span id={idLab} className="block break-words text-sm font-medium text-gray-800">
         {label}
       </span>
       <button
@@ -270,7 +270,7 @@ export default function DropdownCari({
         }}
         className="mt-1 flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-base disabled:opacity-50"
       >
-        <span className={terpilih ? "truncate text-gray-900" : "truncate text-gray-500"}>
+        <span className={"min-w-0 " + (terpilih ? "truncate text-gray-900" : "truncate text-gray-500")}>
           {terpilih?.label ?? opsiKosong ?? "— pilih —"}
         </span>
         <span aria-hidden className="shrink-0 text-gray-400">
