@@ -1,0 +1,145 @@
+{
+  "lulus": 15,
+  "gagal": [],
+  "ringkasan": "15 LULUS, 0 gagal",
+  "rincian": [
+    {
+      "uji": "1a. Mudir: simpan gabungan berhasil (capaian + target bulan depan)",
+      "ok": true,
+      "res": {
+        "baris": 12,
+        "target": 2,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 2,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "1b. Capaian tersalin ke semua anggota + target 'disetujui' untuk tiap mapel",
+      "ok": true,
+      "n_pe": 12,
+      "n_target": 2,
+      "anggota": 6
+    },
+    {
+      "uji": "2. Ditolak bila mapel aktif belum punya target",
+      "ok": true,
+      "pesan": "Target bulan depan belum diisi untuk mata pelajaran: Hisab (kecuali yang sudah tuntas)."
+    },
+    {
+      "uji": "2b. Capaian tidak tersimpan saat simpan gabungan ditolak",
+      "ok": true,
+      "awal": 0,
+      "akhir": 0
+    },
+    {
+      "uji": "3. Mapel TUNTAS dikecualikan dari kewajiban target",
+      "ok": true,
+      "res": {
+        "baris": 0,
+        "target": 1,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 0,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "4a. Bulan terakhir: target TIDAK diminta (simpan capaian saja)",
+      "ok": true,
+      "res": {
+        "baris": 12,
+        "target": 0,
+        "tersimpan": true,
+        "bulan_depan": null,
+        "tanpa_mapel": false,
+        "mapel_capaian": 2,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "4b. Bulan terakhir: mengirim target ditolak jelas",
+      "ok": true,
+      "pesan": "Tidak ada bulan berikutnya; target bulan depan tidak dapat disimpan."
+    },
+    {
+      "uji": "5a. Pengampu mapelnya sendiri: target 'diajukan'",
+      "ok": true,
+      "status": "diajukan"
+    },
+    {
+      "uji": "5b. Masul Wasilah: tersimpan, target 'disetujui'",
+      "ok": true,
+      "res": {
+        "baris": 12,
+        "target": 2,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 2,
+        "di_bawah_capaian": []
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "5c. Masul Ghayah di halaqah Wasilah: DITOLAK",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Sirah di halaqah ini."
+    },
+    {
+      "uji": "5d. Masul Al Quran di halaqah Wasilah: DITOLAK",
+      "ok": true,
+      "pesan": "Anda tidak mengampu mata pelajaran Sirah di halaqah ini."
+    },
+    {
+      "uji": "5e. anon: DITOLAK (tanpa EXECUTE)",
+      "ok": true,
+      "pesan": "permission denied for function wasilah_simpan_gabungan"
+    },
+    {
+      "uji": "6. Target di bawah capaian DITERIMA + dilaporkan di di_bawah_capaian",
+      "ok": true,
+      "res": {
+        "baris": 6,
+        "target": 2,
+        "tersimpan": true,
+        "bulan_depan": "bd12b879-0f83-5ac5-b050-e42555236e61",
+        "tanpa_mapel": false,
+        "mapel_capaian": 1,
+        "di_bawah_capaian": [
+          {
+            "name": "Sirah",
+            "pos_target": 1,
+            "subject_id": "c7f94c36-ca17-5f17-a6a9-b03b520ac9b4",
+            "pos_capaian": 3
+          }
+        ]
+      }
+    },
+    {
+      "uji": "7. Level 6 (tanpa mapel): 'Tuntas, belum ada pelajaran lanjutan', tidak menulis",
+      "ok": true,
+      "res": {
+        "baris": 0,
+        "pesan": "Tuntas, belum ada pelajaran lanjutan",
+        "target": 0,
+        "tersimpan": true,
+        "tanpa_mapel": true,
+        "mapel_capaian": 0
+      },
+      "pesan": ""
+    },
+    {
+      "uji": "8. v_monthly_report Al Qur'an SEBELUM vs SESUDAH simpan gabungan identik",
+      "ok": true,
+      "sebelum": "cbab30daf517",
+      "sesudah": "cbab30daf517"
+    }
+  ]
+}
