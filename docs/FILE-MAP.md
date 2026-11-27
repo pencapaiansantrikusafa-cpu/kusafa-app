@@ -131,6 +131,9 @@ Dibaca bersama `docs/STATUS.md` (kondisi nyata) dan `docs/HANDOVER.md` (serah te
 | `migrations/20261126000029_targets_rpc_only_audit_cancel.sql` | T7a: hapus policy tulis + cabut privilege tulis; RPC `batalkan_target`. |
 | `migrations/20261126000030_targets_massal_xor_fix.sql` | T7a: massal Al Qur'an tetap per santri (bukan halaqah). |
 | `migrations/20261126000031_targets_audit_semantics.sql` | T7a: `catat_jejak_target` mencatat pengubah, pengaju asli tetap. |
+| `migrations/20261127000033_halaqah_mapel_aktif.sql` | **T7c [2/3]**: `halaqah_mapel_aktif(halaqah, bulan)` sumber tunggal mapel aktif (+ `bulan_berikutnya`, `mapel_butir_terakhir`, `mapel_tuntas`, `halaqah_tanpa_mapel`); `wasilah_input_boot`/`form` memakainya. |
+| `migrations/20261127000034_wasilah_simpan_gabungan.sql` | **T7c [2/3]**: RPC `wasilah_simpan_gabungan(halaqah, bulan, capaian, target, konfirmasi)` (capaian + target bulan depan satu transaksi), `wasilah_target_bulan_depan` (DEFINER), `halaqah_status_tuntas` (notifikasi Masul). |
+| `migrations/20261127000035_v_monthly_report_tujuan_akhir.sql` | **T7c [2/3]**: `v_monthly_report` (+base) menambah `target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status` untuk Wasilah/Ghayah; Al Qur'an identik. |
 | `migrations/20261126000032_targets_tujuan_akhir.sql` | **T7c**: kolom `targets.target_item_id` (FK `curriculum_items`), `amount` boleh kosong untuk Wasilah/Ghayah, constraint `targets_bentuk_check`, unique index `targets_satu_diajukan_uk`, trigger `target_validasi_butir` (butir milik buku mapel & aktif), RPC `ajukan_target`/`ubah_target` versi butir (parameter baru DEFAULT NULL, tanpa overload), `setujui_target_halaqah` (bulk), `riwayat_target` + butir/buku, `REVOKE EXECUTE` PUBLIC+anon untuk seluruh keluarga fungsi target. |
 | `seed/01_curriculum.sql`, `seed/02_school_data.sql` | Hasil `build_seed.py`. **Tidak di-commit** (`.gitignore`) karena berisi data. |
 | `.temp/` | Berkas kerja Supabase CLI. Tidak di-commit. |
@@ -180,6 +183,7 @@ Migrasi **tidak boleh diubah** setelah dijalankan. Perubahan skema = berkas baru
 | `scripts/qa/test_t6b_input_wasilah.py` | Uji tulis Wasilah/Ghayah (29 uji, transaksi + ROLLBACK): salinan ke anggota, luar halaqah aman, anggota keluar aman, bulan 0/terkunci, item salah, RLS per role, Masul per domain, anon. |
 | `scripts/qa/test_t6b_e2e.py` | E2E tampilan Wasilah/Ghayah: pilih -> label tampil, simpan -> database semua anggota, muat ulang -> label tetap; data uji dipulihkan. |
 | `scripts/qa/test_t6a_tabel.py` | Uji baca T6a (14 uji): angka dari view, santri tanpa halaqah tidak muncul, bulan kosong bukan 0, HE DUMMY Wasilah/Ghayah = Al Qur'an bulan 1-7, kehadiran 0/0/0, anon 0 baris. |
+| `scripts/qa/test_t7c_simpan_gabungan.py` | **T7c [2/3]** (18 uji, transaksi + ROLLBACK): simpan gabungan berhasil, ditolak tanpa target (capaian tak tersimpan), tuntas dikecualikan, bulan terakhir tanpa target, hak per role & lintas domain, target di bawah capaian, Level 6, lintas buku Tercapai/Kurang N, `v_monthly_report` Al Qur'an identik. |
 | `scripts/qa/test_t7c_target_tujuan.py` | **T7c** (48 uji, transaksi + ROLLBACK): bentuk target (Al Qur'an panggilan lama tetap jalan; Wasilah/Ghayah wajib butir, amount ditolak jelas), constraint, satu target menunggu (penggantian + unique index), hak per role & lintas domain, bulk `setujui_target_halaqah` (termasuk bulan terkunci), ubah/batal, `v_monthly_report` Al Qur'an identik, DUMMY bentuk baru, dan tidak ada overload. |
 | `scripts/qa/test_targets_t7.py` | T7 (34 uji, transaksi + ROLLBACK): role pengaju/penyetuju, Masul lintas domain, Mudir/Admin, anon, status tidak dipakai laporan, tolak wajib alasan, ubah baris baru, massal, riwayat, bulan 0, lewat/terkunci, kasus (f), individu vs halaqah, tiebreak, bulanan tidak dikali Hadir, tulis langsung ditolak. |
 | `scripts/qa/verify_t7_report_unchanged.sql` | T7: bandingkan rumus laporan **sebelum** vs **sesudah** untuk seluruh 2.036 baris Al Qur'an; hasil 0 beda. |
@@ -248,7 +252,7 @@ Kunci unik penting: `progress_entries (student_id, subject_id, month_id)`, `atte
 | `attendance_guard_override()` | trigger | Menjaga `effective_days_override` hanya boleh diisi Mudir/Admin. |
 | `v_months_ordered` | view | Bulan berurutan + `prev_month_id` (bulan pembanding otomatis). |
 | `v_monthly_report_base` | view | Dasar perhitungan laporan (posisi, posisi bulan lalu, kehadiran, target). |
-| `v_monthly_report` | view | Laporan bulanan siap pakai: `pos`, `selisih`, `hadir`, `effective_days`, `target_monthly`, `below_target`, `attendance_short`, `item_label`, `prev_item_label`. |
+| `v_monthly_report` | view | Laporan bulanan siap pakai: `pos`, `selisih`, `hadir`, `effective_days`, `target_monthly`, `below_target`, `attendance_short`, `item_label`, `prev_item_label`. **T7c [2/3]**: + `target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status` (Wasilah/Ghayah menampilkan tujuan akhir + status `Tercapai`/`Kurang N butir`; Al Qur'an NULL). |
 | `v_attendance` | view | Kehadiran per santri/bulan/domain (Hadir dihitung database). |
 | `target_bulan_berjalan(domain)` | fungsi | Bulan berjalan per domain (bulan non-0 dengan setting terbaru). |
 | `target_info_konfirmasi` / `target_cek_konfirmasi` | fungsi | Deteksi bulan lewat/terkunci dan wajib konfirmasi. |

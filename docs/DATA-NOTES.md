@@ -1,6 +1,6 @@
 # DATA-NOTES - pemetaan data Excel dan temuan data terbuka
 
-Diperbarui: 26 November 2026 (T7c [1/3] - target DUMMY Wasilah/Ghayah bentuk tujuan akhir). Angka di sini diperiksa langsung di database pada tanggal itu.
+Diperbarui: 27 November 2026 (T7c [2/3] BACKEND - tidak mengubah data; R5 dihapus 27 Nov: target Al Qur'an 328→327, total 364→363). Angka di sini diperiksa langsung di database pada tanggal itu.
 Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data dummy.
 
 ---

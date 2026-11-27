@@ -5,6 +5,24 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 27 November 2026 - T7c [2/3] BACKEND (simpan gabungan capaian + target bulan depan, tuntas, laporan)
+
+- **Koreksi penamaan:** T7c **[2/3] = BACKEND**, **[3/3] = UI** (sebelumnya tertukar di dokumen).
+- **Langkah 0:** hapus 1 target Al Qur'an percobaan Mudir (R5) via skrip idempoten (`targets` Al Qur'an 328→327,
+  sidik jari hanya `targets` -1, tercatat `change_log`); `test_t6e_hapus_capaian.py` diperbaiki (baris bulan 8
+  sementara; **35/35**, sidik jari SAMA); smoke produksi **42/42** (baca saja).
+- **Migrasi `20261127000033_halaqah_mapel_aktif`**: sumber tunggal mapel aktif + `bulan_berikutnya` + helper
+  tuntas/Level 6; `wasilah_input_boot`/`form` memakainya.
+- **Migrasi `20261127000034_wasilah_simpan_gabungan`**: RPC simpan gabungan (capaian + target bulan depan satu
+  transaksi; wajib target kecuali tuntas; pengampu `diajukan`, Masul `disetujui`) + `wasilah_target_bulan_depan`
+  (DEFINER) + `halaqah_status_tuntas`.
+- **Migrasi `20261127000035_v_monthly_report_tujuan_akhir`**: `v_monthly_report` Wasilah/Ghayah menampilkan butir
+  target + posisi + status `Tercapai`/`Kurang N butir` (lintas buku); Al Qur'an identik.
+- **Uji baru** `test_t7c_simpan_gabungan.py` **18/18**; regresi penuh hijau (target 34/34 & 48/48, RLS 94/97,
+  T6a/T6b/T6e, typecheck/build/npm test). Sidik jari SAMA. **UI tetap belum** (T7c [3/3]).
+
+---
+
 ## 26 November 2026 - T7c [1/3] (target Wasilah/Ghayah = TUJUAN AKHIR: database, RPC, DUMMY, uji)
 
 - **Migrasi `20261126000032_targets_tujuan_akhir`** (dicatat di `schema_migrations`): kolom `target_item_id`,
@@ -15,7 +33,7 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 - **Panggilan lama tetap jalan**: parameter butir `DEFAULT NULL`, jadi frontend Al Qur'an (9 argumen) sukses;
   pengajuan Wasilah/Ghayah dengan `amount` ditolak dengan pesan jelas.
 - **DUMMY**: 36 baris bentuk lama (`amount = 1`) dihapus, dibuat ulang bentuk butir (25 Wasilah + 11 Ghayah);
-  skrip lama T7b ditandai usang. 1 baris target Al Qur'an sisa uji **tidak dihapus** (DATA-NOTES 0b).
+  skrip lama T7b ditandai usang. 1 baris target Al Qur'an sisa uji **dihapus 27 Nov 2026** (R5; DATA-NOTES 0b).
 - **Uji**: `test_t7c_target_tujuan.py` **48/48**, `test_targets_t7.py` **34/34** (disesuaikan bentuk baru),
   `regression_execute.py` **8/8** (tambah cek EXECUTE PUBLIC), `rls_matrix.py` **94/97** (3 SKIP),
   E2E target baca-saja **36/36**, E2E tulis **38/38**, sidik jari **SAMA** (16.505 baris, 19 tabel).

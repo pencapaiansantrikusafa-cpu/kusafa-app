@@ -27,7 +27,7 @@ Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data san
 | T7 [1b/2] | Fondasi target dinamis (database, RPC, uji) | **SELESAI** | migrasi `000021`-`000031`, `scripts/qa/test_targets_t7.py`, `scripts/qa/verify_t7_report_unchanged.sql` |
 | T7 [2/2] | UI `/target` (daftar, ajukan, setujui/tolak, ubah, riwayat) + uji tulis | **SELESAI** | `src/pages/TargetPage.tsx`, `TargetDomainPage.tsx`, `FormTarget.tsx`, `DialogAksiTarget.tsx`, `DialogRiwayatTarget.tsx`, `src/lib/target.ts`, `test_t7_target_ui.py` 36/36, `test_t7_target_tulis.py` 38/38 |
 | **T7c [1/3]** | **Target Wasilah/Ghayah = TUJUAN AKHIR (butir kurikulum): database, RPC, bulk, DUMMY, uji** | **SELESAI** | migrasi `20261126000032_targets_tujuan_akhir.sql`, `scripts/db/fixes/2026-11-26_t7c_*.sql`, `scripts/qa/test_t7c_target_tujuan.py` (48/48) |
-| T7c [2/3] | **BACKEND**: simpan gabungan capaian + target bulan depan (satu transaksi), `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah menampilkan butir/posisi target | **BELUM** | belum ada |
+| T7c [2/3] | **BACKEND**: simpan gabungan capaian + target bulan depan (satu transaksi), `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah menampilkan butir/posisi target | **SELESAI** | migrasi `000033`-`000035`, `test_t7c_simpan_gabungan.py` 18/18, sidik jari SAMA |
 | T7c [3/3] | **UI**: form Wasilah/Ghayah pilih butir, tampilkan butir, bulk di layar, kewajiban target bulan depan + pembuktian akhir (E2E + smoke produksi) | **BELUM** | belum ada |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan**, pergantian mapel halaqah | **BELUM** | rute `/kurikulum`, `/halaqah`, `/pengaturan` masih `PlaceholderPage` |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | ± 27 skrip `scripts/qa/`; belum ada proyek Supabase QA terpisah; 3 sel RLS SKIP |
@@ -37,7 +37,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ---
 
-## 2. Tahap yang sedang dikerjakan: T7c [1/3] selesai, BACKEND [2/3] belum
+## 2. Tahap yang sedang dikerjakan: T7c BACKEND [2/3] selesai, UI [3/3] belum
 
 ### Yang sudah jalan (jangan diulang)
 
@@ -50,13 +50,16 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 - Notifikasi target di kotak "Data belum lengkap"; kolom target di laporan (kosong `–`, 0 tetap `0`).
 - **T7c [1/3] (26 November 2026)**: kolom `targets.target_item_id` (FK `curriculum_items`), `amount` kosong untuk Wasilah/Ghayah, constraint `targets_bentuk_check`, unique index `targets_satu_diajukan_uk`, trigger `target_validasi_butir` (butir milik buku mapel itu dan aktif), `setujui_target_halaqah` (bulk per halaqah x bulan), alur "pengajuan baru menggantikan yang masih `diajukan`", parameter butir `DEFAULT NULL` (panggilan lama Al Qur'an tetap jalan), `riwayat_target` menyertakan butir & buku, `REVOKE EXECUTE` PUBLIC + anon untuk 15 fungsi target.
 - DUMMY Wasilah 25 + Ghayah 11 bentuk baru (butir, tanpa amount); 36 baris bentuk lama sudah dihapus; skrip idempoten di `scripts/db/fixes/`.
-- Migrasi `000032` tercatat di `supabase_migrations.schema_migrations`.
+- **T7c [2/3] BACKEND (27 November 2026)** — migrasi `000033`-`000035`, tercatat di `supabase_migrations` (kini **35**):
+  - `halaqah_mapel_aktif(halaqah, bulan)`: **satu-satunya sumber mapel aktif** (kini = `halaqah_subjects`; T8 tinggal menambah masa berlaku di dalam fungsi). Dipakai di `wasilah_input_boot` & `wasilah_input_form`.
+  - `bulan_berikutnya(bulan)`: bulan setelah bulan terpilih (menurut `v_months_ordered`); NULL bila bulan terakhir.
+  - Helper tuntas: `mapel_butir_terakhir(subject)`, `mapel_tuntas(halaqah,subject,bulan)`, `halaqah_tanpa_mapel(halaqah)` (Level 6), `halaqah_status_tuntas(halaqah,bulan)` (data untuk notifikasi Masul).
+  - **RPC `wasilah_simpan_gabungan(halaqah, bulan, capaian, target, konfirmasi)`**: capaian bulan ini (alur T6b, disalin ke anggota) + target bulan depan dalam **satu transaksi**. Menolak bila ada mapel aktif (yang boleh ditulis pemanggil) tanpa target, **kecuali tuntas**; bila tidak ada bulan berikutnya, target tidak diminta. Pengampu → target `diajukan`; Masul domain/Mudir/Admin → `disetujui` (lewat `wasilah_target_bulan_depan`, SECURITY DEFINER). Target di bawah capaian diterima dan dilaporkan di `di_bawah_capaian`. Level 6 = "Tuntas, belum ada pelajaran lanjutan", tidak menulis.
+  - **`v_monthly_report` Wasilah/Ghayah** kini punya kolom `target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status` (`'Tercapai'` / `'Kurang N butir'`, lintas buku lewat `item_position`; NULL bila tak ada target). Kolom lama + Al Qur'an **identik** (bukti: hash baris Al Qur'an tak berubah).
 
 ### Yang belum
 
-- **T7c [2/3] (BACKEND)**: fungsi `halaqah_mapel_aktif(halaqah, bulan)` sebagai satu-satunya sumber mapel aktif; RPC simpan gabungan capaian + target bulan depan dalam satu transaksi (menolak mapel aktif tanpa target, kecuali tuntas); data tuntas & Level 6 "Tuntas, belum ada pelajaran lanjutan"; `v_monthly_report` Wasilah/Ghayah menampilkan butir target + posisi dan status Tercapai/Kurang N. **UI belum diubah** (itu [3/3]).
 - **T7c [3/3] (UI)**: form Wasilah/Ghayah masih mengirim `amount`, sehingga pengajuan dari UI **ditolak database** dengan pesan jelas; daftar/riwayat belum menampilkan butir tujuan akhir; belum ada tombol bulk "Setujui semua target halaqah ini" di layar; kewajiban target bulan depan saat input capaian, peringatan target di bawah capaian, dan tampilan Level 6 "Tuntas" belum dibuat. Ditutup dengan E2E penuh + smoke produksi.
-- **Laporan Wasilah/Ghayah**: setelah [2/3] `v_monthly_report` menampilkan butir target + posisi; sampai saat itu `target_monthly` masih NULL (bukan 0, bukan galat).
 - **T8 belum dimulai** (menunggu perintah): kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah, notifikasi kekurangan target bulan depan.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
 - Usulan proyek Supabase QA terpisah belum dibuat (T9/T10).
@@ -74,11 +77,10 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Langkah berikutnya (berurutan)
 
-1. **T7c [2/3] = BACKEND** (perintah Mudir 27 Nov 2026, sedang dikerjakan): `halaqah_mapel_aktif`; RPC simpan gabungan capaian + target bulan depan (satu transaksi); tuntas & Level 6; laporan Wasilah/Ghayah menampilkan butir/posisi target. Jangan mulai UI/T8.
-2. **T7c [3/3] = UI `/target`**: form Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (tanpa angka), label "Mapel · Buku - nomor"; daftar/riwayat menampilkan butir; tombol **"Setujui semua target halaqah ini"** memakai `setujui_target_halaqah`; peringatan "target di bawah capaian" (boleh, dengan peringatan); tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan"; kewajiban mengisi target bulan depan bersamaan input capaian. Ditutup E2E penuh + smoke produksi.
-3. **Minta keputusan atas 1 baris target sisa uji** (butir 1 di atas).
-4. **Setelah T7 disetujui**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
-5. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
+1. **T7c [3/3] = UI `/target`** (berikutnya): form Wasilah/Ghayah memilih **butir tujuan akhir** lewat `DropdownCari` (tanpa angka), label "Mapel · Buku - nomor"; kirim `wasilah_simpan_gabungan` (capaian + target bulan depan sekaligus); daftar/riwayat/laporan menampilkan `target_label`/`target_status`; tombol **"Setujui semua target halaqah ini"** memakai `setujui_target_halaqah`; peringatan "target di bawah capaian" (dari `di_bawah_capaian`); tampilan Level 6 "Tuntas, belum ada pelajaran lanjutan". Ditutup E2E penuh + smoke produksi.
+2. **Konfirmasi asumsi** (HANDOVER §5 butir 13): kewajiban target hanya untuk mapel aktif yang **boleh ditulis pemanggil** (lihat §5).
+3. **Setelah T7 disetujui**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
+4. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
 
 ---
 
@@ -148,10 +150,10 @@ Berlaku di atas 3.2.
 
 - Project `kusafa`, ref `vcmamapzkhzgikpsvcdo`, region `ap-southeast-1` (Singapore).
 - **`DATABASE_URL` = pooler Supabase** (host `*.pooler.supabase.com`, port `5432`, user berawalan `postgres`), bukan koneksi langsung. Kata sandi hanya di `.env.local`.
-- **32 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261126000032_targets_tujuan_akhir`**. Berikutnya wajib nomor `20261127000033_...` (atau tanggal berjalan) dan tidak boleh mengubah berkas lama.
-  - Inti: `000001`-`000009`. Hardening/T5c/T6: `000010`-`000020`. Target T7: `000021`-`000031`. T7c: `000032`. Daftar lengkap: `docs/STATUS.md` bagian 3.
-- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **50 fungsi** public; **4 view**.
-- `targets` hanya punya policy SELECT (staf); tulis lewat RPC. **15 fungsi target** tanpa `EXECUTE` untuk `anon` maupun `PUBLIC`; RPC target hanya `authenticated` (dijaga `regression_execute.py`).
+- **35 migrasi** tercatat di `supabase_migrations.schema_migrations`; terakhir **`20261127000035_v_monthly_report_tujuan_akhir`**. Berikutnya wajib nomor `20261128000036_...` (atau tanggal berjalan) dan tidak boleh mengubah berkas lama.
+  - Inti: `000001`-`000009`. Hardening/T5c/T6: `000010`-`000020`. Target T7: `000021`-`000031`. T7c: `000032`-`000035`. Daftar lengkap: `docs/STATUS.md` bagian 3.
+- **19 tabel**, semuanya RLS aktif; **42 kebijakan**; **58 fungsi** public; **4 view**. (8 fungsi baru T7c [2/3]: `halaqah_mapel_aktif`, `bulan_berikutnya`, `mapel_butir_terakhir`, `mapel_tuntas`, `halaqah_tanpa_mapel`, `halaqah_status_tuntas`, `wasilah_target_bulan_depan`, `wasilah_simpan_gabungan`.)
+- `targets` hanya punya policy SELECT (staf); tulis lewat RPC. **15 fungsi target** tanpa `EXECUTE` untuk `anon` maupun `PUBLIC`; RPC target hanya `authenticated` (dijaga `regression_execute.py`). Fungsi T7c baru juga tanpa `EXECUTE` untuk `anon`/`PUBLIC` (diverifikasi).
 - `change_log` hanya SELECT untuk Mudir/Admin, append-only.
 - **Seed dummy 1447 sudah dimuat** dan **destruktif (TRUNCATE)**. Jangan jalankan ulang tanpa perintah Mudir.
 - Data sekarang (diperiksa 27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` bertambah (append-only), `month_domain_settings` 21, `profiles` 24.
@@ -166,7 +168,7 @@ Berlaku di atas 3.2.
 1. **Repo masih PUBLIK.** Harus dijadikan privat sebelum data asli dimuat (`gh repo edit --visibility private --accept-visibility-change-consequences`). Wajib diingatkan lagi di T10.
 2. **Data Awal 252 capaian**: dipertahankan atau dikosongkan saat data asli masuk? Keputusan T10.
 3. **69 capaian dummy yang "mundur"** (lebih kecil dari bulan lalu): disepakati dibiarkan; konfirmasi ulang sebelum T9.
-4. **Halaqah Level 6 (4 santri Wasilah)** belum punya mata pelajaran/pengampu. Tampilan "Tuntas, belum ada pelajaran lanjutan" menunggu T7c [2/3]/T8.
+4. **Halaqah Level 6 (4 santri Wasilah)** belum punya mata pelajaran/pengampu. Data "Tuntas, belum ada pelajaran lanjutan" **sudah disediakan** oleh BACKEND [2/3] (`halaqah_tanpa_mapel`, kembalian `tanpa_mapel`); **tampilannya** di UI menyusul [3/3]/T8.
 5. **Hari Efektif bulan 8-12** (semua domain) belum ada; layar pengisiannya T8. Notifikasi "data belum lengkap" karena itu tidak memeriksa bulan-bulan tersebut.
 6. **3 sel RLS SKIP**: perlu profil `wali` dan contoh target `diajukan` untuk diuji (T9).
 7. **DUMMY Wasilah/Ghayah** (25 + 11): kapan butir asli dimasukkan? Perlu daftar butir tujuan akhir dari Mudir (T8).
@@ -175,6 +177,7 @@ Berlaku di atas 3.2.
 10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): **DITUTUP 27 Nov 2026** — dihapus lewat skrip idempoten, tercatat `change_log`.
 11. **Pemetaan mapel Excel benar** (keputusan 3.2a) dan tidak ada perubahan data. Konfirmasi bahwa layar pergantian mapel halaqah dan kewajiban target bulan depan cukup dikerjakan di T7c [2/3] / T8.
 12. **Smoke produksi setelah T7c [1/3]** — **DITUTUP 27 Nov 2026**: smoke baca-saja dijalankan setelah deploy Vercel terbaru, **42/42 PASS**.
+13. **ASUMSI kewajiban target [2/3] — mohon dikonfirmasi.** Keputusan 3.2a menulis target bulan depan "wajib untuk tiap mapel aktif". Bila dibaca harfiah, seorang **pengampu** (yang hanya mengampu 1 dari 2 mapel pada satu halaqah) **mustahil** menyimpan karena tidak berhak mengisi target mapel lain. Karena itu saya menerapkan: **SERVER menolak bila ada mapel aktif YANG BOLEH DITULIS PEMANGGIL yang belum punya target (kecuali tuntas).** Untuk Masul domain/Mudir/Admin = semua mapel; untuk pengampu = mapel yang diampu saja. Apakah ini sesuai maksud, atau pengampu memang tidak memakai simpan gabungan (hanya Masul/Mudir yang mengisi target semua mapel)?
 
 ---
 

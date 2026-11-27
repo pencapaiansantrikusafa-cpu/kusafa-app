@@ -238,8 +238,14 @@ Memperbaiki §5d untuk domain Wasilah/Ghayah. Al Qur'an **tidak berubah** (jumla
     & buku), `setujui_target_halaqah` (bulk);
   - `REVOKE EXECUTE` dari **PUBLIC + anon** untuk seluruh keluarga fungsi target; hanya `authenticated`
     yang dapat menjalankan RPC (dijaga `regression_execute.py`).
-  - **Sementara sampai BACKEND [2/3]:** `v_monthly_report.target_monthly` untuk target Wasilah/Ghayah = NULL
-    (tidak ada angka target); laporan tetap mengenali `target_id`. Bukan 0.
+  - **Sementara sampai BACKEND [2/3]:** (SUDAH SELESAI 27 Nov 2026, lihat blok berikut) `v_monthly_report.target_monthly` untuk target Wasilah/Ghayah = NULL (tidak ada angka target); laporan tetap mengenali `target_id`. Bukan 0.
+- **Penerapan database (BACKEND T7c [2/3], 27 Nov 2026):**
+  - `halaqah_mapel_aktif(halaqah, bulan)` = **satu-satunya sumber** mapel aktif; dipakai `wasilah_input_boot`/`form`. Saat ini = `halaqah_subjects`; T8 menambah masa berlaku di dalamnya tanpa mengubah pemanggil.
+  - `bulan_berikutnya(bulan)` = bulan setelah bulan terpilih (`v_months_ordered`); NULL bila bulan terakhir.
+  - Tuntas: `mapel_butir_terakhir(subject)`, `mapel_tuntas(halaqah, subject, bulan)`, `halaqah_tanpa_mapel(halaqah)` (Level 6), `halaqah_status_tuntas(halaqah, bulan)` (data notifikasi Masul).
+  - RPC `wasilah_simpan_gabungan(halaqah, bulan, capaian, target, konfirmasi)` = capaian bulan ini + target bulan depan dalam **satu transaksi**; menolak mapel aktif (yang boleh ditulis pemanggil) tanpa target **kecuali tuntas**; tanpa bulan berikutnya = target tidak diminta; pengampu → `diajukan`, Masul/Mudir/Admin → `disetujui` (lewat `wasilah_target_bulan_depan` DEFINER); target di bawah capaian diterima + dilaporkan.
+  - `v_monthly_report`: kolom `target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status` (`'Tercapai'` / `'Kurang N butir'`, lintas buku). Al Qur'an identik (butir NULL).
+  - **Asumsi (menunggu konfirmasi Mudir, HANDOVER §5.13):** kewajiban target hanya untuk mapel aktif yang **boleh ditulis pemanggil** (pengampu tidak dipaksa mengisi target mapel lain).
 
 ## 6. Alur kerja
 - Input bulanan: Admin isi Hari Efektif > pengampu isi capaian, kehadiran, catatan > sistem menghitung > Admin/Mudir mengunci bulan.
