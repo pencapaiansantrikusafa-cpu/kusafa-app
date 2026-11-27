@@ -24,16 +24,24 @@ Jangan menulis data santri asli di berkas ini; semua contoh di bawah adalah data
 - 327 target Al Qur'an lama **tidak berubah**; semuanya tetap `effective_month_id` = Data Awal 1447
   (`month_no=0`), bentuk `amount` + `harian`.
 
-## 0b. Satu baris target Al Qur'an sisa uji (26 November 2026) - TIDAK dihapus
+## 0b. Satu baris target Al Qur'an percobaan Mudir (26 November 2026) - DIHAPUS
 
 - Ditemukan **1 baris** `targets` Al Qur'an yang **dibuat hari ini** (26 Nov 2026 09:27 UTC):
-  Tahfidz, `Santriwan fulan 26`, bulan **Rabiul Akhir**, `amount = 2` (harian), status `disetujui`,
-  `proposed_by` = `approved_by` = **Ust. Fulan 1** (role `musyrif`), tanpa catatan.
+  Tahfidz, `Santriwan fulan 26` (NIS 1444.dummy-nis.013), bulan **Rabiul Akhir**, `amount = 2` (harian),
+  status `disetujui`, `proposed_by` = `approved_by` = **Ust. Fulan 1** (role `musyrif`), tanpa catatan.
 - **Bukan data asli**; bentuknya sama dengan target yang dibuat uji UI T7 [2/2] (Tahfidz 2). Karena
   pengampu tidak boleh menyetujui sendiri, baris ini hanya bisa lahir dari koneksi admin (`is_full_access`)
   atau dari sesi uji, bukan dari alur aplikasi pengampu.
-- **Perintah kerja: JANGAN dihapus.** Baris ini dipertahankan; keputusan di HANDOVER bagian 5 butir 10.
-- Dampak: laporan santri itu bulan Rabiul Akhir memakai target 2 x Hadir. Data dummy, tidak dipakai produksi.
+- **DIHAPUS pada 27 November 2026** (perintah Mudir; semula dibiarkan, kini diputuskan dihapus):
+  `scripts/db/fixes/2026-11-27_hapus_target_percobaan_r5.sql` (idempoten, hanya baris itu, tercatat
+  `change_log` aksi `delete`, sumber `skrip:postgres`). Verifikasi:
+  - `targets` Al Qur'an **328 → 327**; total `targets` **364 → 363**.
+  - Sidik jari database sebelum/sesudah hanya **`targets` berubah -1** (364→363); `change_log` diperiksa
+    terpisah (append-only, tumbuh 1 baris delete). Tidak ada tabel lain yang berubah.
+  - **Idempoten**: skrip dijalankan ulang, jumlah tetap 327.
+  - Laporan santri itu (Rabiul Akhir Tahfidz) `target_monthly` kembali ke **18** = 1 × Hadir 18, yaitu
+    nilai **sebelum percobaan** (target Data Awal amount 1 yang berlaku lintas bulan), bukan lagi 2 × 18 = 36.
+- Keputusan HANDOVER bagian 5 butir 10 **ditutup**.
 
 ---
 

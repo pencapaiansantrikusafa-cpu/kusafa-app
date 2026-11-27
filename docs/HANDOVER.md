@@ -63,7 +63,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Bug/error yang diketahui
 
-1. **1 baris target Al Qur'an sisa uji T7 [2/2]** (Tahfidz, Santriwan fulan 26, Rabiul Akhir, amount 2, 26 Nov 09:27 UTC) **tidak dihapus** sesuai perintah; tercatat di `docs/DATA-NOTES.md` 0b. Perlu keputusan Mudir.
+1. **1 baris target Al Qur'an sisa uji T7 [2/2]** (Tahfidz, Santriwan fulan 26, Rabiul Akhir, amount 2, 26 Nov 09:27 UTC) — **SELESAI dihapus 27 Nov 2026** (percobaan Mudir). Skrip `scripts/db/fixes/2026-11-27_hapus_target_percobaan_r5.sql`; target Al Qur'an 328→327, sidik jari hanya `targets` -1, tercatat `change_log`. Lihat `DATA-NOTES.md` 0b.
 2. **`test_t6e_hapus_capaian.py` butuh baris capaian bulan 8.** Data dummy tidak punya capaian bulan 8; uji berhasil 35/35 setelah satu baris sementara disisipkan lalu dihapus. Masalah prasyarat uji, bukan regresi. Belum dijalankan ulang pada sesi 26-27 Nov (**BELUM DIVERIFIKASI**).
 3. **3 sel matriks RLS SKIP:** profil `wali` belum ada dan tidak ada target `diajukan` di data dummy.
 4. **`change_log`** append-only; sekarang **356** baris (bertambah karena uji yang menulis), baris lama utuh.
@@ -172,7 +172,7 @@ Berlaku di atas 3.2.
 7. **DUMMY Wasilah/Ghayah** (25 + 11): kapan butir asli dimasukkan? Perlu daftar butir tujuan akhir dari Mudir (T8).
 8. **Proyek Supabase QA terpisah**: usulan belum dibuat; sekarang uji dan produksi memakai SATU database.
 9. **Retensi `change_log`**: belum ada pemangkasan; perlu keputusan bila log dianggap terlalu besar.
-10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): dihapus atau dibiarkan sampai T10?
+10. **1 baris target sisa uji** (STATUS 2q, DATA-NOTES 0b): **DITUTUP 27 Nov 2026** — dihapus lewat skrip idempoten, tercatat `change_log`.
 11. **Pemetaan mapel Excel benar** (keputusan 3.2a) dan tidak ada perubahan data. Konfirmasi bahwa layar pergantian mapel halaqah dan kewajiban target bulan depan cukup dikerjakan di T7c [2/3] / T8.
 12. **Smoke produksi setelah T7c [1/3]** belum dijalankan. Perlu izin menjalankan smoke baca-saja (`42/42`) setelah deploy Vercel berikutnya.
 
