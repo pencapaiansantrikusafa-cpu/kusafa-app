@@ -140,7 +140,7 @@
     {
       "uji": "C9 Semua fungsi target tanpa EXECUTE untuk anon",
       "ok": true,
-      "detail": "15 fungsi; terbuka=0"
+      "detail": "16 fungsi; terbuka=0"
     },
     {
       "uji": "C10 Semua fungsi target tanpa EXECUTE untuk PUBLIC",

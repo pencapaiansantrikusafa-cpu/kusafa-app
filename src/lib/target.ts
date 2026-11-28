@@ -39,8 +39,9 @@ export interface BarisTarget {
   student_id: string | null;
   halaqah_id: string | null;
   effective_month_id: string;
-  amount: number;
+  amount: number | null;
   amount_period: PeriodeTarget;
+  target_item_id: string | null;
   status: TargetStatus;
   proposed_by: string | null;
   approved_by: string | null;
@@ -117,8 +118,9 @@ export async function ajukanTarget(p: {
   studentId?: string | null;
   halaqahId?: string | null;
   bulanId?: string | null;
-  amount: number;
+  amount?: number | null;
   periode: PeriodeTarget;
+  targetItemId?: string | null;
   note?: string | null;
   konfirmasi?: boolean;
 }): Promise<HasilTarget> {
@@ -128,10 +130,11 @@ export async function ajukanTarget(p: {
     p_student_id: p.studentId ?? null,
     p_halaqah_id: p.halaqahId ?? null,
     p_effective_month_id: p.bulanId ?? null,
-    p_amount: p.amount,
+    p_amount: p.amount ?? null,
     p_amount_period: p.periode,
     p_note: p.note ?? null,
     p_konfirmasi: p.konfirmasi ?? false,
+    p_target_item_id: p.targetItemId ?? null,
   });
   if (error) throw kePesan(error, "Gagal mengajukan target");
   return (data as unknown as HasilTarget) ?? {};
@@ -140,17 +143,19 @@ export async function ajukanTarget(p: {
 /** Mengubah target = membuat baris baru; target lama tetap utuh (keputusan T7 3.2b). */
 export async function ubahTarget(p: {
   targetLamaId: string;
-  amount: number;
+  amount?: number | null;
   bulanId?: string | null;
+  targetItemId?: string | null;
   note?: string | null;
   konfirmasi?: boolean;
 }): Promise<HasilTarget> {
   const { data, error } = await supabase.rpc("ubah_target", {
     p_target_lama_id: p.targetLamaId,
-    p_amount: p.amount,
+    p_amount: p.amount ?? null,
     p_effective_month_id: p.bulanId ?? null,
     p_note: p.note ?? null,
     p_konfirmasi: p.konfirmasi ?? false,
+    p_target_item_id: p.targetItemId ?? null,
   });
   if (error) throw kePesan(error, "Gagal mengubah target");
   return (data as unknown as HasilTarget) ?? {};
@@ -199,6 +204,21 @@ export async function tolakTarget(
   });
   if (error) throw kePesan(error, "Gagal menolak target");
   return (data as unknown as HasilTarget) ?? {};
+}
+
+/** Bulk: setujui semua target menunggu untuk satu halaqah (opsional satu bulan). */
+export async function setujuiTargetHalaqah(p: {
+  halaqahId: string;
+  bulanId?: string | null;
+  konfirmasi?: boolean;
+}): Promise<{ jumlah?: number }> {
+  const { data, error } = await supabase.rpc("setujui_target_halaqah", {
+    p_halaqah_id: p.halaqahId,
+    p_effective_month_id: p.bulanId ?? null,
+    p_konfirmasi: p.konfirmasi ?? false,
+  });
+  if (error) throw kePesan(error, "Gagal menyetujui target halaqah");
+  return (data as unknown as { jumlah?: number }) ?? {};
 }
 
 /** Hanya pengaju, hanya status `diajukan`; target tidak dihapus. */

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import DropdownCari from "./DropdownCari";
+import DropdownCari, { type OpsiCari } from "./DropdownCari";
 import PemilihHalaqah, { type HalaqahData } from "./PemilihHalaqah";
 import PemilihTahunBulan, { type BulanData } from "./PemilihTahunBulan";
 import { supabase } from "../lib/supabase";
@@ -23,7 +23,7 @@ interface Props {
   /** `ajukan` = target baru; `ubah` = baris baru menggantikan target lama. */
   mode: "ajukan" | "ubah";
   /** Target yang diubah (wajib bila mode `ubah`). */
-  target?: BarisTarget | null;
+  target?: (BarisTarget & { target_item?: { label: string } | null }) | null;
   halaqah: HalaqahData[];
   pengampu: Record<string, string>;
   bulan: BulanData[];
@@ -70,7 +70,16 @@ export default function FormTarget({
   const [halaqahId, setHalaqahId] = useState(target?.halaqah_id ?? halaqahAwal ?? "");
   const [santriId, setSantriId] = useState("");
   const [mapelId, setMapelId] = useState("");
-  const [nilai, setNilai] = useState(modeUbah ? String(target?.amount ?? "") : "");
+  const [butir, setButir] = useState<OpsiCari | null>(() =>
+    target?.target_item_id
+      ? { nilai: target.target_item_id, label: target.target_item?.label ?? "butir terpilih" }
+      : null,
+  );
+  const [nilai, setNilai] = useState(
+    modeUbah && target?.amount !== null && target?.amount !== undefined
+      ? String(target.amount)
+      : "",
+  );
   const [tahun, setTahun] = useState<number | "">("");
   const [bulanId, setBulanId] = useState("");
   const [catatan, setCatatan] = useState(target?.note ?? "");
@@ -196,6 +205,20 @@ export default function FormTarget({
     };
   }, [bulanId, domain]);
 
+  /** Pencarian butir tujuan akhir di server (hanya mapel yang dipilih). */
+  async function cariButirServer(subject: string, kata: string): Promise<OpsiCari[]> {
+    const { data, error } = await supabase.rpc("curriculum_items_search", {
+      p_subject: subject,
+      p_q: kata,
+      p_limit: 60,
+    });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as Array<{ id: string; label: string }>).map((it) => ({
+      nilai: it.id,
+      label: it.label,
+    }));
+  }
+
   const bisaSimpan = useMemo(() => {
     if (!halaqahId) return false;
     if (modeUbah) {
@@ -204,13 +227,17 @@ export default function FormTarget({
       if (isAlquran && !massal && !santriId) return false;
       if (!mapelId) return false;
     }
-    const n = Number(nilai);
-    if (nilai === "" || !Number.isFinite(n) || n <= 0) return false;
+    if (isAlquran) {
+      const n = Number(nilai);
+      if (nilai === "" || !Number.isFinite(n) || n <= 0) return false;
+    } else if (!butir) {
+      return false;
+    }
     if (!bulanId) return false;
     if (peringatan && aksesPenuh && !konfirmasi) return false;
     if (peringatan && !aksesPenuh) return false;
     return true;
-  }, [modeUbah, halaqahId, isAlquran, massal, santriId, mapelId, nilai, bulanId, peringatan, aksesPenuh, konfirmasi]);
+  }, [modeUbah, halaqahId, isAlquran, massal, santriId, mapelId, butir, nilai, bulanId, peringatan, aksesPenuh, konfirmasi]);
 
   async function simpan() {
     setGalat(null);
@@ -222,8 +249,9 @@ export default function FormTarget({
       if (modeUbah && target) {
         const h = await ubahTarget({
           targetLamaId: target.id,
-          amount: jumlah,
+          amount: isAlquran ? jumlah : null,
           bulanId,
+          targetItemId: isAlquran ? null : butir?.nilai ?? target.target_item_id,
           note: catatan,
           konfirmasi: perluKonfirmasi,
         });
@@ -253,8 +281,9 @@ export default function FormTarget({
           // adalah per santri, jadi halaqah_id dikirim NULL.
           halaqahId: isAlquran ? null : halaqahId,
           bulanId,
-          amount: jumlah,
+          amount: isAlquran ? jumlah : null,
           periode: isAlquran ? "harian" : "bulanan",
+          targetItemId: isAlquran ? null : butir?.nilai ?? null,
           note: catatan,
           konfirmasi: perluKonfirmasi,
         });
@@ -288,7 +317,7 @@ export default function FormTarget({
         <p className="mt-1 text-xs text-gray-600">
           {isAlquran
             ? "Target Al Qur'an per santri per bidang, dihitung harian (target bulanan = target harian × Hadir)."
-            : "Target per halaqah per mata pelajaran, bulanan langsung (tidak dikali Hadir)."}
+            : "Target Ilmu Wasilah/Ilmu Ghayah per halaqah per mata pelajaran = satu butir tujuan akhir (bukan jumlah), bulanan langsung."}
         </p>
 
         <div className="mt-4 space-y-3">
@@ -370,23 +399,40 @@ export default function FormTarget({
             </>
           )}
 
-          <div>
-            <label htmlFor="target-nilai" className="block text-sm font-medium text-gray-800">
-              {isAlquran ? "Target harian" : "Target bulanan"}
-            </label>
-            <input
-              id="target-nilai"
-              type="number"
-              min="0"
-              step="0.1"
-              inputMode="decimal"
-              value={nilai}
-              onChange={(e) => setNilai(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
-              placeholder={isAlquran ? "mis. 1 (halaman per hari)" : "mis. 2 (item per bulan)"}
+          {!isAlquran && (
+            <DropdownCari
+              id="target-butir"
+              label="Butir tujuan akhir"
+              opsi={butir ? [butir] : []}
+              diServer={mapelId ? { awal: () => cariButirServer(mapelId, ""), cari: (kata) => cariButirServer(mapelId, kata) } : undefined}
+              nilai={butir?.nilai ?? ""}
+              onChange={(_, o) => setButir(o ?? null)}
+              opsiKosong="— pilih butir tujuan akhir —"
+              disabled={!mapelId}
+              placeholderCari={mapelId ? 'Cari butir (mis. "1" atau "Quraisy")...' : "Pilih mata pelajaran dulu"}
+              keterangan={mapelId ? undefined : "Pilih mata pelajaran terlebih dahulu."}
             />
-            <p className="mt-1 text-xs text-gray-500">Boleh pecahan. Tidak boleh negatif.</p>
-          </div>
+          )}
+
+          {isAlquran && (
+            <div>
+              <label htmlFor="target-nilai" className="block text-sm font-medium text-gray-800">
+                Target harian
+              </label>
+              <input
+                id="target-nilai"
+                type="number"
+                min="0"
+                step="0.1"
+                inputMode="decimal"
+                value={nilai}
+                onChange={(e) => setNilai(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-base"
+                placeholder="mis. 1 (halaman per hari)"
+              />
+              <p className="mt-1 text-xs text-gray-500">Boleh pecahan. Tidak boleh negatif.</p>
+            </div>
+          )}
 
           <PemilihTahunBulan
             bulan={bulan}

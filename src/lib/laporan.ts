@@ -13,6 +13,13 @@ export interface BarisLaporan {
   attendance_short: boolean | null;
   item_label: string | null;
   prev_item_label: string | null;
+  /** Target tujuan akhir (Wasilah/Ghayah): butir + status capaian. */
+  target_item_id: string | null;
+  target_label: string | null;
+  target_pos: number | null;
+  target_tercapai: boolean | null;
+  target_kurang: number | null;
+  target_status: string | null;
 }
 
 /** Format angka: bilangan bulat tanpa desimal, pecahan dengan satu desimal. */

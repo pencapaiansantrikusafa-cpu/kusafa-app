@@ -1,0 +1,206 @@
+{
+  "marker": "UJI-T7C3-20261128-131115",
+  "lulus": 24,
+  "gagal": [],
+  "rincian": [
+    {
+      "uji": "1. Halaman Input siap: median 5 putaran < 1,5 detik",
+      "ok": true,
+      "median": 1.382,
+      "maks": 2.394,
+      "sampel": [
+        2.394,
+        1.4,
+        1.372,
+        1.382,
+        1.378
+      ]
+    },
+    {
+      "uji": "2. Simpan gabungan: capaian tersalin ke semua anggota + target dibuat",
+      "ok": true,
+      "baris": 10,
+      "anggota": 10,
+      "target": [
+        [
+          "diajukan",
+          "2408317d-23c9-538d-87b2-5f04d05b9e95",
+          null
+        ]
+      ]
+    },
+    {
+      "uji": "3. Capaian tanpa target DITOLAK dan capaian tidak tersimpan",
+      "ok": true,
+      "pesan": "Target bulan depan belum diisi untuk mata pelajaran: Tulis (kecuali yang sudah tuntas atau sudah punya target).",
+      "baris": 0
+    },
+    {
+      "uji": "4. Koreksi capaian tanpa isi ulang target DITERIMA; target tidak bertambah",
+      "ok": true,
+      "target": [
+        [
+          "diajukan",
+          "2408317d-23c9-538d-87b2-5f04d05b9e95",
+          null
+        ]
+      ],
+      "item": "2408317d-23c9-538d-87b2-5f04d05b9e95"
+    },
+    {
+      "uji": "5a. Peringatan target di bawah capaian tampil",
+      "ok": true,
+      "pesan": "Target bulan depan di bawah capaian (pengulangan) untuk mata pelajaran: Baca. Centang konfirmasi untuk melanjutkan."
+    },
+    {
+      "uji": "5b. Tanpa centang konfirmasi: DITOLAK",
+      "ok": true,
+      "pesan": "Target bulan depan di bawah capaian (pengulangan) untuk mata pelajaran: Baca. Centang konfirmasi untuk melanjutkan."
+    },
+    {
+      "uji": "5c. Dengan centang: DITERIMA; target diganti (satu target hidup)",
+      "ok": true,
+      "target": [
+        [
+          "dibatalkan",
+          "2408317d-23c9-538d-87b2-5f04d05b9e95",
+          null
+        ],
+        [
+          "diajukan",
+          "5f7194e9-986f-567b-a892-d59b738f23e3",
+          null
+        ]
+      ]
+    },
+    {
+      "uji": "6. Pengampu menyimpan mapel kedua (capaian + target)",
+      "ok": true,
+      "baris": 10,
+      "target": [
+        [
+          "diajukan",
+          "9350a5b5-9dba-540a-897c-b90ebfa52804",
+          null
+        ]
+      ]
+    },
+    {
+      "uji": "6b. Pengampu tidak punya tombol Setujui/Tolak di /target",
+      "ok": true,
+      "ada_setujui_semua": false
+    },
+    {
+      "uji": "7. Masul menolak target dengan alasan wajib (tersimpan)",
+      "ok": true,
+      "alasan": "UJI-T7C3 alasan penolakan"
+    },
+    {
+      "uji": "8. Setujui semua target halaqah ini: target menunggu menjadi disetujui",
+      "ok": true,
+      "target": [
+        [
+          "dibatalkan",
+          "2408317d-23c9-538d-87b2-5f04d05b9e95",
+          null
+        ],
+        [
+          "disetujui",
+          "5f7194e9-986f-567b-a892-d59b738f23e3",
+          null
+        ]
+      ]
+    },
+    {
+      "uji": "8b. Alasan penolakan tampil ke pengaju di /target",
+      "ok": true
+    },
+    {
+      "uji": "8c. Bulan terkunci: Masul diblokir (butuh Mudir/Admin), target tetap diajukan",
+      "ok": true,
+      "status": "diajukan",
+      "potongan": "KUSAFA\n\nUst. Masul Wasilah · Masul Wasilah\n\nKeluar\n« Ikon saja\nCapaian\nInput\nTarget\nKurikulum\nHalaqah & Santri\nTarget Il"
+    },
+    {
+      "uji": "8d. Bulan terkunci: Mudir konfirmasi eksplisit -> target disetujui",
+      "ok": true,
+      "status": "disetujui"
+    },
+    {
+      "uji": "9. Masul Ghayah dialihkan dari /target/wasilah",
+      "ok": true,
+      "url": "http://localhost:4173/target/ghayah"
+    },
+    {
+      "uji": "10a. Level 6 di Input: 'Tuntas, belum ada pelajaran lanjutan'",
+      "ok": true
+    },
+    {
+      "uji": "10b. Level 6 di Capaian: pesan tuntas tampil",
+      "ok": true
+    },
+    {
+      "uji": "10c. Level 6 di Target: pesan tuntas tampil",
+      "ok": true
+    },
+    {
+      "uji": "11. 1280 px: tab aktif Ilmu Wasilah + URL + tanpa geser samping",
+      "ok": true,
+      "url": "http://localhost:4173/target/wasilah",
+      "tab": "Ilmu Wasilah",
+      "tanpa_geser": true
+    },
+    {
+      "uji": "12. 1280 px: Capaian Wasilah tanpa geser samping",
+      "ok": true,
+      "url": "http://localhost:4173/capaian/wasilah"
+    },
+    {
+      "uji": "11. 360 px: tab aktif Ilmu Wasilah + URL + tanpa geser samping",
+      "ok": true,
+      "url": "http://localhost:4173/target/wasilah",
+      "tab": "Ilmu Wasilah",
+      "tanpa_geser": true
+    },
+    {
+      "uji": "12. 360 px: Capaian Wasilah tanpa geser samping",
+      "ok": true,
+      "url": "http://localhost:4173/capaian/wasilah"
+    },
+    {
+      "uji": "13. Konsol bersih (galat 400 = penolakan server yang memang diuji)",
+      "ok": true,
+      "galat": [
+        "Failed to load resource: the server responded with a status of 400 ()",
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ],
+      "http": [
+        "400 https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/wasilah_simpan_gabungan",
+        "400 https://vcmamapzkhzgikpsvcdo.supabase.co/rest/v1/rpc/wasilah_simpan_gabungan"
+      ],
+      "lain": []
+    },
+    {
+      "uji": "14. Data dipulihkan PERSIS (pulihkan_data) + sidik jari SAMA",
+      "ok": true,
+      "beda": {},
+      "selisih": [
+        {
+          "tabel": "change_log",
+          "sebelum": {
+            "baris": 903,
+            "maks_id": 1792,
+            "checksum_sampai_maks": "26950f9be8e60ca56ed120ce7b5f32df"
+          },
+          "sesudah": {
+            "baris": 941,
+            "maks_id": 1830,
+            "checksum_sampai_maks": "16bc8747703473c0d8ab997701910ad2"
+          },
+          "selisih_baris": 38,
+          "baris_lama_utuh": false
+        }
+      ]
+    }
+  ]
+}

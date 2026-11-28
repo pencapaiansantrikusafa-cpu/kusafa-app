@@ -1,6 +1,6 @@
 # HANDOVER - serah terima KUSAFA
 
-**Terakhir diperbarui**: 27 November 2026, sesi pemulihan T7c (waktu lokal), setelah commit form UI T7c [3/3] butir 1-2.
+**Terakhir diperbarui**: 28 November 2026, T7c **[3b] selesai** (tab `/target` massal + tabel Capaian target, E2E 24/24, sidik jari SAMA).
 Dokumen ini serah terima tetap. Sumber kebenaran status dan angka: `docs/STATUS.md`. Aturan bisnis: `docs/SPEC.md`.
 Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data santri asli di sini.
 
@@ -29,8 +29,8 @@ Jangan menulis rahasia (kata sandi, token, `DATABASE_URL` lengkap) atau data san
 | **T7c [1/3]** | **Target Wasilah/Ghayah = TUJUAN AKHIR (butir kurikulum): database, RPC, bulk, DUMMY, uji** | **SELESAI** | migrasi `20261126000032_targets_tujuan_akhir.sql`, `scripts/db/fixes/2026-11-26_t7c_*.sql`, `scripts/qa/test_t7c_target_tujuan.py` (48/48) |
 | T7c [2/3] | **BACKEND**: simpan gabungan capaian + target bulan depan (satu transaksi), `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah menampilkan butir/posisi target | **SELESAI** | migrasi `000033`-`000035`, `test_t7c_simpan_gabungan.py` 18/18, sidik jari SAMA |
 | T7c [3/3] form | **UI butir 1-2**: form Input Wasilah/Ghayah = capaian + **target bulan depan**, simpan gabungan, kewajiban target ⓐ, peringatan di bawah capaian, Tuntas/Level 6 | **SELESAI (butir 1-2)** | migrasi `000036`, `FormInputWasilah.tsx`, `InputWasilahPage.tsx`, `DropdownCari.tsx`, `test_t7c_form_e2e.py` 4/4, sidik jari SAMA |
-| T7c [3b] | **UI tab `/target` Wasilah/Ghayah**: satu baris per halaqah + tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`), tabel Capaian menampilkan target & Tercapai/Kurang N butir | **BELUM** | kode setengah jadi **belum di-commit**: `TabelTargetHalaqah.tsx` (baru), `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx` |
-| T7c [3c] | **Notifikasi "belum punya target" + E2E penuh + tangkapan layar HP/desktop** | **BELUM** | `KotakBelumLengkap.tsx` (semantik baru `target_belum_domain`, belum di-commit), `test_t7c3_e2e.py` + `docs/qa/t7c3/` (penuh; 19/20, 1 gagal = ambang waktu halaman Input 1,89 s) |
+| T7c [3b] | **UI tab `/target` Wasilah/Ghayah**: satu baris per halaqah, kolom = mapel aktif bulan itu (label butir target), tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`), tolak beralasan wajib, bulan terkunci/lewat hanya Mudir/Admin + dialog konfirmasi, `FormTarget` Ubah memakai `DropdownCari`; tabel Capaian menampilkan target & Tercapai/Kurang N butir | **SELESAI** | `TabelTargetHalaqah.tsx` (baru), `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`; `test_t7c3_e2e.py` **24/24** (per role, 360/1280 px, bulan terkunci, sidik jari SAMA) |
+| T7c [3c] | **Notifikasi "belum punya target" + tangkapan layar HP/desktop (tambahan)** | **BELUM** | `KotakBelumLengkap.tsx` (semantik baru `target_belum_domain`). E2E penuh **sudah 24/24** (pengampu/Masul/lintas domain/Level 6/360-1280 px/ambang median); yang tersisa hanya notifikasi + tangkapan layar ekstra |
 | T8 | Kelola kurikulum, halaqah, santri, kalender, **Hari Efektif & kunci bulan**, pergantian mapel halaqah | **BELUM** | rute `/kurikulum`, `/halaqah`, `/pengaturan` masih `PlaceholderPage` |
 | T9 | Pengujian & QA penuh | **SEBAGIAN** | ± 27 skrip `scripts/qa/`; belum ada proyek Supabase QA terpisah; 3 sel RLS SKIP |
 | T10 | Deploy akhir, hapus dummy, repo privat | **BELUM** | belum ada |
@@ -62,8 +62,8 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Yang belum
 
-- **T7c [3b] (UI `/target`)**: tab Wasilah/Ghayah **satu baris per halaqah** + tombol **"Setujui semua target halaqah ini"** (RPC `setujui_target_halaqah`) + tabel Capaian menampilkan `target_label` & `target_status` (Tercapai / Kurang N butir). Kode setengah jadi **BELUM di-commit** (`TabelTargetHalaqah.tsx` baru, `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`).
-- **T7c [3c]**: notifikasi "belum punya target" (`target_belum_domain`, semantik baru di `KotakBelumLengkap.tsx` — **BELUM di-commit**), E2E penuh (pengampu + Masul, lintas domain, Level 6, 1280/360 px), tangkapan layar HP/desktop. `test_t7c3_e2e.py` penuh sudah ditulis (19/20; 1 gagal = ambang waktu halaman Input 1,89 s vs 1,5 s) tapi **BELUM di-commit**.
+- **T7c [3b] SELESAI (28 November 2026)** — tab `/target` Wasilah/Ghayah satu baris per halaqah (kolom mapel aktif bulan itu = label butir target), "Setujui semua target halaqah ini" (RPC `setujui_target_halaqah`) untuk Masul domain/Mudir/Admin, tolak beralasan wajib, bulan terkunci/lewat hanya Mudir/Admin + dialog konfirmasi eksplisit, `FormTarget` Ubah memakai `DropdownCari` (butir mapel itu). Tabel Capaian menampilkan `target_label` + "Tercapai"/"Kurang N butir"/"–". HP 360 px = kartu per halaqah tanpa geser samping. Bukti: `test_t7c3_e2e.py` 24/24, sidik jari SAMA.
+- **T7c [3c]**: notifikasi "belum punya target" (`target_belum_domain`, sambungkan ke `KotakBelumLengkap.tsx`) + tangkapan layar HP/desktop tambahan. E2E penuh sudah 24/24 (termasuk ambang median 5 putaran **1,382 s** < 1,5 s, maks 2,394 s).
 - **T8 belum dimulai** (menunggu perintah): kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah, notifikasi kekurangan target bulan depan.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
 - Usulan proyek Supabase QA terpisah belum dibuat (T9/T10).
@@ -81,8 +81,8 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 
 ### Langkah berikutnya (berurutan)
 
-1. **[3b] UI tab `/target` Wasilah/Ghayah**: selesaikan & commit kode setengah jadi (`TabelTargetHalaqah.tsx`, `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`): satu baris per halaqah, tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`), tabel Capaian menampilkan `target_label` + `target_status` (Tercapai / Kurang N butir). Typecheck + build + uji tulis.
-2. **[3c] Notifikasi + E2E penuh + tangkapan layar**: sambungkan `target_belum_domain` ke `KotakBelumLengkap.tsx` ("belum punya target"), jalankan `test_t7c3_e2e.py` (penuh, 1280/360 px, Level 6, lintas domain; perbaiki/ganti ambang waktu 1,5 s yang membuat 1 uji gagal), simpan tangkapan layar HP/desktop. Sidik jari wajib SAMA.
+1. **[3b] SELESAI** (28 November 2026): tab `/target` massal + tabel Capaian target terverifikasi (E2E 24/24). Tidak ada lagi yang menggantung di [3b].
+2. **[3c] Notifikasi + tangkapan layar**: sambungkan `target_belum_domain` ke `KotakBelumLengkap.tsx` ("belum punya target"), simpan tangkapan layar HP (360 px) + desktop (1280 px) tambahan. E2E penuh `test_t7c3_e2e.py` sudah 24/24; sidik jari wajib SAMA.
 3. **Setelah T7c tuntas**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
 4. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
 

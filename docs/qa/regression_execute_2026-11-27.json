@@ -1,10 +1,10 @@
 {
-  "ran_at": "2026-11-27T07:58:32.547710",
+  "ran_at": "2026-11-27T11:42:42.314815",
   "tests": [
     {
       "name": "A_anon_tanpa_execute_loop_pg_proc",
       "ok": true,
-      "detail": "58 fungsi public diperiksa; 0 terbuka ke anon.",
+      "detail": "59 fungsi public diperiksa; 0 terbuka ke anon.",
       "evidence": {
         "terbuka_ke_anon": []
       }
@@ -12,7 +12,7 @@
     {
       "name": "A2_tidak_ada_fungsi_public_ber_execute_public",
       "ok": true,
-      "detail": "58 fungsi public diperiksa; 0 masih ber-EXECUTE untuk PUBLIC.",
+      "detail": "59 fungsi public diperiksa; 0 masih ber-EXECUTE untuk PUBLIC.",
       "evidence": {
         "terbuka_ke_public": []
       }

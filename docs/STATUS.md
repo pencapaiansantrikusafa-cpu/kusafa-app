@@ -1,6 +1,6 @@
 # STATUS - kondisi nyata proyek KUSAFA
 
-**Sumber kebenaran status.** Diperbarui: **27 November 2026** (T7c [3/3] **butir 1-2 = form Input Wasilah/Ghayah**: simpan gabungan capaian + target bulan depan lewat `wasilah_simpan_gabungan`, kewajiban target keputusan ⓐ, peringatan target di bawah capaian, Tuntas/Level 6; E2E ringkas 4/4; migrasi `000036`). Tab `/target` massal (**[3b]**) dan notifikasi + E2E penuh + tangkapan layar (**[3c]**) menyusul.
+**Sumber kebenaran status.** Diperbarui: **28 November 2026** (T7c **[3b] selesai**: tab `/target` Wasilah/Ghayah satu baris per halaqah + "Setujui semua target halaqah ini" + tolak beralasan + konfirmasi bulan terkunci/lewat (Mudir/Admin) + `FormTarget` DropdownCari; tabel Capaian menampilkan target + "Tercapai"/"Kurang N butir"; E2E 24/24 (per role, 360/1280 px), semua uji lama hijau, sidik jari SAMA; ambang beban halaman Input median **1,382 s**). Notifikasi + E2E penuh + tangkapan layar tambahan (**[3c]**) menyusul.
 Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`.
 
 | | |
@@ -12,15 +12,17 @@ Setiap sub-tugas selesai wajib memperbarui berkas ini bersama `docs/HANDOVER.md`
 | Situs produksi | `https://kusafa-app.vercel.app` |
 | Migrasi terakhir | `20261128000036_kewajiban_target_gabungan.sql` (tercatat; berikutnya `20261129000037_...` atau tanggal berjalan) |
 
-### Hasil uji terakhir (T7c [3/3] form, 27 November 2026)
+### Hasil uji terakhir (T7c [3b], 28 November 2026)
 
 | Rangkaian | Hasil |
 |---|---|
-| `test_t7c_form_e2e.py` (baru; menulis lewat tampilan: pengampu + Masul Wasilah simpan gabungan, pesan sukses tampil, target tersalin + status diajukan/disetujui, tampilan "Sudah ada", pulihkan data) | **4/4 LULUS**; sidik jari **SAMA** (16.504 baris, 19 tabel) |
-| `test_t7c_simpan_gabungan.py` (BACKEND, 18 uji) | **18/18 LULUS**; sidik jari SAMA (dari [2/3]) |
-| `test_targets_t7.py` / `test_t7c_target_tujuan.py` / `regression_execute.py` | **34/34 / 48/48 / 8/8 LULUS** |
+| `test_t7c3_e2e.py` (E2E penuh, 24 uji: pengampu tanpa tombol Setujui/Tolak; Masul domain "Setujui semua" + tolak beralasan tampil ke pengaju; lintas domain; **bulan terkunci: Masul diblokir, Mudir konfirmasi eksplisit**; Level 6; tab & URL 360/1280 px; ambang median 5 putaran; pulihkan data) | **24/24 LULUS**; sidik jari **SAMA** (16.504 baris, 19 tabel) |
+| `test_t7c_form_e2e.py` / `test_t7c_simpan_gabungan.py` / `test_t7c3_kewajiban_target.py` | **4/4 / 19/19 / 13/13 LULUS** |
+| T6a / T6b (DB) / T6b (E2E) / T6d2 / T6e | **14 / 29 / 14 / 68 / 35 LULUS** |
+| `test_targets_t7` / `test_t7_target_tulis` / `test_t7c_target_tujuan` / `regression_execute` / `rls_matrix` | **34/34 / 38/38 / 48/48 / 8/8 / 94/97 (3 SKIP) LULUS** |
 | `npm run typecheck` / `npm run build` / `npm test` | hijau / berhasil / 14/14 |
-| Smoke produksi Vercel (baca saja) setelah deploy form T7c [3/3] | **42/42 PASS** (`docs/qa/smoke_e2e_2026-11-27_prod.json`); bundel produksi memanggil `wasilah_simpan_gabungan` |
+| Ambang beban halaman Input (5 putaran) | median **1,382 s**, maksimum **2,394 s** (< 1,5 s median → tidak perlu optimasi) |
+| Smoke produksi Vercel (baca saja) | **42/42 PASS** setelah deploy form T7c (27 Nov) — diulang setelah merge [3b] |
 
 **Data sekarang:** capaian **2.036** (jumlah seed), kehadiran **599 / 756 / 749**, `monthly_notes` 0,
 `change_log` bertambah (append-only; baris lama utuh), `targets` **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah; DUMMY berbentuk TUJUAN AKHIR tanpa amount). Migrasi **36**.
@@ -59,6 +61,7 @@ Urutan tugas mengikuti `prompts/OPENCODE.md` dan **tidak boleh diubah**.
 | **T7c [1/3]** | Target Wasilah/Ghayah = TUJUAN AKHIR (database, RPC, DUMMY, uji) | **SELESAI** (lihat 2q); BACKEND [2/3] **SELESAI**, UI [3/3] menyusul | migrasi `000032`, `test_t7c_target_tujuan.py` 48/48, `regression_execute.py` 8/8, sidik jari SAMA | Form UI Wasilah/Ghayah **belum** mengirim butir; pengajuan dari UI ditolak sampai [3/3] |
 | **T7c [2/3]** | **BACKEND**: simpan gabungan capaian + target bulan depan, `halaqah_mapel_aktif`, tuntas & Level 6, laporan Wasilah/Ghayah = butir/posisi target | **SELESAI** (lihat 2r) | migrasi `000033`-`000035`, `test_t7c_simpan_gabungan.py` 18/18, regresi penuh hijau, sidik jari SAMA | Kewajiban target = mapel aktif yang **boleh ditulis pemanggil**; dikonfirmasi Mudir sebagai **keputusan ⓐ** (jawaban §5.13) |
 | **T7c [3/3] form** | **UI butir 1-2**: form Input Wasilah/Ghayah = capaian + **target bulan depan** (butir kurikulum via `DropdownCari`), simpan gabungan `wasilah_simpan_gabungan`, kewajiban target keputusan ⓐ, peringatan + konfirmasi target di bawah capaian, "Tuntas, target tidak wajib", Level 6 | **SELESAI** (butir 1-2); **[3b] & [3c] belum** | migrasi `000036`, `FormInputWasilah.tsx`, `InputWasilahPage.tsx`, `DropdownCari.tsx`, `test_t7c_form_e2e.py` 4/4 (sidik jari SAMA), banner sukses dipindah ke induk agar tampil | Jalur simpan lama `wasilah_input_save` **ditutup** (melempar galat); produksi kembali konsisten setelah UI baru di-push. [3b]=tab `/target` massal; [3c]=notifikasi, E2E penuh, tangkapan layar |
+| **T7c [3b]** | **UI tab `/target` + tabel Capaian**: satu baris per halaqah, kolom = mapel aktif bulan itu (label butir target), tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`, Masul domain/Mudir/Admin), tolak beralasan wajib, bulan terkunci/lewat hanya Mudir/Admin + dialog konfirmasi, `FormTarget` Ubah memakai `DropdownCari`; tabel Capaian menampilkan `target_label` + "Tercapai"/"Kurang N butir"/"–"; HP 360 px kartu per halaqah tanpa geser samping | **SELESAI** | `TabelTargetHalaqah.tsx` (baru), `TargetDomainPage.tsx`, `TabelWasilah.tsx`, `TabelCapaian.tsx`, `laporan.ts`, `target.ts`, `FormTarget.tsx`, `test_t7c3_e2e.py` 24/24 (sidik jari SAMA) | **[3c] belum** (notifikasi `target_belum_domain`, tangkapan layar tambahan). Ambang halaman Input: median 5 putaran **1,382 s** (maks 2,394 s) → tidak perlu optimasi |
 | **T8** | Kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan | **BELUM** | Rute `/kurikulum`, `/halaqah`, `/pengaturan` memakai `PlaceholderPage` | Hari Efektif saat ini hanya bisa diisi lewat SQL/dashboard |
 | **T9** | Pengujian & QA | **SEBAGIAN** | Panggung otomatis luas: `tests/` 14 uji, `scripts/qa/` ± 20 rangkaian (DB, E2E, RLS, banding Excel, sidik jari) | Masih ada 8 sel RLS SKIP dan belum ada proyek QA terpisah |
 | **T10** | Deploy akhir (hapus data dummy, repo privat) | **BELUM** | - | Repo masih publik, data dummy masih ada |

@@ -147,7 +147,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
         supabase
           .from("v_monthly_report")
           .select(
-            "halaqah_id, student_id, subject_id, month_id, pos, selisih, hadir, effective_days, target_monthly, below_target, attendance_short, item_label, prev_item_label",
+            "halaqah_id, student_id, subject_id, month_id, pos, selisih, hadir, effective_days, target_monthly, below_target, attendance_short, item_label, prev_item_label, target_item_id, target_label, target_pos, target_tercapai, target_kurang, target_status",
           )
           .eq("halaqah_id", halaqahId)
           .eq("month_id", bulanId)
@@ -330,7 +330,7 @@ export default function TabelCapaian({ domain }: { domain: Domain }) {
     <div className="space-y-4">
       <div className="rounded-xl bg-white p-4 ring-1 ring-black/5">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
+          <div className="min-w-0">
             <PemilihHalaqah
               id={`halaqah-${domain}`}
               label={domain === "wasilah" ? "Level" : domain === "ghayah" ? "Kelompok" : "Halaqah"}

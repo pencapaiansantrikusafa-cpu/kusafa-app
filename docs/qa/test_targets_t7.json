@@ -150,7 +150,7 @@
     {
       "uji": "Diajukan dan ditolak tidak mengubah laporan",
       "ok": true,
-      "detail": "base=18, pending=18, ditolak=18"
+      "detail": "base=9.6, pending=9.6, ditolak=9.6"
     },
     {
       "uji": "Tulis langsung targets UPDATE ditolak",
@@ -170,7 +170,7 @@
     {
       "uji": "Semua fungsi bernama target tidak dapat di-EXECUTE anon",
       "ok": true,
-      "detail": "17 fungsi"
+      "detail": "18 fungsi"
     }
   ]
 }

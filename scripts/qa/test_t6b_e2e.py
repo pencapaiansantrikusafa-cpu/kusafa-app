@@ -110,6 +110,23 @@ def pilih_item(page, indeks: int, kata: str) -> str:
     return label
 
 
+
+def pilih_target(page, indeks: int, kata: str) -> str:
+    """Pilih butir target bulan depan untuk mapel ke-`indeks` (T7c [3/3])."""
+    tombol = [b for b in page.query_selector_all('[role="combobox"]') if (b.get_attribute("id") or "").startswith("target-")]
+    tombol[indeks].click()
+    page.wait_for_selector('input[type="search"]:visible', timeout=20000)
+    page.locator('input[type="search"]:visible').first.fill(kata)
+    page.wait_for_timeout(1800)
+    opsi = page.query_selector_all('[role="option"]')
+    if not opsi:
+        raise AssertionError(f"pencarian target {kata!r} tidak menghasilkan pilihan")
+    label = opsi[0].inner_text().strip()
+    opsi[0].click()
+    page.wait_for_timeout(500)
+    return label
+
+
 def main() -> int:  # noqa: C901
     FOTO.mkdir(parents=True, exist_ok=True)
     db = psycopg.connect(env_local()["DATABASE_URL"], autocommit=True, connect_timeout=30)
@@ -132,7 +149,7 @@ def main() -> int:  # noqa: C901
             for domain, halaman in (("wasilah", "Ilmu Wasilah"), ("ghayah", "Ilmu Ghayah")):
                 t0 = time.perf_counter()
                 page.goto(f"{BASE}/input/{domain}", wait_until="load")
-                page.get_by_role("button", name="Simpan", exact=True).first.wait_for(timeout=60000)
+                page.get_by_role("button", name="Simpan capaian & target", exact=True).first.wait_for(timeout=60000)
                 siap = time.perf_counter() - t0
                 page.wait_for_timeout(1200)
 
@@ -146,6 +163,7 @@ def main() -> int:  # noqa: C901
                 page.screenshot(path=str(FOTO / f"{domain}_01_awal.png"), full_page=True)
 
                 label = pilih_item(page, 0, "1")
+                label_target = pilih_target(page, 0, "1")
                 tampil = teks_dropdown_item(page)[0]
                 catat(
                     f"{domain}: pilih dari pencarian -> label tampil",
@@ -156,7 +174,7 @@ def main() -> int:  # noqa: C901
                 page.screenshot(path=str(FOTO / f"{domain}_02_dipilih.png"), full_page=True)
 
                 # Simpan.
-                page.get_by_role("button", name="Simpan", exact=True).first.click()
+                page.get_by_role("button", name="Simpan capaian & target", exact=True).first.click()
                 # Tunggu bukti database: baris muncul untuk domain ini.
                 batas = time.time() + 120
                 jml = 0
@@ -189,13 +207,13 @@ def main() -> int:  # noqa: C901
                     (domain,),
                 ).fetchone()[0]
                 catat(f"{domain}: semua anggota mendapat item yang sama", beda == 1, variasi=beda)
-                page.get_by_role("button", name="Simpan", exact=True).first.wait_for(state="visible", timeout=120000)
+                page.get_by_role("button", name="Simpan capaian & target", exact=True).first.wait_for(state="visible", timeout=120000)
                 page.wait_for_timeout(2500)
                 page.screenshot(path=str(FOTO / f"{domain}_03_tersimpan.png"), full_page=True)
 
                 # Muat ulang: label tersimpan harus tetap tampil.
                 page.reload(wait_until="load")
-                page.get_by_role("button", name="Simpan", exact=True).first.wait_for(timeout=60000)
+                page.get_by_role("button", name="Simpan capaian & target", exact=True).first.wait_for(timeout=60000)
                 page.wait_for_timeout(2500)
                 ulang = teks_dropdown_item(page)
                 catat(

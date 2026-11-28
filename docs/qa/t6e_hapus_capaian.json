@@ -283,8 +283,8 @@
       "uji": "LOG tidak mencatat UPDATE tanpa perubahan nilai",
       "ok": true,
       "log": {
-        "sebelum": 367,
-        "sesudah": 367
+        "sebelum": 946,
+        "sesudah": 946
       }
     },
     {
@@ -323,7 +323,7 @@
       "uji": "log: Mudir/Admin bisa membaca log",
       "ok": true,
       "hasil": [
-        367
+        946
       ],
       "pesan": ""
     },

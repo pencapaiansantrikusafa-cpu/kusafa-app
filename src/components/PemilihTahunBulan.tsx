@@ -61,7 +61,7 @@ export default function PemilihTahunBulan({
   );
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid min-w-0 gap-3 sm:grid-cols-2">
       <DropdownCari
         id={`${idAwalan}-tahun`}
         label="Tahun Hijriyah"

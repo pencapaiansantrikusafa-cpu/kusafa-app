@@ -5,6 +5,15 @@ Ini ringkasan, bukan daftar komit lengkap; daftar lengkap ada di `git log`.
 
 ---
 
+## 28 November 2026 - T7c [3b] UI `/target` massal + tabel Capaian target
+
+- **Tab `/target` Wasilah & Ghayah** (`TabelTargetHalaqah.tsx` baru + `TargetDomainPage.tsx`): **satu baris per halaqah**, kolom = mapel aktif bulan itu berisi **label butir tujuan akhir** + status + pengaju/penyetuju. Tombol **"Setujui semua target halaqah ini"** (`setujui_target_halaqah`) untuk Masul domain/Mudir/Admin; tolak per target dengan alasan wajib; **bulan terkunci/lewat hanya Mudir/Admin + dialog konfirmasi eksplisit**; Ubah = baris baru berlaku mulai bulan X lewat `FormTarget` (`DropdownCari`, hanya butir mapel itu). HP 360 px: kartu per halaqah, tanpa geser samping.
+- **Tabel Capaian** (`TabelWasilah.tsx`): menampilkan `target_label` + status **"Tercapai"/"Kurang N butir"**, "–" bila tak ada target disetujui; angka dari `v_monthly_report` (React tidak menghitung).
+- **Ambang beban halaman Input**: diukur 5 putaran → median **1,382 s**, maksimum **2,394 s** (median < 1,5 s; tidak perlu optimasi).
+- **Uji**: `test_t7c3_e2e.py` **24/24** (per role, bulan terkunci, Level 6, 360/1280 px, pulihkan data); semua uji lama hijau; sidik jari **SAMA** (16.504 baris, 19 tabel). Migrasi tidak berubah (tetap `000036`).
+
+---
+
 ## 27 November 2026 - T7c [2/3] BACKEND (simpan gabungan capaian + target bulan depan, tuntas, laporan)
 
 - **Koreksi penamaan:** T7c **[2/3] = BACKEND**, **[3/3] = UI** (sebelumnya tertukar di dokumen).

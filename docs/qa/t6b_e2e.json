@@ -7,7 +7,7 @@
     {
       "uji": "wasilah: halaman siap < 1,5 s",
       "ok": true,
-      "detik": 0.89
+      "detik": 1.43
     },
     {
       "uji": "wasilah: belum ada capaian -> placeholder wajar",
@@ -43,7 +43,7 @@
     {
       "uji": "ghayah: halaman siap < 1,5 s",
       "ok": true,
-      "detik": 0.9
+      "detik": 0.91
     },
     {
       "uji": "ghayah: belum ada capaian -> placeholder wajar",

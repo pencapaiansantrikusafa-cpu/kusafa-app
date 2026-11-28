@@ -60,8 +60,9 @@ interface TargetBaris {
   student_id: string | null;
   halaqah_id: string | null;
   effective_month_id: string;
-  amount: number;
+  amount: number | null;
   amount_period: "harian" | "bulanan";
+  target_item_id: string | null;
   status: "diajukan" | "disetujui" | "ditolak" | "dibatalkan";
   note: string | null;
 }
@@ -71,8 +72,10 @@ interface MenungguTarget {
   id: string;
   sasaran: string;
   mapel: string;
-  amount: number;
+  amount: number | null;
   period: "harian" | "bulanan";
+  /** Butir tujuan akhir (Wasilah/Ghayah). */
+  butir: string | null;
   dummy: boolean;
 }
 
@@ -154,6 +157,12 @@ export default function KotakBelumLengkap({
       dummy: number;
       tanpa: SasaranTanpaTarget[];
       totalTanpa: number;
+      /** Mapel tuntas: "Tuntas, menunggu keputusan Masul". */
+      tuntas: SasaranTanpaTarget[];
+      /** Jumlah halaqah Level 6 (tanpa mapel); tidak dihitung kekurangan. */
+      level6: number;
+      /** Nama bulan berikutnya (target yang diperiksa). */
+      bulanDepanNama: string;
     } | null;
   } | null>(null);
   /** Notifikasi santri tanpa halaqah per domain (view v_students_without_halaqah). */
@@ -337,22 +346,26 @@ export default function KotakBelumLengkap({
           return { monthId: b.id, nama: b.name, total: daftarAnggota.length, terisi };
         });
 
-        // 9. Ringkasan TARGET (T7 [2/2]) untuk Masul domain, Mudir, Admin.
-        //    Semua angka dibaca dari tabel `targets`; tidak ada aturan target dihitung ulang.
-        //    "Punya target" = ada target `disetujui` dengan bulan berlaku <= bulan yang dipilih
-        //    (target berlaku sampai diganti). Target DUMMY dikenali dari catatannya.
+        // 9. Ringkasan TARGET untuk Masul domain, Mudir, Admin.
+        //    Al Qur'an: "punya target" = target disetujui berlaku <= bulan dipilih.
+        //    Wasilah/Ghayah (semantik baru): target berlaku PER BULAN. Kekurangan =
+        //    mapel aktif yang belum punya target hidup untuk BULAN BERIKUTNYA
+        //    (kecuali tuntas). Semua fakta dari RPC `target_belum_domain`.
         let targetRingkas: {
           menunggu: MenungguTarget[];
           dummy: number;
           tanpa: SasaranTanpaTarget[];
           totalTanpa: number;
+          tuntas: SasaranTanpaTarget[];
+          level6: number;
+          bulanDepanNama: string;
         } | null = null;
         if (profile && domainNotifikasi(profile.role).includes(DOMAIN)) {
           const { data: targetRows, error: e7 } = await ambilSemua<TargetBaris>((awal, jumlah) =>
             supabase
               .from("targets")
               .select(
-                "id, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, status, note",
+                "id, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, target_item_id, status, note",
               )
               .eq("domain", DOMAIN)
               .order("id", { ascending: true })
@@ -366,6 +379,20 @@ export default function KotakBelumLengkap({
             (ordBulan.get(t.effective_month_id) ?? Number.POSITIVE_INFINITY) <= batas.ord;
           const namaMapel = new Map(bidang.map((b) => [b.id, b.name]));
 
+          // Label butir untuk pengajuan Wasilah/Ghayah (satu permintaan).
+          const butirIds = daftarTarget
+            .filter((t) => t.status === "diajukan" && t.target_item_id)
+            .map((t) => t.target_item_id as string);
+          const petaButir = new Map<string, string>();
+          if (butirIds.length > 0) {
+            const { data: items } = await supabase.rpc("curriculum_items_by_ids", {
+              p_ids: [...new Set(butirIds)],
+            });
+            for (const it of (items ?? []) as Array<{ id: string; label: string }>) {
+              petaButir.set(it.id, it.label);
+            }
+          }
+
           const menunggu: MenungguTarget[] = daftarTarget
             .filter((t) => t.status === "diajukan")
             .map((t) => ({
@@ -376,6 +403,7 @@ export default function KotakBelumLengkap({
               mapel: namaMapel.get(t.subject_id) ?? "",
               amount: t.amount,
               period: t.amount_period,
+              butir: t.target_item_id ? petaButir.get(t.target_item_id) ?? null : null,
               dummy: (t.note ?? "").startsWith("DUMMY"),
             }));
           const dummy = daftarTarget.filter(
@@ -383,7 +411,10 @@ export default function KotakBelumLengkap({
           ).length;
 
           const tanpa: SasaranTanpaTarget[] = [];
+          const tuntas: SasaranTanpaTarget[] = [];
           let totalTanpa = 0;
+          let level6 = 0;
+          let bulanDepanNama = "";
           if (DOMAIN === "alquran") {
             for (const bd of bidang) {
               const belum = daftarAnggota.filter(
@@ -396,19 +427,46 @@ export default function KotakBelumLengkap({
               if (belum > 0) tanpa.push({ halaqah: "", mapel: bd.name, jumlah: belum });
             }
           } else {
-            for (const h of halaqah) {
-              for (const bd of bidangHalaqah(h.id)) {
-                const ada = daftarTarget.some(
-                  (t) => t.subject_id === bd.id && t.halaqah_id === h.id && berlakuSampai(t),
-                );
-                if (!ada) {
-                  totalTanpa += 1;
-                  tanpa.push({ halaqah: h.code, mapel: bd.name, jumlah: 1 });
-                }
+            const depan = semua.find(
+              (m) => m.ord > batas.ord && m.month_no > 0,
+            );
+            bulanDepanNama = depan ? `${depan.name} ${depan.hijri_year}` : "";
+            const { data: statusRows, error: e8 } = await supabase.rpc("target_belum_domain", {
+              p_domain: DOMAIN,
+              p_bulan: bulanId,
+            });
+            if (e8) throw new Error(e8.message);
+            for (const r of (statusRows ?? []) as Array<{
+              halaqah_code: string;
+              subject_name: string | null;
+              tuntas: boolean;
+              level6: boolean;
+              ada_disetujui: boolean;
+              ada_diajukan: boolean;
+            }>) {
+              if (r.level6) {
+                level6 += 1;
+                continue;
+              }
+              if (r.tuntas) {
+                tuntas.push({ halaqah: r.halaqah_code, mapel: r.subject_name ?? "", jumlah: 1 });
+                continue;
+              }
+              if (!r.ada_disetujui && !r.ada_diajukan) {
+                totalTanpa += 1;
+                tanpa.push({ halaqah: r.halaqah_code, mapel: r.subject_name ?? "", jumlah: 1 });
               }
             }
           }
-          targetRingkas = { menunggu, dummy, tanpa, totalTanpa };
+          targetRingkas = {
+            menunggu,
+            dummy,
+            tanpa,
+            totalTanpa,
+            tuntas,
+            level6,
+            bulanDepanNama,
+          };
         }
 
         if (!aktif) return;
@@ -632,8 +690,18 @@ export default function KotakBelumLengkap({
                       : "bg-emerald-50 text-emerald-800 ring-emerald-200")
                   }
                 >
-                  <strong className="font-semibold">{data.target.totalTanpa}</strong> belum punya target
+                  <strong className="font-semibold">{data.target.totalTanpa}</strong> belum punya
+                  target
                 </span>
+                {data.target.level6 > 0 && (
+                  <span
+                    className="rounded bg-emerald-50 px-2 py-1 text-emerald-800 ring-1 ring-emerald-200"
+                    title="Halaqah tanpa mapel aktif; tidak dihitung kekurangan target."
+                  >
+                    <strong className="font-semibold">{data.target.level6}</strong> tuntas (tanpa
+                    mapel)
+                  </span>
+                )}
               </div>
 
               {data.target.menunggu.length > 0 && (
@@ -644,8 +712,10 @@ export default function KotakBelumLengkap({
                   <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
                     {data.target.menunggu.slice(0, 5).map((t) => (
                       <li key={t.id}>
-                        {t.sasaran} · {t.mapel} · target {t.amount}{" "}
-                        {t.period === "harian" ? "per hari" : "per bulan"}
+                        {t.sasaran} · {t.mapel} ·{" "}
+                        {t.butir
+                          ? `target ${t.butir}`
+                          : `target ${t.amount ?? "—"} ${t.period === "harian" ? "per hari" : "per bulan"}`}
                         {t.dummy && (
                           <span className="ml-1 rounded bg-gray-100 px-1 text-[10px] font-medium text-gray-700">
                             DUMMY
@@ -665,7 +735,9 @@ export default function KotakBelumLengkap({
               {data.target.tanpa.length > 0 && (
                 <div className="mt-2 rounded-lg bg-white px-3 py-2 ring-1 ring-black/5">
                   <p className="text-xs font-medium text-gray-800">
-                    Belum punya target (berlaku sampai {data.batasNama || "bulan ini"}):
+                    {domain === "alquran"
+                      ? `Belum punya target (berlaku sampai ${data.batasNama || "bulan ini"}):`
+                      : `Belum punya target untuk ${data.target.bulanDepanNama || "bulan berikutnya"}:`}
                   </p>
                   <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
                     {data.target.tanpa.slice(0, 8).map((t, i) => (
@@ -687,6 +759,27 @@ export default function KotakBelumLengkap({
                   </p>
                 </div>
               )}
+
+              {domain !== "alquran" && data.target.tuntas.length > 0 &&
+                profile?.role === `masul_${domain}` && (
+                  <div className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 ring-1 ring-emerald-200">
+                    <p className="text-xs font-medium text-emerald-900">
+                      Tuntas, menunggu keputusan Masul:
+                    </p>
+                    <ul className="mt-1 space-y-0.5 text-xs text-emerald-900">
+                      {data.target.tuntas.slice(0, 8).map((t, i) => (
+                        <li key={`${t.halaqah}|${t.mapel}|tuntas|${i}`}>
+                          {t.halaqah} · {t.mapel}
+                        </li>
+                      ))}
+                    </ul>
+                    {data.target.tuntas.length > 8 && (
+                      <p className="mt-1 text-xs text-emerald-800">
+                        … dan {data.target.tuntas.length - 8} mapel lain.
+                      </p>
+                    )}
+                  </div>
+                )}
             </div>
           )}
           {galat && (

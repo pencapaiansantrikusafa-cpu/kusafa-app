@@ -10,6 +10,7 @@ import DropdownCari from "../components/DropdownCari";
 import FormTarget from "../components/FormTarget";
 import DialogRiwayatTarget from "../components/DialogRiwayatTarget";
 import DialogAksiTarget, { type JenisAksiTarget } from "../components/DialogAksiTarget";
+import TabelTargetHalaqah, { type GrupHalaqah } from "../components/TabelTargetHalaqah";
 import { supabase } from "../lib/supabase";
 import { ambilSemua } from "../lib/ambil-semua";
 import { angka } from "../lib/laporan";
@@ -25,6 +26,7 @@ import {
   batalkanTarget,
   infoKonfirmasi,
   setujuiTarget,
+  setujuiTargetHalaqah,
   STATUS_GAYA,
   STATUS_LABEL,
   tolakTarget,
@@ -46,6 +48,7 @@ type BarisTargetTampil = BarisTarget & {
   santri: { full_name: string } | null;
   halaqah: { code: string } | null;
   mapel: { name: string } | null;
+  target_item: { label: string } | null;
   bulan: {
     name: string;
     month_no: number;
@@ -87,6 +90,12 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
   const [siswaHalaqah, setSiswaHalaqah] = useState<Map<string, string[]>>(new Map());
   /** halaqah_id -> daftar student_id anggota aktif (saringan Al Qur'an). */
   const [anggotaHalaqah, setAnggotaHalaqah] = useState<Map<string, string[]>>(new Map());
+  /** halaqah_id -> mapel aktif pada bulan matriks (Wasilah/Ghayah). */
+  const [mapelHalaqah, setMapelHalaqah] = useState<Map<string, { id: string; name: string }[]>>(
+    new Map(),
+  );
+  /** Bulan matriks target Wasilah/Ghayah (satu bulan, dipilih lewat saringan). */
+  const [bulanMatriks, setBulanMatriks] = useState("");
 
   const [tahun, setTahun] = useState<number | "">("");
   const [bulanId, setBulanId] = useState("");
@@ -222,6 +231,81 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
   );
   const mapelPeta = useMemo(() => new Map(bidang.map((b) => [b.id, b.name])), [bidang]);
 
+  // ---- Wasilah/Ghayah: mapel aktif tiap halaqah untuk matriks target ----
+  useEffect(() => {
+    if (isAlquran || memuatAwal || halaqahList.length === 0) {
+      setMapelHalaqah(new Map());
+      setBulanMatriks("");
+      return;
+    }
+    let aktif = true;
+    void (async () => {
+      let bulan = bulanId;
+      if (!bulan) {
+        const { data } = await supabase.rpc("target_bulan_berjalan", { p_domain: domain });
+        bulan = (data as unknown as string) ?? "";
+      }
+      if (!bulan) bulan = bulanTahun[bulanTahun.length - 1]?.id ?? "";
+      if (!aktif) return;
+      setBulanMatriks(bulan);
+      if (!bulan) {
+        setMapelHalaqah(new Map());
+        return;
+      }
+      const hasil = await Promise.all(
+        halaqahList.map(async (h) => {
+          const { data, error } = await supabase.rpc("halaqah_mapel_aktif", {
+            p_halaqah: h.id,
+            p_bulan: bulan,
+          });
+          if (error) return [h.id, [] as { id: string; name: string }[]] as const;
+          return [
+            h.id,
+            ((data ?? []) as Array<{ subject_id: string; name: string }>).map((x) => ({
+              id: x.subject_id,
+              name: x.name,
+            })),
+          ] as const;
+        }),
+      );
+      if (aktif) setMapelHalaqah(new Map(hasil));
+    })();
+    return () => {
+      aktif = false;
+    };
+  }, [domain, isAlquran, memuatAwal, halaqahList, bulanId, bulanTahun]);
+
+  // ---- Matriks target: satu grup per halaqah ----
+  const grup = useMemo<GrupHalaqah<BarisTargetTampil>[]>(
+    () =>
+      (halaqahId ? halaqahList.filter((h) => h.id === halaqahId) : halaqahList).map((h) => {
+        const mapel = mapelHalaqah.get(h.id) ?? [];
+        return {
+          halaqahId: h.id,
+          code: h.code,
+          pengampu: pengampu[h.id] ?? "",
+          mapel,
+          tanpaMapel: mapel.length === 0,
+          baris: baris.filter(
+            (b) =>
+              b.halaqah_id === h.id &&
+              (!bulanMatriks || b.effective_month_id === bulanMatriks) &&
+              (!mapelId || b.subject_id === mapelId),
+          ),
+        };
+      }),
+    [halaqahList, halaqahId, pengampu, mapelHalaqah, baris, bulanMatriks, mapelId],
+  );
+  const kolomMapel = useMemo(() => {
+    const peta = new Map<string, { id: string; name: string }>();
+    for (const g of grup) for (const m of g.mapel) peta.set(m.id, m);
+    return [...peta.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [grup]);
+  const namaBulanMatriks = useMemo(() => {
+    const b = bulanPeta.get(bulanMatriks);
+    return b ? `${b.name} ${b.hijri_year}` : "";
+  }, [bulanPeta, bulanMatriks]);
+
   // ---- Muat daftar target sesuai saringan ----
   useEffect(() => {
     let aktif = true;
@@ -248,7 +332,7 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
         let q = supabase
           .from("targets")
           .select(
-            "id, domain, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, status, proposed_by, approved_by, approved_at, rejected_by, rejected_at, alasan_tolak, note, created_at, santri:students(full_name), halaqah:halaqahs(code), mapel:subjects(name), bulan:hijri_months(name, month_no, academic_years(hijri_year)), pengaju:profiles!targets_proposed_by_fkey(full_name), penyetuju:profiles!targets_approved_by_fkey(full_name), penolak:profiles!targets_rejected_by_fkey(full_name)",
+            "id, domain, subject_id, student_id, halaqah_id, effective_month_id, amount, amount_period, target_item_id, status, proposed_by, approved_by, approved_at, rejected_by, rejected_at, alasan_tolak, note, created_at, santri:students(full_name), halaqah:halaqahs(code), mapel:subjects(name), target_item:curriculum_items(label), bulan:hijri_months(name, month_no, academic_years(hijri_year)), pengaju:profiles!targets_proposed_by_fkey(full_name), penyetuju:profiles!targets_approved_by_fkey(full_name), penolak:profiles!targets_rejected_by_fkey(full_name)",
           )
           .eq("domain", domain)
           .in("effective_month_id", bulanQuery)
@@ -363,6 +447,36 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
         setPesan("Pengajuan target dibatalkan (baris tetap tersimpan sebagai riwayat).");
       }
       setAksi(null);
+      await muatUlang();
+    } catch (e) {
+      setPesan(`Gagal: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setSedang(false);
+    }
+  }
+
+  /** Bulk "Setujui semua target halaqah ini" (Masul domain/Mudir/Admin). */
+  async function setujuiSemua(halaqahSatu: string) {
+    setPesan(null);
+    try {
+      const info = bulanMatriks ? await infoKonfirmasi(domain, bulanMatriks) : null;
+      if (info?.perlu_konfirmasi) {
+        if (!aksesPenuh) {
+          setPesan("Gagal: bulan sudah lewat/terkunci. Hanya Mudir atau Admin yang dapat menyetujui.");
+          return;
+        }
+        const lanjut = window.confirm(
+          `${info.lewat ? "Bulan sudah lewat" : "Bulan sudah dikunci"}. Tetap setujui semua target halaqah ini?`,
+        );
+        if (!lanjut) return;
+      }
+      setSedang(true);
+      const h = await setujuiTargetHalaqah({
+        halaqahId: halaqahSatu,
+        bulanId: bulanMatriks || null,
+        konfirmasi: !!info?.perlu_konfirmasi,
+      });
+      setPesan(`${h.jumlah ?? 0} target disetujui${bulanMatriks ? ` untuk ${namaBulanMatriks}` : ""}.`);
       await muatUlang();
     } catch (e) {
       setPesan(`Gagal: ${e instanceof Error ? e.message : String(e)}`);
@@ -534,6 +648,40 @@ export default function TargetDomainPage({ domain }: { domain: Domain }) {
           <p className="px-4 py-8 text-center text-sm text-gray-600">
             Belum ada halaqah yang Anda ampu pada domain ini.
           </p>
+        ) : !isAlquran ? (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-600">
+              Bulan berlaku: <strong>{namaBulanMatriks || "—"}</strong> · satu baris per {labelHalaqah.toLowerCase()},
+              kolom = mapel aktif bulan itu (butir tujuan akhir + status).
+            </p>
+            {memuat && (
+              <p className="px-4 py-2 text-center text-sm text-gray-600">Memuat target...</p>
+            )}
+            <TabelTargetHalaqah
+              domain={domain}
+              labelHalaqah={labelHalaqah}
+              grup={grup}
+              mapel={mapelId ? kolomMapel.filter((m) => m.id === mapelId) : kolomMapel}
+              bolehSetujui={bolehSetujui}
+              aksesPenuh={aksesPenuh}
+              profileId={profile?.id}
+              sedang={sedang}
+              onSetujuiSemua={(id) => void setujuiSemua(id)}
+              onAksi={(jenis, target) => void bukaAksi(jenis, target)}
+              onUbah={(target) => {
+                setPesan(null);
+                setForm({ mode: "ubah", target });
+              }}
+              onRiwayat={(target) =>
+                setRiwayat({
+                  judul: `${target.halaqah?.code ?? teksSasaran(target)} · ${mapelPeta.get(target.subject_id) ?? ""}`,
+                  subjectId: target.subject_id,
+                  studentId: target.student_id,
+                  halaqahId: target.halaqah_id,
+                })
+              }
+            />
+          </div>
         ) : baris.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-gray-600">
             {memuat ? "Memuat target..." : "Belum ada target pada saringan ini."}
