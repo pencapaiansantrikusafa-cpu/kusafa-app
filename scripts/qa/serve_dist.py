@@ -23,8 +23,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def handle_one_request(self):
+        # Browser yang menutup koneksi lebih awal (navigasi cepat, render putus) memicu
+        # BrokenPipeError/ConnectionResetError. Itu normal untuk server uji; jangan kotori log.
+        try:
+            super().handle_one_request()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+
 
 socketserver.TCPServer.allow_reuse_address = True
-with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+
+
+class Server(socketserver.TCPServer):
+    # Koneksi yang ditutup browser saat server masih menulis (mis. flush di finish())
+    # memunculkan BrokenPipeError/ConnectionResetError. Abaikan, jangan cetak traceback.
+    def handle_error(self, request, client_address):
+        import sys as _sys
+        exc = _sys.exc_info()[1]
+        if isinstance(exc, (BrokenPipeError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
+
+
+with Server(("127.0.0.1", PORT), Handler) as httpd:
     print(f"Serving {ROOT} on http://127.0.0.1:{PORT}")
     httpd.serve_forever()

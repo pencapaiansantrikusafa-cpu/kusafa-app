@@ -15,6 +15,11 @@ Yang diperiksa:
   8. Level 6: "Tuntas, belum ada pelajaran lanjutan" di Input, Capaian, Target.
   9. Tab & URL di 1280 px dan 360 px; tidak ada geser samping di 360 px.
  10. Tangkapan layar HP + desktop.
+ 11. Notifikasi target per role (T7c [3c]): target "diajukan" tampil untuk Masul
+     domainnya/Mudir/Admin (jumlah & daftar = database), "belum punya target"
+     semantik baru, "Tuntas, menunggu keputusan Masul", Level 6 tidak dihitung,
+     target DUMMY ditandai, role lain tidak melihat, hilang setelah "Setujui semua".
+      Tangkapan layar notifikasi HP + desktop di docs/qa/t7c3/.
 
 Pakai:
   npm run build
@@ -195,6 +200,90 @@ def main() -> int:  # noqa: C901
             (hal_id, subject, bulan7),
         )
         return c.fetchall()
+
+    # ---------- Pembantu notifikasi target (T7c [3c]) ----------
+    def angka(teks: str, pola: str):
+        """Ambil angka pertama yang cocok pola (regex) dari teks kotak notifikasi."""
+        m = re.search(pola, teks)
+        return int(m.group(1)) if m else None
+
+    def ekspektasi(domain: str, bulan_pilih: str) -> dict:
+        """Angka yang SEHARUSNYA tampil di notifikasi target, dihitung langsung dari database
+        (cermin `target_belum_domain` tanpa RLS — uji hak lihat lewat tampilan, bukan di sini)."""
+        depan = satu("select public.bulan_berikutnya(%s)", (bulan_pilih,))
+        menunggu = hitung(
+            "select count(*) from public.targets where domain=%s and status='diajukan'", (domain,)
+        )
+        dummy = hitung(
+            """select count(*) from public.targets t join public.v_months_ordered m on m.id=t.effective_month_id
+               where t.domain=%s and t.status='disetujui' and coalesce(t.note,'') like 'DUMMY%%'
+                 and m.ord <= (select ord from public.v_months_ordered where id=%s)""",
+            (domain, bulan_pilih),
+        )
+        c.execute(
+            """with baris as (
+                 select h.id, mp.subject_id,
+                        public.mapel_tuntas(h.id, mp.subject_id, %s) as tuntas
+                 from public.halaqahs h
+                 cross join lateral public.halaqah_mapel_aktif(h.id, %s) mp
+                 where h.domain=%s and h.is_active)
+               select count(*) filter (where not tuntas and not exists (
+                          select 1 from public.targets t
+                          where t.halaqah_id=baris.id and t.subject_id=baris.subject_id
+                            and t.effective_month_id=%s and t.status in ('diajukan','disetujui'))),
+                      count(*) filter (where tuntas)
+               from baris""",
+            (bulan_pilih, bulan_pilih, domain, depan),
+        )
+        total_tanpa, tuntas = c.fetchone()
+        level6 = hitung(
+            "select count(*) from public.halaqahs where domain=%s and is_active "
+            "and public.halaqah_tanpa_mapel(id)",
+            (domain,),
+        )
+        nama_depan = satu(
+            "select name || ' ' || hijri_year from public.v_months_ordered where id=%s", (depan,)
+        )
+        return dict(menunggu=menunggu, dummy=dummy, total_tanpa=total_tanpa,
+                    tuntas=tuntas, level6=level6, nama_depan=nama_depan)
+
+    def tunggu_notifikasi_selesai(batas_ms: int = 20000) -> None:
+        """Tunggu kotak notifikasi selesai diperiksa (subjudul 'Memeriksa...' hilang)."""
+        batas_tunggu = time.time() + batas_ms / 1000
+        while time.time() < batas_tunggu:
+            if "Memeriksa..." not in page.locator("body").inner_text():
+                return
+            page.wait_for_timeout(400)
+
+    def buka_target_wasilah(a: dict, nama_bulan: str) -> str | None:
+        """Login sebagai `a`, buka /input/wasilah, pilih bulan, tunggu kotak target memuat bulan itu.
+        Kembalikan teks kotak 'Target Ilmu Wasilah' (None bila role ini tidak melihatnya).
+        Menunggu sampai kotak memperlihatkan 'bulan berikutnya' dari bulan dipilih, supaya tidak
+        terbaca saat transisi (kotak lama bulan default masih tertempel)."""
+        login(page, a)
+        page.goto(f"{BASE}/input/wasilah", wait_until="load")
+        tunggu_notifikasi_selesai()
+        if page.locator("#input-wasilah-bulan").count():
+            pilih(page, "input-wasilah-bulan", nama_bulan, re.escape(nama_bulan))
+        depan_label = satu(
+            """select name || ' ' || hijri_year from public.v_months_ordered
+               where id = (select public.bulan_berikutnya(%s))""",
+            (bulan6,),
+        )
+        batas_tunggu = time.time() + 25000
+        while time.time() < batas_tunggu:
+            kotak = page.locator("div.bg-sky-50", has_text="Target Ilmu Wasilah")
+            teks_kotak = kotak.first.inner_text() if kotak.count() else ""
+            if (
+                kotak.count()
+                and "Memeriksa..." not in page.locator("body").inner_text()
+                and f"Belum punya target untuk {depan_label}" in teks_kotak
+            ):
+                break
+            page.wait_for_timeout(400)
+        page.wait_for_timeout(400)
+        kotak = page.locator("div.bg-sky-50", has_text="Target Ilmu Wasilah")
+        return kotak.first.inner_text() if kotak.count() else None
 
     try:
         with sync_playwright() as p:
@@ -527,6 +616,144 @@ def main() -> int:  # noqa: C901
                     path=str(FOTO / ("mobile_capaian_360.png" if lebar == 360 else "desktop_capaian_1280.png")),
                     full_page=True,
                 )
+
+            # ---------------- 13. Notifikasi target per role (T7c [3c]) ----------------
+            # Kondisi uji sementara: SATU target Level Dasar A (mapel pertama) status "diajukan"
+            # untuk bulan 7, diajukan pengampu — dibuat uji ini, dipulihkan PERSIS di finally.
+            # Notifikasi di /input/wasilah (bulan dipilih = bulan 6, "bulan berikutnya" = bulan 7)
+            # wajib menampilkan jumlah & daftar sesuai database untuk Masul Wasilah, Mudir, Admin,
+            # dan TIDAK tampil untuk role di luar haknya.
+            pid_notif = satu("select id from public.profiles where full_name=%s", (pengampu_nama,))
+            c.execute(
+                """insert into public.targets (domain, subject_id, halaqah_id, effective_month_id,
+                       amount_period, target_item_id, status, proposed_by, note)
+                   values ('wasilah', %s, %s, %s, 'bulanan', %s, 'diajukan', %s, %s)
+                   returning id""",
+                (sid0, hal_id, bulan7, item_id_1(sid0), pid_notif, MARKER + " notifikasi"),
+            )
+            id_notif = c.fetchone()[0]
+            eks = ekspektasi("wasilah", bulan6)
+            catat(
+                "13a. Kondisi uji notifikasi: 1 target diajukan terbaca dari database",
+                eks["menunggu"] >= 1, eks=eks,
+            )
+
+            def periksa_notifikasi(label_uji, akun_x, boleh_lihat: bool, nama_foto: str | None = None):
+                """Buka /input/wasilah (bulan 6) sebagai akun, bandingkan jumlah notifikasi dengan DB.
+                boleh_lihat=False berarti role ini TIDAK boleh melihat kotak Target Ilmu Wasilah."""
+                page.set_viewport_size({"width": 1280, "height": 1100})
+                if not boleh_lihat:
+                    # Jalur cepat: role tanpa hak tidak perlu menunggu kotak yang tak akan muncul.
+                    login(page, akun_x)
+                    page.goto(f"{BASE}/input/wasilah", wait_until="load")
+                    tunggu_notifikasi_selesai()
+                    page.wait_for_timeout(500)
+                    ada = page.locator("div.bg-sky-50", has_text="Target Ilmu Wasilah").count() > 0
+                    catat(label_uji, not ada, ada_kotak=ada, url=page.url)
+                    return
+                teks = buka_target_wasilah(akun_x, nama6)
+                if teks is None:
+                    catat(label_uji, False, alasan="kotak Target Ilmu Wasilah tidak tampil")
+                    return
+                tampil = dict(
+                    menunggu=angka(teks, r"(\d+)\s*menunggu persetujuan"),
+                    dummy=angka(teks, r"(\d+)\s*target DUMMY"),
+                    tanpa=angka(teks, r"(\d+)\s*belum punya target"),
+                    level6=angka(teks, r"(\d+)\s*tuntas \(tanpa mapel\)"),
+                )
+                ok = (
+                    tampil["menunggu"] == eks["menunggu"]
+                    and tampil["dummy"] == eks["dummy"]
+                    and tampil["tanpa"] == eks["total_tanpa"]
+                    and tampil["level6"] == eks["level6"]
+                    and f"Belum punya target untuk {eks['nama_depan']}" in teks
+                    and "Level Dasar A" in teks
+                )
+                catat(label_uji, ok, tampil=tampil, eks=eks)
+                if nama_foto:
+                    page.screenshot(path=str(FOTO / f"desktop_{nama_foto}.png"), full_page=True)
+                    page.set_viewport_size({"width": 360, "height": 800})
+                    page.wait_for_timeout(600)
+                    page.screenshot(path=str(FOTO / f"mobile_{nama_foto}.png"), full_page=True)
+                    page.set_viewport_size({"width": 1280, "height": 1100})
+
+            periksa_notifikasi(
+                "13b. Masul Wasilah: jumlah & daftar notifikasi target sesuai database (HP+desktop)",
+                akun_masul_w, True, "notif_masul_wasilah",
+            )
+            periksa_notifikasi(
+                "13c. Mudir: jumlah & daftar notifikasi target sesuai database (HP+desktop)",
+                akun_mudir, True, "notif_mudir",
+            )
+            periksa_notifikasi(
+                "13d. Admin: jumlah & daftar notifikasi target sesuai database (HP+desktop)",
+                akun_role("admin"), True, "notif_admin",
+            )
+            periksa_notifikasi(
+                "13e. Mudarris/ah tidak melihat notifikasi target Wasilah",
+                akun_role("mudarris"), False,
+            )
+            periksa_notifikasi(
+                "13f. Masul Al Quran tidak melihat notifikasi target Wasilah",
+                akun_role("masul_alquran"), False,
+            )
+            periksa_notifikasi(
+                "13g. Musyrif/ah tidak melihat notifikasi target Wasilah",
+                akun_role("musyrif"), False,
+            )
+
+            # 13h. "Tuntas, menunggu keputusan Masul": buat mapel pertama Level Dasar A TUNTAS
+            # sementara (capaian bulan 6 = butir terakhir), lalu pulihkan PERSIS.
+            c.execute(
+                "select student_id, item_id from public.progress_entries "
+                "where halaqah_id=%s and subject_id=%s and month_id=%s order by student_id",
+                (hal_id, sid0, bulan6),
+            )
+            lama_tuntas = c.fetchall()
+            c.execute(
+                "update public.progress_entries set item_id=%s "
+                "where halaqah_id=%s and subject_id=%s and month_id=%s",
+                (satu("select public.mapel_butir_terakhir(%s)", (sid0,)), hal_id, sid0, bulan6),
+            )
+            try:
+                page.set_viewport_size({"width": 1280, "height": 1100})
+                teks_tuntas = buka_target_wasilah(akun_masul_w, nama6)
+                catat(
+                    "13h. Masul Wasilah: 'Tuntas, menunggu keputusan Masul' tampil untuk mapel tuntas",
+                    teks_tuntas is not None
+                    and "Tuntas, menunggu keputusan Masul" in teks_tuntas
+                    and "Level Dasar A" in teks_tuntas
+                    and angka(teks_tuntas, r"(\d+)\s*belum punya target") == eks["total_tanpa"],
+                    potongan=(teks_tuntas or "")[:220],
+                )
+                page.screenshot(path=str(FOTO / "desktop_notif_tuntas_1280.png"), full_page=True)
+            finally:
+                for st, it in lama_tuntas:
+                    c.execute(
+                        "update public.progress_entries set item_id=%s where student_id=%s "
+                        "and halaqah_id=%s and subject_id=%s and month_id=%s",
+                        (it, st, hal_id, sid0, bulan6),
+                    )
+
+            # 13i. "Setujui semua" (Masul, /target bulan 7) -> notifikasi kembali 0 menunggu.
+            login(page, akun_masul_w)
+            page.goto(f"{BASE}/target/wasilah", wait_until="load")
+            page.wait_for_timeout(1200)
+            pilih(page, "target-filter-halaqah-wasilah", "Level Dasar A", r"Level Dasar A")
+            pilih(page, "target-filter-bulan-wasilah-bulan", nama7, re.escape(nama7))
+            page.wait_for_timeout(1500)
+            page.get_by_role("button", name="Setujui semua target halaqah ini").first.click()
+            page.wait_for_timeout(2500)
+            status_notif = satu("select status from public.targets where id=%s", (id_notif,))
+            teks_setelah = buka_target_wasilah(akun_masul_w, nama6)
+            catat(
+                "13i. Setelah 'Setujui semua': target disetujui & notifikasi 0 menunggu",
+                status_notif == "disetujui"
+                and teks_setelah is not None
+                and angka(teks_setelah, r"(\d+)\s*menunggu persetujuan") == 0,
+                status=status_notif,
+                menunggu=angka(teks_setelah or "", r"(\d+)\s*menunggu persetujuan"),
+            )
 
             galat_nyata = [g for g in galat if "Failed to load resource" not in g]
             catat(
