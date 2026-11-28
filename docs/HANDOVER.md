@@ -63,7 +63,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 ### Yang belum
 
 - **T7c [3b] SELESAI (28 November 2026)** — tab `/target` Wasilah/Ghayah satu baris per halaqah (kolom mapel aktif bulan itu = label butir target), "Setujui semua target halaqah ini" (RPC `setujui_target_halaqah`) untuk Masul domain/Mudir/Admin, tolak beralasan wajib, bulan terkunci/lewat hanya Mudir/Admin + dialog konfirmasi eksplisit, `FormTarget` Ubah memakai `DropdownCari` (butir mapel itu). Tabel Capaian menampilkan `target_label` + "Tercapai"/"Kurang N butir"/"–". HP 360 px = kartu per halaqah tanpa geser samping. Bukti: `test_t7c3_e2e.py` 24/24, sidik jari SAMA.
-- **T7c [3c]**: notifikasi "belum punya target" (`target_belum_domain`, sambungkan ke `KotakBelumLengkap.tsx`) + tangkapan layar HP/desktop tambahan. E2E penuh sudah 24/24 (termasuk ambang median 5 putaran **1,382 s** < 1,5 s, maks 2,394 s).
+- **T7c [3c]**: notifikasi "belum punya target" (`target_belum_domain`) — **kode sudah di-merge** ke `KotakBelumLengkap.tsx` (tidak merusak Input; smoke 42/42); sisa = **VERIFIKASI** bahwa notifikasi tampil benar untuk Masul + **tangkapan layar HP/desktop tambahan**. E2E penuh sudah 24/24 (median 5 putaran **1,382 s** < 1,5 s, maks 2,394 s).
 - **T8 belum dimulai** (menunggu perintah): kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah, notifikasi kekurangan target bulan depan.
 - 3 sel matriks RLS masih SKIP (profil `wali`, target `diajukan` sebagai data tetap).
 - Usulan proyek Supabase QA terpisah belum dibuat (T9/T10).
@@ -82,7 +82,7 @@ Catatan dua penomoran: **A-G** = setup (bukan tahap kerja). **T0-T10** = tahap k
 ### Langkah berikutnya (berurutan)
 
 1. **[3b] SELESAI** (28 November 2026): tab `/target` massal + tabel Capaian target terverifikasi (E2E 24/24). Tidak ada lagi yang menggantung di [3b].
-2. **[3c] Notifikasi + tangkapan layar**: sambungkan `target_belum_domain` ke `KotakBelumLengkap.tsx` ("belum punya target"), simpan tangkapan layar HP (360 px) + desktop (1280 px) tambahan. E2E penuh `test_t7c3_e2e.py` sudah 24/24; sidik jari wajib SAMA.
+2. **[3c] Verifikasi notifikasi + tangkapan layar**: `target_belum_domain` **sudah terpasang** di `KotakBelumLengkap.tsx` (lihat perubahan di `main`); sisa = **verifikasi** notifikasi "belum punya target" tampil benar untuk Masul (jumlah mapel aktif tanpa target bulan depan, kecuali tuntas) + simpan tangkapan layar HP (360 px) & desktop (1280 px) tambahan. E2E penuh `test_t7c3_e2e.py` sudah 24/24; sidik jari wajib SAMA.
 3. **Setelah T7c tuntas**: mulai **T8** (kurikulum, halaqah, santri, kalender, Hari Efektif & kunci bulan, pergantian mapel halaqah). Jangan mulai T8/T9 lebih awal.
 4. Saat T8: ganti DUMMY Wasilah/Ghayah dengan butir asli dari Mudir; isi Hari Efektif bulan 8-12 lewat layar (belum ada).
 
@@ -163,7 +163,7 @@ Berlaku di atas 3.2.
 - Data sekarang (diperiksa 27 Nov 2026): santri **109**, capaian **2.036**, kehadiran **599 Al Qur'an / 756 Wasilah / 749 Ghayah** (total 2.104), catatan 0, target **363** (327 Al Qur'an setelah R5 dihapus + 25 DUMMY Wasilah + 11 DUMMY Ghayah bentuk tujuan akhir), `change_log` bertambah (append-only), `month_domain_settings` 21, `profiles` 24.
 - `month_domain_settings` hanya bulan 1-7; `is_locked` semua `false`; bulan 8-12 dan pengisian Hari Efektif adalah T8.
 - **Matriks RLS:** 94 OK / 3 SKIP / 0 GAGAL. SKIP: profil `wali`, target `diajukan`.
-- Situs produksi: `https://kusafa-app.vercel.app` (HTTP 200; **27 Nov 2026** setelah deploy form T7c [3/3], commit `8275103`: bundel produksi memanggil `wasilah_simpan_gabungan`, jalur lama `wasilah_input_save` sudah tidak ada; smoke baca saja **42/42 PASS** — `docs/qa/smoke_e2e_2026-11-27_prod.json`).
+- Situs produksi: `https://kusafa-app.vercel.app` (HTTP 200; **28 Nov 2026** setelah deploy T7c [3b], commit `2c5f77c`: bundel memanggil `wasilah_simpan_gabungan` (form) dan `setujui_target_halaqah` (bulk /target); smoke baca saja **42/42 PASS** — `docs/qa/smoke_e2e_2026-11-28_prod.json`). Deploy 27 Nov (`8275103`, form T7c) juga **42/42**.
 
 ---
 
